@@ -635,7 +635,8 @@ function reset(){
   nextWave();refresh();
 }
 function total(){return G.cells.reduce((a,c)=>a+(c?c.n:0),0)}
-function cost(){if(G.freeT>0||(G.free&&A('freebie')))return 0;return Math.max(1,Math.round((12+(A('freeze')&&G.frzS!=null?G.summons-Math.min(15,G.summons-G.frzS):G.summons))*(G.bn?G.bn.cost:1)))}
+function cost(){if(G.freeT>0||(G.free&&A('freebie')))return 0;return Math.max(1,Math.round(((12+(A('freeze')&&G.frzS!=null?G.summons-Math.min(15,G.summons-G.frzS):G.summons))*COST_K+4)*(G.bn?G.bn.cost:1)))}
+const COST_K=1.6,HERO_POW=1.6; // 소환 비싸게 + 영웅 강하게 (판에 덜 깔리게)
 function killCoin(w){return Math.round((4+Math.floor(w/5))*(G.bn?G.bn.coin:1)*(A('greed')?2:1)*(G.plOn&&G.plOn.mosaica>0?1.3:1))}
 function odds(){const n=G.luck,w=[1,.09+.06*n,.018+.02*n,.003+.004*n],t=w[0]+w[1]+w[2]+w[3];return w.map(v=>v/t*100)}
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
@@ -686,7 +687,7 @@ function upgrade(i){
 function planetLevel(k){return (G.upPlanet&&G.upPlanet[U[k].planet])||0}
 const LVF=['dur','st','bst','sl','vu','adur','hold','kbd','coinK'];
 function lvK(k){return 1+.05*(((typeof SAVE!=='undefined'&&SAVE.lv&&SAVE.lv[k])||1)-1)}
-function mult(k){return (1+.25*planetLevel(k))*(G.buff>0?1.5:1)*lvK(k)*(G.bn?G.bn.atk:1)}
+function mult(k){return HERO_POW*(1+.25*planetLevel(k))*(G.buff>0?1.5:1)*lvK(k)*(G.bn?G.bn.atk:1)}
 const TILEC=['','#b5dc65','#66d9ef','#c89cff','#ffd863','#ff7e87'];
 const TILEIMG={"1": __P(1367), "2": __P(1368), "3": __P(1369), "4": __P(1370), "5": __P(1371)};const TILE_ART={};
 if(typeof Image!=='undefined')for(const lv in TILEIMG){const im=new Image();im.src=TILEIMG[lv];TILE_ART[lv]=im}
@@ -1310,6 +1311,11 @@ function draw(){
     const big=u.t>=4,P=big?[[0,-CS*.16]]:c.n===1?[[0,-1]]:c.n===2?[[-CS*.22,-1],[CS*.22,-1]]:[[0,-CS*.22],[-CS*.23,CS*.06],[CS*.23,CS*.06]],sz=(big?(u.t===4?CS*1.21:CS*1.1):CS*.75)*k;
     const SC=['rgba(240,245,235,.62)','rgba(120,190,255,.7)','rgba(200,140,255,.7)','rgba(255,214,70,.75)','rgba(255,130,90,.75)'][u.t];
     const RB=RING['t'+(u.t+1)+'_back'],RF=RING['t'+(u.t+1)+'_front'],RW=sz*(big?1.0:1.15)*(P.length>1?.78:1)*512/448,RH=RW*320/512,ringOK=RB&&RB.complete&&RB.naturalWidth;
+    if(u.t>=3&&!dg){const gold=u.t===4,pu=.5+.5*Math.sin(tm*3+i),col=gold?'255,205,70':'190,125,255';cx.save();
+      const gr=cx.createRadialGradient(x,y+2,2,x,y+2,CS*.66);gr.addColorStop(0,'rgba('+col+','+((gold?.85:.38)*(.7+.3*pu)).toFixed(3)+')');gr.addColorStop(1,'rgba('+col+',0)');cx.fillStyle=gr;rrect(cx,x-CS/2+2,y-CS/2+2,CS-4,CS-4,8);cx.fill();
+      if(gold){cx.globalCompositeOperation='lighter';{const bw=CS*.62,bg=cx.createLinearGradient(0,y+CS*.45,0,y-CS*1.05);bg.addColorStop(0,'rgba(255,215,90,'+(.5+.2*pu).toFixed(3)+')');bg.addColorStop(1,'rgba(255,215,90,0)');cx.fillStyle=bg;cx.fillRect(x-bw/2,y-CS*1.05,bw,CS*1.5)}cx.translate(x,y+4);cx.rotate(tm*.5+i);for(let r=0;r<8;r++){cx.rotate(Math.PI/4);const g2=cx.createLinearGradient(0,0,0,-CS*.6);g2.addColorStop(0,'rgba(255,225,120,'+(.38+.16*pu).toFixed(3)+')');g2.addColorStop(1,'rgba(255,220,110,0)');cx.fillStyle=g2;cx.beginPath();cx.moveTo(-5,0);cx.lineTo(0,-CS*.6);cx.lineTo(5,0);cx.closePath();cx.fill()}}
+      cx.restore();cx.save();if(gold&&cx.createConicGradient){const cg=cx.createConicGradient(tm*2.2+i,x,y);['#ff5e7a','#ffb83c','#fff27a','#5effa8','#5ec8ff','#b47bff','#ff5e7a'].forEach((cc,q,A)=>cg.addColorStop(q/(A.length-1),cc));cx.strokeStyle=cg}else cx.strokeStyle='rgba('+col+','+(.55+.45*pu).toFixed(3)+')';cx.lineWidth=gold?4:1.8;cx.shadowColor='rgb('+col+')';cx.shadowBlur=gold?10+10*pu:6+4*pu;rrect(cx,x-CS/2+2.5,y-CS/2+2.5,CS-5,CS-5,8);cx.stroke();cx.restore();
+      if(gold){cx.save();cx.globalCompositeOperation='lighter';for(let q=0;q<5;q++){const ph=(tm*.6+q/5+i*.13)%1,sx=x+Math.sin(q*2.3+i)*CS*.34,sy=y+CS*.38-ph*CS*.85,al=Math.sin(ph*Math.PI);cx.fillStyle='rgba(255,230,140,'+(al*.9).toFixed(3)+')';cx.beginPath();cx.arc(sx,sy,1.2+al*1.6,0,7);cx.fill()}cx.restore()}}
     P.forEach(([dx,dy])=>{const fy=y+dy+GROUND;cx.fillStyle='rgba(40,70,25,.22)';cx.beginPath();cx.ellipse(x+dx,fy+1.5,sz*.36,sz*.12,0,0,7);cx.fill();if(ringOK){cx.drawImage(RB,x+dx-RW/2,fy-RH/2,RW,RH)}else{cx.fillStyle=SC;cx.beginPath();cx.ellipse(x+dx,fy,sz*.33,sz*.105,0,0,7);cx.fill()}});
     P.forEach(([dx,dy],j)=>{cx.save();const br=Math.sin(tm*2.6+i+j*2)*.03;{const lg=u.melee?(c.sb>0&&c.sT?Math.sin(Math.min(1,(1-c.sb/c.sT)*1.6)*Math.PI):c.b>0&&c.bT?Math.sin((1-c.b/c.bT)*Math.PI):0)*CS*.3:0;cx.translate(x+dx+M.ox+lg*(c.ax||0),y+dy+M.oy+sz*.42+lg*(c.ay||0))}cx.rotate(M.rot);cx.scale(M.sx*(1-br*.5)*(c.ax<0?-1:1),M.sy*(1+br));const AF=u.ani?aniFrame(u,c):null;if(AF){const S2=fitS2(c,u)*k;cx.drawImage(AF,-S2/2,GROUND-sz*.42-S2*u.ani.pivot,S2,S2)}else spr(u.fr&&c.b>0&&c.bT?u.fr[Math.max(0,Math.min(NF-1,Math.round((1-c.b/c.bT)*(NF-1))))]:u.spr,u.e,0,-sz*.42,sz);cx.restore()});
     if(ringOK)P.forEach(([dx,dy])=>{const fy=y+dy+GROUND;cx.drawImage(RF,x+dx-RW/2,fy-RH/2,RW,RH)});
@@ -1472,7 +1478,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:195};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:196};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
