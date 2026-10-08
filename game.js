@@ -1429,15 +1429,17 @@ function sbDb(pid,sec){const row=d=>({w:d.w,k:d.k,t:d.t,nick:d.nick,g:d.g});
     set:async d=>{await sbReq('rpc/submit_score',{method:'POST',body:JSON.stringify({p_pid:pid,p_secret:sec,p_nick:d.nick||'',p_w:d.w|0,p_k:d.k|0,p_t:Math.round(d.t||0)})})},
     update:async d=>{if(d.nick!=null)await sbReq('rpc/set_nick',{method:'POST',body:JSON.stringify({p_pid:pid,p_secret:sec,p_nick:d.nick})})}}},
    collection:()=>{const q={orderBy:()=>q,limit:()=>q,get:async()=>{const a=await sbReq('rank?select=pid,nick,w,k,t,g&order=w.desc,k.desc&limit=200');return{docs:(a||[]).map(r=>({id:r.pid,data:()=>row(r)}))}}};return q}}}
-if(!(window.claude&&window.claude.use)&&SB_URL&&typeof fetch!=='undefined'){const[p,s0]=sbId();RK.db=sbDb(p,s0);RK.uid=p;RK.sb=1;(async()=>{try{const d=await RK.db.doc('rank/'+p).get();if(d.exists)RK.best=d.data()}catch(e){}})()}
+if(!(window.claude&&window.claude.use)&&SB_URL&&typeof fetch!=='undefined'){const[p,s0]=sbId();RK.db=sbDb(p,s0);RK.uid=p;RK.sb=1;setTimeout(()=>rkFetch().catch(()=>{}),1500)}
 (async()=>{try{const C=window.claude;if(!C||!C.use)return;const[db,us]=await Promise.all([C.use('db'),C.use('user')]);if(!db||!us)return;RK.db=db;RK.us=us;RK.uid=await us.id();try{const me=await us.me();RK.name=me&&me.name||''}catch(e){}
   if(RK.uid){try{const d=await db.doc('rank/'+RK.uid).get();if(d.exists)RK.best=d.data()}catch(e){}}if($('mRank')&&$('mRank').classList.contains('on'))rkRender()}catch(e){}})();
 function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
-async function rkSubmit(w,k,t){if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:193};
+async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
+async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:194};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
-async function rkFetch(){const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
+async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
 async function rkMyRank(){try{const L=await rkFetch();const i=L.findIndex(r=>r.id===RK.uid);return i<0?null:i+1}catch(e){return null}}
 function rkTime(t){t=Math.round(t||0);return Math.floor(t/60)+'분 '+(t%60)+'초'}
 // 기록 코드: 랭킹에 직접 못 쓰는 사람(공개 링크 외부인·비로그인)이 주인에게 보내면 주인이 등록
@@ -1449,7 +1451,7 @@ async function rkImport(txt){const L=txt.split(/\s+/).map(rkParse).filter(Boolea
 function rkCanOwn(){try{return !!(RK.us&&RK.us.isOwner())}catch(e){return false}}
 async function rkRender(){const M=$('rkMe'),L=$('rkList');if(!M)return;const esc=t=>String(t).replace(/[<>"&]/g,'');
   let h='내 이름 <input id="rkNick" maxlength="12" value="'+esc(rkNick())+'"><button id="rkSave">저장</button>';
-  if(RK.db&&RK.uid&&RK.canW!==false)h+='<div>'+(RK.best?'내 최고 기록 — 웨이브 <b>'+RK.best.w+'</b> · 처치 '+RK.best.k+' · '+(RK.best.g||1)+'판':'아직 기록이 없어요. 한 판 끝내면 자동으로 올라가요.')+'</div>';
+  if(RK.sb)h+='<div>판이 끝날 때마다 이 이름으로 기록이 올라가요. 높은 웨이브 순서예요.</div>';else if(RK.db&&RK.uid&&RK.canW!==false)h+='<div>'+(RK.best?'내 최고 기록 — 웨이브 <b>'+RK.best.w+'</b> · 처치 '+RK.best.k+' · '+(RK.best.g||1)+'판':'아직 기록이 없어요. 한 판 끝내면 자동으로 올라가요.')+'</div>';
   else h+='<div style="font-size:.85em;color:#8a4a1a">이 링크로는 랭킹에 바로 저장되지 않아요. 판이 끝나면 나오는 <b>기록 코드</b>를 게임 주인에게 보내 주세요.</div>';
   if(RK.db&&rkCanOwn())h+='<div style="margin-top:6px;border-top:1px dashed #d9b77a;padding-top:6px">📥 받은 기록 코드 등록 <small style="opacity:.7">(여러 개 한 번에 붙여 넣어도 돼요)</small><textarea id="rkIn" rows="2" style="width:100%;box-sizing:border-box;font-size:12px;margin-top:4px"></textarea><button id="rkReg">등록</button> <span id="rkRegMsg" style="font-size:.85em"></span></div>';
   M.innerHTML=h;
@@ -1457,7 +1459,7 @@ async function rkRender(){const M=$('rkMe'),L=$('rkList');if(!M)return;const esc
   if($('rkReg'))$('rkReg').onclick=async()=>{const r=await rkImport($('rkIn').value);$('rkRegMsg').textContent=r[1]?'✅ '+r[0]+'개 등록':'❌ 올바른 코드가 없어요';if(r[0]){$('rkIn').value='';setTimeout(rkRender,600)}};
   if(!RK.db){L.innerHTML='<div style="text-align:center;opacity:.6;padding:12px">랭킹 목록은 claude.ai에 로그인하면 보여요.</div>';return}
   L.innerHTML='<div style="text-align:center;opacity:.6;padding:12px">불러오는 중…</div>';
-  try{const R=await rkFetch();L.innerHTML=R.length?R.slice(0,100).map((r,i)=>{const e=document.createElement('span');e.textContent=r.nick||'이름없음';return '<div class="rkr'+(i<3?' p'+(i+1):'')+(r.id===RK.uid?' me':'')+'"><span class="n">'+(i<3?['🥇','🥈','🥉'][i]:i+1)+'</span><span class="nm">'+e.innerHTML+(r.id===RK.uid?' (나)':'')+'<small>처치 '+(r.k||0)+' · '+rkTime(r.t)+' · '+(r.g||1)+'판</small></span><span class="w">웨이브 <b>'+r.w+'</b></span></div>'}).join(''):'<div style="text-align:center;opacity:.6;padding:12px">아직 아무도 없어요. 첫 기록을 남겨 보세요!</div>'}
+  try{const R=await rkFetch();L.innerHTML=R.length?R.slice(0,100).map((r,i)=>{const e=document.createElement('span');e.textContent=r.nick||'이름없음';const me=r.mine||r.id===RK.uid;return '<div class="rkr'+(i<3?' p'+(i+1):'')+(me?' me':'')+(RK.sb&&r.id===RK.last?' new':'')+'"><span class="n">'+(i<3?['🥇','🥈','🥉'][i]:i+1)+'</span><span class="nm">'+e.innerHTML+(me?' (나)':'')+'<small>처치 '+(r.k||0)+' · '+rkTime(r.t)+(RK.sb?(r.d?' · '+new Date(r.d).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}):''):' · '+(r.g||1)+'판')+'</small></span><span class="w">웨이브 <b>'+r.w+'</b></span></div>'}).join(''):'<div style="text-align:center;opacity:.6;padding:12px">아직 아무도 없어요. 첫 기록을 남겨 보세요!</div>'}
   catch(e){L.innerHTML='<div style="text-align:center;opacity:.6;padding:12px">랭킹을 불러오지 못했어요.</div>'}}
 function saveAll(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}}
 function fragNeed(lv){return 10*lv}
