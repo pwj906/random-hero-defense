@@ -2,8 +2,8 @@
 
 운빨존많겜 규칙을 바탕으로 만든 HTML 캔버스 디펜스 게임.
 
-- `index.html` — 페이지와 화면 구성
-- `game.js` — 게임 코드
-- `pack.json` — 그림 묶음
+플레이: https://pwj906.github.io/random-hero-defense/
 
-GitHub Pages로 배포한다.
+- `src/unppal-defense.html` — 원본 (수정은 여기서)
+- `tools/build.py` — 원본을 `index.html`·`game.js`·`pack.json`으로 나눔
+- `tools/deploy.sh` — 빌드 후 main에 push (GitHub Pages 자동 반영)
