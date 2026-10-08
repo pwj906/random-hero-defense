@@ -1419,11 +1419,22 @@ try{const r=localStorage.getItem(SAVE_KEY);if(r)Object.assign(SAVE,JSON.parse(r)
 SAVE.sk=SAVE.sk||{meteor:1};SAVE.skEq=(SAVE.skEq||['meteor']).filter(k=>USK[k]&&SAVE.sk[k]).slice(0,2);SAVE.skPity=SAVE.skPity||0;
 // ---------- 랭킹 (artifact db: rank/<viewer id>, 각자 자기 기록만 씀) ----------
 const RK={db:null,us:null,uid:null,name:'',canW:null,best:null,list:null,err:''};
+// 공개 배포판(claude.ai 밖)용 랭킹: Supabase. 기기마다 무작위 id·비밀값을 만들어 자기 기록만 갱신.
+const SB_URL='https://loegtuubjzsfkexehuvn.supabase.co',SB_KEY='sb_publishable_4vh1i_31bEHbOecl8vxEug_GGtA6Y6a';
+function sbId(){let p,s;try{p=localStorage.getItem('rhd_pid');s=localStorage.getItem('rhd_sec')}catch(e){}if(!p||!s){const r=()=>(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36)+Math.random().toString(36).slice(2)).replace(/-/g,'');p='p'+r().slice(0,20);s=r()+r();try{localStorage.setItem('rhd_pid',p);localStorage.setItem('rhd_sec',s)}catch(e){}}return [p,s]}
+async function sbReq(path,opt){const r=await fetch(SB_URL+'/rest/v1/'+path,Object.assign({headers:{apikey:SB_KEY,'Content-Type':'application/json'}},opt||{}));if(!r.ok)throw {code:r.status===401||r.status===403?'invalid_argument':'unavailable',status:r.status};const t=await r.text();return t?JSON.parse(t):null}
+function sbDb(pid,sec){const row=d=>({w:d.w,k:d.k,t:d.t,nick:d.nick,g:d.g});
+  return {doc:p=>{const id=p.split('/')[1];return{
+    get:async()=>{const a=await sbReq('rank?select=pid,nick,w,k,t,g&pid=eq.'+encodeURIComponent(id));return{exists:!!(a&&a.length),data:()=>a&&a[0]&&row(a[0]),id}},
+    set:async d=>{await sbReq('rpc/submit_score',{method:'POST',body:JSON.stringify({p_pid:pid,p_secret:sec,p_nick:d.nick||'',p_w:d.w|0,p_k:d.k|0,p_t:Math.round(d.t||0)})})},
+    update:async d=>{if(d.nick!=null)await sbReq('rpc/set_nick',{method:'POST',body:JSON.stringify({p_pid:pid,p_secret:sec,p_nick:d.nick})})}}},
+   collection:()=>{const q={orderBy:()=>q,limit:()=>q,get:async()=>{const a=await sbReq('rank?select=pid,nick,w,k,t,g&order=w.desc,k.desc&limit=200');return{docs:(a||[]).map(r=>({id:r.pid,data:()=>row(r)}))}}};return q}}}
+if(!(window.claude&&window.claude.use)&&SB_URL&&typeof fetch!=='undefined'){const[p,s0]=sbId();RK.db=sbDb(p,s0);RK.uid=p;RK.sb=1;(async()=>{try{const d=await RK.db.doc('rank/'+p).get();if(d.exists)RK.best=d.data()}catch(e){}})()}
 (async()=>{try{const C=window.claude;if(!C||!C.use)return;const[db,us]=await Promise.all([C.use('db'),C.use('user')]);if(!db||!us)return;RK.db=db;RK.us=us;RK.uid=await us.id();try{const me=await us.me();RK.name=me&&me.name||''}catch(e){}
   if(RK.uid){try{const d=await db.doc('rank/'+RK.uid).get();if(d.exists)RK.best=d.data()}catch(e){}}if($('mRank')&&$('mRank').classList.contains('on'))rkRender()}catch(e){}})();
 function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
-async function rkSubmit(w,k,t){if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:192};
+async function rkSubmit(w,k,t){if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:193};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
