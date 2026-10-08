@@ -4,14 +4,15 @@
 
 ## 파일
 - `src/unppal-defense.html` — **원본. 수정은 항상 여기서만 한다.** 그림(WebP data URI)이 전부 박힌 단일 HTML.
-- `index.html`, `game.js`, `pack.json` — 배포용. `tools/build.py`가 원본에서 자동 생성한다. 직접 고치지 않는다.
-  - 그림을 `pack.json` 하나로 빼는 이유: 그림이 HTML 안에 많으면 claude.ai 공개 공유 검토가 막힌다.
+- `index.html`, `game.js`, `pack.json`, `pack-1.json`, `pack-2.json`… — 배포용. `tools/build.py`가 원본에서 자동 생성한다. 직접 고치지 않는다.
+  - 그림을 pack 파일로 빼는 이유: 그림이 HTML 안에 많으면 claude.ai 공개 공유 검토가 막힌다.
+  - pack은 7MB씩 나눈다(아티팩트 파일 하나 16MB 한도). `pack.json`은 목록, `pack-N.json`이 그림 묶음.
 
 ## 업데이트할 때마다 (자동 배포)
 1. `src/unppal-defense.html` 수정. 메인 화면의 버전 표시 `>v1NN<`와 랭킹 기록용 `v:1NN`을 함께 올린다.
 2. `tools/deploy.sh "vNNN: 바꾼 내용"` 실행 → 빌드, 문법 검사, 커밋, push.
    - GitHub Pages(main 브랜치 / root)가 1~2분 안에 https://pwj906.github.io/random-hero-defense/ 에 반영한다.
-3. claude.ai 아티팩트(https://claude.ai/artifact/QzZJKSqcjsDtUz14ccwMRg)도 같은 `index.html`과 files `{game.js, pack.json}`로 다시 게시한다. `capabilities`는 생략해서 기존 설정(db·user)을 유지한다.
+3. claude.ai 아티팩트(https://claude.ai/artifact/QzZJKSqcjsDtUz14ccwMRg)도 같은 `index.html`과 files `{game.js, pack.json, pack-1.json, pack-2.json…}`로 다시 게시한다. `capabilities`는 생략해서 기존 설정(db·user)을 유지한다.
 4. 커밋 메시지 끝에는 세션 안내에 있는 Co-Authored-By 줄을 붙인다.
 
 ## 랭킹
@@ -22,5 +23,7 @@
   - 예전 `public.rank` 표와 `submit_score`/`set_nick` 함수는 안 쓴다.
 
 ## 그림
+- v5 그림(제륵 보스2~6·현상금·특수적·컷인, 사용자 스킬, 증강·복권·박스·시너지칩, 전투FX)은 원본의 `V5` 상수(키 = GPT 묶음의 animation.json asset 키)에 있다. `v5i(키,프레임)`으로 꺼낸다.
+- 보스 순서: 10웨이브마다 1(카록스)·2(나르굴)·3(두르간)·4(벨사르)·6(제르칸, 50웨이브)·5(티크론) 반복. `JB`, `bossKind`, `bossFire` 참고.
 - 그림은 사용자가 GPT로 만들어 zip으로 준다. 캐릭터 256×256, 발 (128,240), 오른쪽을 봄.
 - `PKG`(JSON) 안에 프레임은 168px WebP q70, 효과는 144px로 줄여 넣는다.
