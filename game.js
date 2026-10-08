@@ -595,7 +595,7 @@ const SPT={gamer:['단일'],veteran:['범위'],napoleon:['단일'],jir:['연쇄'
 function tagH(a){return (a||[]).map(t=>'<span class="tg" style="--c:'+(TAGC[t]||'#ddd')+'">'+t+'</span>').join('')}
 function rngTag(k){const u=U[k];return u.melee?'근접':(u.r-16)/CS>=4.9?'저격':'원거리'}
 for(const k in PV){const u=U[k],v=PV[k];if(!u)continue;for(const f in v){if(f==='r')u.r=Math.round(v.r*CS+16);else if(f==='sm')u.s*=v.sm;else if(f==='sp')u.sp=Math.round(v.sp*CS);else if(f==='kbd')u.kbd=v.kbd*CS;else if(f==='nth')u.nth=Object.assign({},v.nth,v.nth.r?{r:v.nth.r*CS}:{});else if(f!=='x')u[f]=v[f]}}
-let drag=null;let H=1581/MAPK,T=220/MAPK,B=1190/MAPK,PH=B-T,PER=2*(PW+PH),GY=CYS[0]-CS/2,FS=1;let MAXU=20,MAXL=5; // 인구(영웅 수) 제한 · 우주 히어로 최대 수
+let drag=null;let H=1581/MAPK,T=220/MAPK,B=1190/MAPK,PH=B-T,PER=2*(PW+PH),GY=CYS[0]-CS/2,FS=1;let MAXU=NC*3;
 // 백수형 사거리 +2칸은 미확정. 기존 200px 유지.
 const UIIMG={"btn_summon_normal": __P(1073), "btn_summon_pressed": __P(1074), "btn_summon_disabled": __P(1075), "btn_combine_normal": __P(1076), "btn_combine_pressed": __P(1077), "btn_combine_disabled": __P(1078), "btn_luck_normal": __P(1079), "btn_luck_pressed": __P(1080), "btn_luck_disabled": __P(1081), "btn_upgrade_normal": __P(1082), "btn_upgrade_pressed": __P(1083), "btn_upgrade_disabled": __P(1084), "wave_panel": __P(1085), "enemy_counter_track": __P(1086), "resource_bar": __P(1087), "speed_pill": __P(1088)};
 const RINGIMG={"t1_back":__P(1089),"t1_front":__P(1090),"t2_back":__P(1091),"t2_front":__P(1092),"t3_back":__P(1093),"t3_front":__P(1094),"t4_back":__P(1095),"t4_front":__P(1096),"t5_back":__P(1097),"t5_front":__P(1098)};const RING={};
@@ -636,7 +636,7 @@ function reset(){
 }
 function total(){return G.cells.reduce((a,c)=>a+(c?c.n:0),0)}
 function cost(){if(G.freeT>0||(G.free&&A('freebie')))return 0;return Math.max(1,Math.round(((12+(A('freeze')&&G.frzS!=null?G.summons-Math.min(15,G.summons-G.frzS):G.summons))*COST_K+4)*(G.bn?G.bn.cost:1)))}
-let COST_K=1.6,HERO_POW=1.6; // 소환 비싸게 + 영웅 강하게 (판에 덜 깔리게)
+let COST_K=2.4,HERO_POW=2.2,CRAFT_C0=120,CRAFT_STEP=120; // 소환 비싸게 + 영웅 강하게 (판에 덜 깔리게)
 function killCoin(w){return Math.round((4+Math.floor(w/5))*(G.bn?G.bn.coin:1)*(A('greed')?2:1)*(G.plOn&&G.plOn.mosaica>0?1.3:1))}
 function odds(){const n=G.luck,w=[1,.09+.06*n,.018+.02*n,.003+.004*n],t=w[0]+w[1]+w[2]+w[3];return w.map(v=>v/t*100)}
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
@@ -662,7 +662,7 @@ function pickU(t){const pool=BY[t],inc={},pl={},have={};for(const c of G.cells)i
   const need={};for(const m in RECIPE){const r=rcp(m),got=r.filter(k=>have[k]).length;if(got>=2&&got<r.length)for(const k of r)if(!have[k])need[k]=1}
   const w=pool.map(k=>(inc[k]?PULL_SAME:pl[U[k].planet]?PULL_PLANET:1)*(need[k]?PULL_RECIPE:1));let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let j=0;j<pool.length;j++){r-=w[j];if(r<0)return pool[j]}return pool[pool.length-1]}
 function summon(){
-  if(G.over)return;if(total()>=MAXU){toast('👥 인구가 가득 찼어요 (최대 '+MAXU+'명) — 승급하거나 팔아 주세요');return}
+  if(G.over)return;if(total()>=MAXU){toast('필드가 가득 찼어요!');return}
   const c=cost();if(G.coins<c)return;
   const o=odds();let r=Math.random()*100,t=0;while(t<3&&r>=o[t]){r-=o[t];t++}
   let leap=false;if(A('leap')&&t<3&&Math.random()<.12){t=Math.min(3,t+2);leap=true}
@@ -672,7 +672,7 @@ function summon(){
 }
 const GAM=[{t:1,c:1,p:.6},{t:2,c:1,p:.2},{t:3,c:2,p:.1}];
 function gamble(i){
-  const g=GAM[i];if(G.over||G.stones<g.c||!BY[g.t].length)return;if(total()>=MAXU){toast('👥 인구가 가득 찼어요 (최대 '+MAXU+'명) — 승급하거나 팔아 주세요');return}
+  const g=GAM[i];if(G.over||G.stones<g.c||!BY[g.t].length)return;if(total()>=MAXU){toast('필드가 가득 찼어요!');return}
   if(Math.random()<g.p){const id=rnd(BY[g.t]);if(!place(id)){toast('놓을 칸이 없어요');return}G.stones-=g.c;toast('성공! '+U[id].n)}
   else{G.stones-=g.c;toast('꽝! 🍀💨')}
   refresh()
@@ -716,7 +716,8 @@ function upgradeTile(){const cand=[];for(let i=0;i<NC;i++)if((G.tile[i]||0)<5)ca
 function upKCost(k){return Math.round((40+40*planetLevel(k))*(A('sponsor')?.6:1))}
 function upgradeK(k){if(G.over||!U[k]||!PLANETS[U[k].planet])return;const p=U[k].planet,cost=upKCost(k);if(G.coins<cost)return;G.coins-=cost;G.upPlanet[p]=(G.upPlanet[p]||0)+1;
  for(let i=0;i<NC;i++){const c=G.cells[i];if(c&&U[c.u].planet===p){const[x,y]=cellXY(i);parts(x,y,10,'#ffd23e',110,3)}}toast(PLANETS[p]+' 지원 강화 Lv.'+G.upPlanet[p]);refresh()}
-function canCraft(m){if(G&&G.cells&&G.cells.filter(c=>c&&U[c.u].t===4).length>=MAXL)return false;const need=rcp(m);if(!U[m]||U[m].t!==4||!Array.isArray(need)||!need.length)return false;const counts={};for(const id of need){if(!U[id]||U[id].t<0||U[id].t>3)return false;counts[id]=(counts[id]||0)+1}
+function craftCost(){return CRAFT_C0+CRAFT_STEP*((G&&G.nCraft)||0)}
+function canCraft(m){if(G&&G.coins<craftCost())return false;const need=rcp(m);if(!U[m]||U[m].t!==4||!Array.isArray(need)||!need.length)return false;const counts={};for(const id of need){if(!U[id]||U[id].t<0||U[id].t>3)return false;counts[id]=(counts[id]||0)+1}
  for(const id in counts)if(G.cells.reduce((n,c)=>n+(c&&c.u===id?c.n:0),0)<counts[id])return false;
  return G.cells.some(c=>!c)||G.cells.some(c=>c&&counts[c.u]>=c.n)}
 function merge(){
@@ -736,7 +737,7 @@ function sell(){
 }
 function hasUnit(id){return G.cells.some(c=>c&&c.u===id)}
 function craft(m){
- if(G.over||!canCraft(m)){toast('재료 또는 우주 히어로 배치 공간이 부족해요');return}
+ if(G.over||!canCraft(m)){toast(G.coins<craftCost()?'🪙 우주 조합 비용 '+craftCost()+'이 부족해요':'재료 또는 우주 히어로 배치 공간이 부족해요');return}G.coins-=craftCost();G.nCraft=(G.nCraft||0)+1;
  for(const id of rcp(m)){const i=G.cells.reduce((best,c,j)=>c&&c.u===id&&(best<0||c.n<G.cells[best].n)?j:best,-1);if(--G.cells[i].n===0)G.cells[i]=null}
  place(m);if(A('cosmicplus')&&Math.random()<.4&&place(m))toast('🌠 우주의 축복! 하나 더');G.sel=null;{const at=G.cells.findIndex(q=>q&&q.u===m),[px,py]=cellXY(at<0?12:at);SND.play('cosmic');burst(px,py,4,true);fxs('common/cosmic_birth',px,py-CS*.3,CS*3.2,{fps:9});for(let q=0;q<5;q++)G.fx.push({k:'ring',x:px,y:py,r:60+q*45,t:.7,T:.7,c:q%2?'#fff':'#ffd23e',dl:.1+q*.09});parts(px,py,40,'#ffd23e',260,4);parts(px,py,24,'#fff',200,3);G.fx.push({k:'t',x:px,y:py-34,t:1.6,T:1.6,s:'우주 히어로 탄생!',cr:true,dl:.1});G.hs=.45;G.flash=Math.max(G.flash||0,.2);G.fAt=-9;G.shake=Math.max(G.shake,.7);for(const o of G.mobs)if(o.hp>0&&!o.boss)o.st=Math.max(o.st||0,1.2);if(!cutin(m,'우주 히어로 탄생! '+U[m].n))toast('우주 히어로 탄생! '+U[m].n)}refresh()
 }
@@ -1403,7 +1404,7 @@ function lotInit(){if(v5u('lottery/background')){const lb=document.querySelector
 function openSheet(k){sheet=sheet===k?null:k;refresh()}
 function refresh(){
   {const n=G&&!G.over?readyCells().length:0,b=$('bAll');if(b){b.style.display=n&&G.sel===null&&!sheet?'block':'none';b.textContent='▲ 일괄 승급 ×'+n}}
-  {const b=$('bCraft');if(b){const m=G&&!G.over?Object.keys(RECIPE).find(k=>canCraft(k)):null;b.style.display=m&&G.sel===null&&!sheet?'flex':'none';if(m&&b.dataset.m!==m){b.dataset.m=m;b.innerHTML=(U[m].url?'<img src="'+U[m].url+'" alt="">':'')+'✦ '+U[m].n+' 조합!'}if(!m)b.dataset.m=''}}
+  {const b=$('bCraft');if(b){const m=G&&!G.over?Object.keys(RECIPE).find(k=>canCraft(k)):null;b.style.display=m&&G.sel===null&&!sheet?'flex':'none';if(m&&b.dataset.k!==m+craftCost()){b.dataset.m=m;b.dataset.k=m+craftCost();b.innerHTML=(U[m].url?'<img src="'+U[m].url+'" alt="">':'')+'✦ '+U[m].n+' 조합! <small style="font-size:.6em">🪙'+craftCost()+'</small>'}if(!m)b.dataset.m=''}}
   $('cost').textContent=cost()?'🪙'+cost():'무료';
   $('bMyth').classList.toggle('ready',Object.keys(RECIPE).some(m=>canCraft(m)));
   const s=$('sel'),c=G.sel!==null?G.cells[G.sel]:null;
@@ -1418,7 +1419,7 @@ function refresh(){
   const sh=$('sheet');if(!sheet){sh.style.display='none';return}
   sh.style.display='block';const body=$('sheetBody'),X='<button id="x">✕</button></h3>';
   if(sheet==='myth'){
-    body.innerHTML='<h3><span>우주 히어로 조합</span>'+X+'<div class="mhelp">같은 행성 영웅을 <b>등급마다 1명씩</b> 필드에 모으면 <b>우주 히어로 1명</b>으로 합쳐져요. 재료는 1명씩만 빠지고, 3명 쌓인 칸도 1명만 써요. 우주 히어로는 <b>최대 '+MAXL+'명</b>까지 둘 수 있어요.</div><div id="myth"></div>';
+    body.innerHTML='<h3><span>우주 히어로 조합</span>'+X+'<div class="mhelp">같은 행성 영웅을 <b>등급마다 1명씩</b> 필드에 모으면 <b>우주 히어로 1명</b>으로 합쳐져요. 재료는 1명씩만 빠지고, 3명 쌓인 칸도 1명만 써요. 조합할 때마다 코인이 들고, 할수록 비싸져요 (지금 <b>🪙'+craftCost()+'</b>).</div><div id="myth"></div>';
     const ord=Object.keys(RECIPE).map(m=>[m,rcp(m).filter(id=>hasUnit(id)).length,rcp(m).length]).sort((a,b)=>canCraft(b[0])-canCraft(a[0])||b[1]/b[2]-a[1]/a[2]);
     for(const[m,have,need]of ord){const ok=canCraft(m),b=document.createElement('button'),pl=U[m].planet;
       b.className='mr'+(ok?' ok':'');b.disabled=!ok;
@@ -1478,7 +1479,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:197};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:198};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
