@@ -1391,7 +1391,7 @@ function hud(){
   $('hM').textContent='💀 '+G.mobs.length+' / 200';{const dz=G.mobs.length>=140;if(dz&&!G.dz){toast('⚠️ 위기! 적이 너무 많아요');SND.play('alarm')}if(dz!==!!G.dz)SND.bg(false,dz||isBoss(G.wave)?1:0);G.dz=dz;$('mbar').classList.toggle('dz',dz)}$('mfill').style.width=Math.min(100,G.mobs.length/2)+'%';
   $('hC').textContent=G.coins;$('hS').textContent=G.stones;$('hN').textContent=total()+'/'+MAXU;
   $('summon').disabled=G.coins<cost();{G.crK2=(G.crK2||0)+1;if(G.crK2%10===0){const sig=Object.keys(RECIPE).map(k=>canCraft(k)?1:0).join('')+'|'+craftCost();if(sig!==G.crSig){G.crSig=sig;refresh()}}}{const cs=cost(),tx=cs?'🪙'+cs:'무료';if($('cost').textContent!==tx)$('cost').textContent=tx}skHud();
-  if(sheet==='gam'){GAM.forEach((g,i)=>$('g'+i).disabled=G.stones<g.c||!BY[g.t].length);if($('gLot'))$('gLot').disabled=G.stones<lotCost()}
+  if(sheet==='gam'){GAM.forEach((g,i)=>$('g'+i).disabled=G.stones<g.c||!BY[g.t].length);if($('gLot'))$('gLot').disabled=G.stones<lotCost();if($('gLot10'))$('gLot10').disabled=G.stones<lotCost()*10}
   if(sheet==='up'&&$('u3'))$('u3').disabled=G.coins<upCost(3)||G.luck>=10;
   if(sheet==='up'&&$('u4'))$('u4').disabled=G.coins<tileCost()||G.tile.every(lv=>lv>=5);
   if(sheet==='up'&&$('planetUp'))Array.from($('planetUp').children).forEach((b,j)=>{const p=plIn()[j],k=Object.keys(U).find(k=>U[k].planet===p);b.disabled=!k||!G.cells.some(c=>c&&U[c.u].planet===p)||G.coins<upKCost(k)});
@@ -1403,25 +1403,36 @@ const LOT=[{k:'jack',s:'🦸',p:.006},{k:'x20',s:'7️⃣',p:.012,m:20},{k:'ston
 function lotCost(){return 1}
 function lotPrize(){return Math.round((40+6*G.wave)*(A('lotto')?2:1))}
 let lotCur=null;
-function buyLot(){if(G.over||lotCur&&!lotCur.done)return;const c=lotCost();if(G.stones<c)return;G.stones-=c;G.lotN=(G.lotN||0)+1;let r=Math.random(),pz=null;for(const z of LOT){if(r<z.p){pz=z;break}r-=z.p}
-  let sy;if(pz)sy=[pz.s,pz.s,pz.s];else{const S=LOT.map(z=>z.s),a=S[Math.floor(Math.random()*S.length)];let b;do{b=S[Math.floor(Math.random()*S.length)]}while(b===a);sy=Math.random()<.6?[a,a,b]:[a,b,S[Math.floor(Math.random()*S.length)]];if(sy[0]===sy[1]&&sy[1]===sy[2])sy[2]=b;sy.sort(()=>Math.random()-.5)}
-  lotCur={pz,cost:lotPrize(),done:false};const L=$('lot');L.style.display='flex';L.firstChild.className='lcard';$('lotSym').innerHTML=sy.map(x=>'<span>'+(LOTI[x]&&v5u(LOTI[x])?v5img(LOTI[x],'','width:1.15em;height:1.15em'):x)+'</span>').join('');$('lotRes').innerHTML='';$('lotSub').textContent='두근두근…';
+function lotRoll(){let r=Math.random();for(const z of LOT){if(r<z.p)return z;r-=z.p}return null}
+function lotSyms(pz){if(pz)return [pz.s,pz.s,pz.s];const S=LOT.map(z=>z.s),a=S[Math.floor(Math.random()*S.length)];let b;do{b=S[Math.floor(Math.random()*S.length)]}while(b===a);const sy=Math.random()<.6?[a,a,b]:[a,b,S[Math.floor(Math.random()*S.length)]];if(sy[0]===sy[1]&&sy[1]===sy[2])sy[2]=b;return sy.sort(()=>Math.random()-.5)}
+function lotSymH(x,sz){return LOTI[x]&&v5u(LOTI[x])?v5img(LOTI[x],'','width:'+sz+';height:'+sz):x}
+function lotPay(z,cost){if(!z)return {msg:'꽝… 다음엔 될 거예요',sh:'꽝',big:0,c:0,st:0,h:null};
+  if(z.m){const w=cost*z.m;G.coins+=w;return {msg:(z.m>=20?'🎉 대박! ':z.m>=5?'✨ 당첨! ':'당첨! ')+'<b>🪙+'+w+'</b>'+(z.m>1?' ('+z.m+'배)':' (본전)'),sh:'🪙'+w,big:z.m>=20,c:w,st:0,h:null}}
+  if(z.k==='stone'){G.stones+=3;return {msg:'🍀 당첨! <b>행운석 +3</b>',sh:'🍀+3',big:0,c:0,st:3,h:null}}
+  const id=BY[3].length?rnd(BY[3]):null;if(id&&place(id))return {msg:'🦸 잭팟!! <b>'+U[id].n+'</b> 등장!',sh:'🦸'+U[id].n,big:1,c:0,st:0,h:id};G.coins+=cost*30;return {msg:'🦸 잭팟!! <b>🪙+'+cost*30+'</b>',sh:'🪙'+cost*30,big:1,c:cost*30,st:0,h:null}}
+function lotFx(big){const card=$('lot').firstChild;card.className='lcard '+(big?'jack':'win');G.flash=Math.max(G.flash||0,big?.6:.25);G.shake=Math.max(G.shake,big?.8:.3);
+  for(let i=0;i<(big?60:22);i++)G.fx.push({k:'pf',x:W/2+(Math.random()-.5)*W*.8,y:H*.45,vx:(Math.random()-.5)*260,vy:-80-Math.random()*220,t:1+Math.random()*.6,T:1.6,c:['#ffe066','#ff9a2e','#fff','#7fe3ff','#ff6fae'][i%5],r:2.5+Math.random()*2.5,dl:Math.random()*.25})}
+function buyLot10(){if(G.over||lotCur&&!lotCur.done)return;const n=10,c=lotCost()*n;if(G.stones<c){toast('🍀 행운석이 '+c+'개 필요해요');return}G.stones-=c;G.lotN=(G.lotN||0)+n;const cost=lotPrize(),R=[];
+  for(let i=0;i<n;i++){const z=lotRoll();R.push({z,sy:lotSyms(z),p:lotPay(z,cost)})}
+  lotCur={done:true,ten:1};const L=$('lot');L.style.display='flex';L.firstChild.className='lcard';L.querySelector('.lbox').style.display='none';$('lotSub').textContent='10장 한 번에 긁는 중…';SND.play('scratch');
+  const tc=R.reduce((a,r)=>a+r.p.c,0),ts=R.reduce((a,r)=>a+r.p.st,0),hs=R.filter(r=>r.p.h).map(r=>U[r.p.h].n),wn=R.filter(r=>r.z).length,big=R.some(r=>r.p.big);
+  $('lotRes').innerHTML='<div class="l10">'+R.map((r,i)=>'<div class="'+(r.z?(r.p.big?'w j':'w'):'')+'" style="animation-delay:'+(i*.12)+'s"><span>'+r.sy.map(x=>lotSymH(x,'1em')).join('')+'</span><b>'+r.p.sh+'</b></div>').join('')+'</div><div class="l10s" style="animation-delay:'+(n*.12+.1)+'s">당첨 <b>'+wn+'</b>/10 · <b>🪙+'+tc+'</b>'+(ts?' · <b>🍀+'+ts+'</b>':'')+(hs.length?' · <b>🦸'+hs.join(', ')+'</b>':'')+'</div>';
+  ['lotAll','lotAgain','lotClose'].forEach(id=>$(id).style.display='none');
+  setTimeout(()=>{if(!wn)SND.play('lose');else if(big)SND.play('jackpot');else SND.play('win',3);if(wn)lotFx(big);$('lotSub').textContent=big?'이게 되네!!':wn?'당첨!':'아깝다!';
+    const a=$('lotAgain');a.style.display='';a.textContent='10장 더 🍀'+lotCost()*10;a.disabled=G.stones<lotCost()*10;a.onclick=buyLot10;$('lotClose').style.display='';refresh()},n*120+250);refresh()}
+function buyLot(){if(G.over||lotCur&&!lotCur.done)return;const c=lotCost();if(G.stones<c)return;G.stones-=c;G.lotN=(G.lotN||0)+1;const pz=lotRoll(),sy=lotSyms(pz);
+  lotCur={pz,cost:lotPrize(),done:false};const L=$('lot');L.querySelector('.lbox').style.display='';$('lotAgain').onclick=buyLot;L.style.display='flex';L.firstChild.className='lcard';$('lotSym').innerHTML=sy.map(x=>'<span>'+lotSymH(x,'1.15em')+'</span>').join('');$('lotRes').innerHTML='';$('lotSub').textContent='두근두근…';
   $('lotAll').style.display='none';$('lotAgain').style.display='none';$('lotClose').style.display='none';
   const cv=$('lotCv'),x=cv.getContext('2d');x.globalCompositeOperation='source-over';const g=x.createLinearGradient(0,0,520,220);g.addColorStop(0,'#c9ccd6');g.addColorStop(.5,'#f1f2f6');g.addColorStop(1,'#a9adba');x.fillStyle=g;x.fillRect(0,0,520,220);
   x.fillStyle='rgba(90,95,110,.5)';x.font="bold 26px 'Jua',sans-serif";x.textAlign='center';for(let i=0;i<3;i++)x.fillText('긁어요',95+i*165,120);x.globalCompositeOperation='destination-out';refresh();setTimeout(lotAuto,220)}
 
 function lotReveal(){if(!lotCur||lotCur.done)return;lotCur.done=true;const cv=$('lotCv'),x=cv.getContext('2d');x.clearRect(0,0,520,220);const z=lotCur.pz,R=$('lotRes'),card=$('lot').firstChild;let msg;
   if(!z)SND.play('lose');else if(z.k==='jack'||(z.m||0)>=20)SND.play('jackpot');else SND.play('win',z.m||3);
-  if(!z){msg='꽝… 다음엔 될 거예요';$('lotSub').textContent='아깝다!'}
-  else{if(z.m){const w=lotCur.cost*z.m;G.coins+=w;msg=(z.m>=20?'🎉 대박! ':z.m>=5?'✨ 당첨! ':'당첨! ')+'<b>🪙+'+w+'</b>'+(z.m>1?' ('+z.m+'배)':' (본전)')}
-    else if(z.k==='stone'){G.stones+=3;msg='🍀 당첨! <b>행운석 +3</b>'}
-    else{const id=BY[3].length?rnd(BY[3]):null;if(id&&place(id))msg='🦸 잭팟!! <b>'+U[id].n+'</b> 등장!';else{G.coins+=lotCur.cost*30;msg='🦸 잭팟!! <b>🪙+'+lotCur.cost*30+'</b>'}}
-    const big=z.k==='jack'||z.m>=20;card.className='lcard '+(big?'jack':'win');$('lotSub').textContent=big?'이게 되네!!':'당첨!';G.flash=Math.max(G.flash||0,big?.6:.25);G.shake=Math.max(G.shake,big?.8:.3);
-    for(let i=0;i<(big?60:22);i++)G.fx.push({k:'pf',x:W/2+(Math.random()-.5)*W*.8,y:H*.45,vx:(Math.random()-.5)*260,vy:-80-Math.random()*220,t:1+Math.random()*.6,T:1.6,c:['#ffe066','#ff9a2e','#fff','#7fe3ff','#ff6fae'][i%5],r:2.5+Math.random()*2.5,dl:Math.random()*.25})}
+  {const P=lotPay(z,lotCur.cost);msg=P.msg;if(!z)$('lotSub').textContent='아깝다!';else{const big=z.k==='jack'||z.m>=20;$('lotSub').textContent=big?'이게 되네!!':'당첨!';lotFx(big)}}
   R.innerHTML=msg;$('lotAll').style.display='none';const a=$('lotAgain');a.style.display='';a.textContent='한 장 더 🍀'+lotCost();a.disabled=G.stones<lotCost();$('lotClose').style.display='';refresh()}
 function lotAuto(){if(!lotCur||lotCur.done||lotCur.auto)return;lotCur.auto=true;SND.play('scratch');const cur=lotCur,cv=$('lotCv'),x=cv.getContext('2d');x.globalCompositeOperation='destination-out';let k=0;const N=16,step=()=>{if(lotCur!==cur||cur.done)return;for(let q=0;q<3;q++){const t=(k*3+q)/(N*3),row=Math.floor(t*4),u=t*4-row,X=(row%2?1-u:u)*520,Y=28+row*55;x.beginPath();x.arc(X,Y,44,0,7);x.fill()}k++;if(k<N)requestAnimationFrame(step);else lotReveal()};step()}
 function lotInit(){if(v5u('lottery/background')){const lb=document.querySelector('#lot .lbox');if(lb)lb.style.backgroundImage='url('+v5u('lottery/background')+')'}const cv=$('lotCv');let dn=false;cv.addEventListener('pointerdown',e=>{lotAuto()});
-  $('lotAll').onclick=lotReveal;$('lotAgain').onclick=buyLot;$('lotClose').onclick=()=>{$('lot').style.display='none';lotCur=null}}
+  $('lotAll').onclick=lotReveal;$('lotAgain').onclick=buyLot;$('lotClose').onclick=()=>{$('lot').style.display='none';$('lot').querySelector('.lbox').style.display='';lotCur=null}}
 function openSheet(k){sheet=sheet===k?null:k;refresh()}
 function refresh(){
   {const n=G&&!G.over?readyCells().length:0,b=$('bAll');if(b){b.style.display=n&&G.sel===null&&!sheet?'block':'none';b.textContent='▲ 일괄 승급 ×'+n}}
@@ -1448,8 +1459,8 @@ function refresh(){
         rcp(m).map(id=>{const h=hasUnit(id);return '<span class="ing'+(h?' h':'')+'">'+ic(id)+'<em>'+TN[U[id].t]+'</em>'+U[id].n+'<i>'+(h?'✓ 있음':'필요')+'</i></span>'}).join('')+'</div>'+(ok?'<div class="go">✦ 조합하기 <small>🪙'+craftCost()+'</small></div>':canCraft(m,1)?'<div class="go no">🪙'+craftCost()+' 필요 · '+(craftCost()-Math.floor(G.coins))+' 부족</div>':'');
       b.onclick=()=>{craft(m);refresh()};$('myth').appendChild(b)}
   }else if(sheet==='gam'){
-    body.innerHTML='<h3><span>행운 도박 <small>행운석으로 뽑기</small></span>'+X+'<div class="row r3" id="gam">'+GAM.map((g,i)=>'<button id="g'+i+'">'+TN[g.t]+'<small style="white-space:nowrap">🍀'+g.c+' · '+g.p*100+'%</small></button>').join('')+'</div><div class="row" style="margin-top:6px"><button id="gLot" style="background:linear-gradient(#ffdf5a,#f5b921);color:#3a2a1a;width:100%">🎫 복권 긁기 🍀'+lotCost()+' <small>당첨금 🪙'+lotPrize()+' 기준 최대 20배 · 행성 히어로 잭팟</small></button></div>';
-    GAM.forEach((g,i)=>$('g'+i).onclick=()=>gamble(i));$('gLot').onclick=buyLot
+    body.innerHTML='<h3><span>행운 도박 <small>행운석으로 뽑기</small></span>'+X+'<div class="row r3" id="gam">'+GAM.map((g,i)=>'<button id="g'+i+'">'+TN[g.t]+'<small style="white-space:nowrap">🍀'+g.c+' · '+g.p*100+'%</small></button>').join('')+'</div><div class="row" style="margin-top:6px;display:flex;gap:6px"><button id="gLot" style="background:linear-gradient(#ffdf5a,#f5b921);color:#3a2a1a;flex:2">🎫 복권 긁기 🍀'+lotCost()+' <small>당첨금 🪙'+lotPrize()+' 기준 최대 20배 · 행성 히어로 잭팟</small></button><button id="gLot10" style="background:linear-gradient(#ffb85a,#f58a21);color:#3a2a1a;flex:1">🎫×10<br>일괄 긁기<br><small>🍀'+lotCost()*10+'</small></button></div>';
+    GAM.forEach((g,i)=>$('g'+i).onclick=()=>gamble(i));$('gLot').onclick=buyLot;$('gLot10').onclick=buyLot10
   }else{
     const o=odds(),l=G.luck;
     body.innerHTML='<h3><span>강화 <small>집 '+o[0].toFixed(2)+' / 동네 '+o[1].toFixed(2)+' / 나라 '+o[2].toFixed(2)+' / 행성 '+o[3].toFixed(2)+'%</small></span>'+X+'<div class="row r4" id="upg" style="grid-template-columns:1fr 1fr">'+
@@ -1547,7 +1558,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:210};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:211};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
