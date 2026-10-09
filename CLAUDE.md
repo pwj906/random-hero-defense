@@ -32,3 +32,8 @@
 - 행성은 8개(루미엘 추가). 판마다 7개를 고른다(`SAVE.pl`, `plIn()`, `buildBY()`가 start에서 소환 풀을 다시 만든다).
 - 잠긴 행성은 `LOCKP`(루미엘: 최고 기록 100웨이브 초과 시 해금). 잠긴 영웅은 `ownedList()`에서 빠지고 내 캐릭터에 🔒 카드로 보인다.
 - 새 영웅 그림은 `PKG`에 넣는다(프레임 168px, 효과 144px, sock은 256 기준 ×4).
+
+## 계정 (공개 배포판만)
+- 아이디·비밀번호 → Supabase Auth(이메일 `아이디@player.rhd.app`로 바꿔 가입, 이메일 확인은 꺼 둠). `AC`, `acLogin`, `acPush`.
+- 진행 상황 `SAVE` 전체를 `public.saves`(user_id, data jsonb)에 저장. 표 만들기 SQL은 `supabase/saves.sql`.
+- 로그인하면 랭킹 pid가 `u`+사용자 id 앞 20자로 바뀐다. claude.ai 아티팩트 안에서는 로그인 버튼이 안 보인다.
