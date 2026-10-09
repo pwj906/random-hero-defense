@@ -1501,13 +1501,52 @@ function sbDb(pid,sec){const row=d=>({w:d.w,k:d.k,t:d.t,nick:d.nick,g:d.g});
     update:async d=>{if(d.nick!=null)await sbReq('rpc/set_nick',{method:'POST',body:JSON.stringify({p_pid:pid,p_secret:sec,p_nick:d.nick})})}}},
    collection:()=>{const q={orderBy:()=>q,limit:()=>q,get:async()=>{const a=await sbReq('rank?select=pid,nick,w,k,t,g&order=w.desc,k.desc&limit=200');return{docs:(a||[]).map(r=>({id:r.pid,data:()=>row(r)}))}}};return q}}}
 if(!(window.claude&&window.claude.use)&&SB_URL&&typeof fetch!=='undefined'){const[p,s0]=sbId();RK.db=sbDb(p,s0);RK.uid=p;RK.sb=1;setTimeout(()=>rkFetch().catch(()=>{}),1500)}
+// ---------- 계정(공개 배포판): 아이디·비밀번호 → Supabase Auth. 진행 상황(SAVE)을 saves 표에 저장 ----------
+var AC={s:null,err:0};const AC_DOM='@player.rhd.app';
+function acLoad(){try{AC.s=JSON.parse(localStorage.getItem('rhd_auth')||'null')}catch(e){AC.s=null}}
+function acStore(){try{if(AC.s)localStorage.setItem('rhd_auth',JSON.stringify(AC.s));else localStorage.removeItem('rhd_auth')}catch(e){}}
+function acPid(){return 'u'+AC.s.uid.replace(/-/g,'').slice(0,20)}
+async function acAuth(path,body){const r=await fetch(SB_URL+'/auth/v1/'+path,{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok)throw j;return j}
+function acSet(j,id){AC.s={id:id||(AC.s&&AC.s.id),uid:j.user.id,at:j.access_token,rt:j.refresh_token,exp:Date.now()+((j.expires_in||3600)-120)*1000};acStore()}
+async function acTok(){if(!AC.s)return null;if(Date.now()>AC.s.exp){try{acSet(await acAuth('token?grant_type=refresh_token',{refresh_token:AC.s.rt}))}catch(e){return null}}return AC.s.at}
+async function acReq(path,opt){const t=await acTok();if(!t)throw {code:'auth'};opt=opt||{};const r=await fetch(SB_URL+'/rest/v1/'+path,Object.assign({},opt,{keepalive:true,headers:Object.assign({apikey:SB_KEY,Authorization:'Bearer '+t,'Content-Type':'application/json'},opt.headers||{})}));if(!r.ok)throw {status:r.status};const x=await r.text();return x?JSON.parse(x):null}
+async function acPull(){const a=await acReq('saves?select=data&user_id=eq.'+AC.s.uid);return a&&a[0]?a[0].data:null}
+let acTm=null;
+function acPush(now){if(!AC.s)return;clearTimeout(acTm);const go=async()=>{try{await acReq('saves',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:AC.s.uid,data:SAVE,updated_at:new Date().toISOString()})});AC.err=0}catch(e){AC.err=1}acUI()};if(now)return go();acTm=setTimeout(go,1200)}
+function acMerge(a,b){const o=Object.assign({},b,a),mx=k=>Math.max(a[k]||0,b[k]||0);['best','games','boxes','skPity'].forEach(k=>o[k]=mx(k));
+  o.lv={};o.frag={};for(const k of new Set([...Object.keys(a.lv||{}),...Object.keys(b.lv||{}),...Object.keys(a.frag||{}),...Object.keys(b.frag||{})])){const la=(a.lv||{})[k]||1,lb=(b.lv||{})[k]||1,fa=(a.frag||{})[k]||0,fb=(b.frag||{})[k]||0,useA=la>lb||(la===lb&&fa>=fb);o.lv[k]=useA?la:lb;o.frag[k]=useA?fa:fb}
+  o.kills={};for(const k of new Set([...Object.keys(a.kills||{}),...Object.keys(b.kills||{})]))o.kills[k]=Math.max((a.kills||{})[k]||0,(b.kills||{})[k]||0);
+  o.sk=Object.assign({},b.sk||{},a.sk||{});o.skEq=(a.skEq&&a.skEq.length?a.skEq:b.skEq)||['meteor'];o.pl=a.pl||b.pl;o.nick=a.nick||b.nick;return o}
+const AC_PROG=['lv','kills','frag','boxes','games','best','sk','skEq','skPity','pl','plNew','nick','acct'];
+function acReplace(d){const keep={};for(const k of Object.keys(SAVE))if(!AC_PROG.includes(k))keep[k]=SAVE[k];for(const k of Object.keys(SAVE))delete SAVE[k];Object.assign(SAVE,keep,{lv:{},kills:{},frag:{},boxes:0,games:0,best:0},d||{});SAVE.sk=SAVE.sk||{meteor:1};SAVE.skEq=(SAVE.skEq||['meteor']).filter(k=>USK[k]&&SAVE.sk[k]).slice(0,2);SAVE.skPity=SAVE.skPity||0}
+function acErr(e,su){const c=e&&(e.error_code||e.code||''),m=String(e&&(e.msg||e.message||e.error_description||e.error)||'');
+  if(c==='user_already_exists'||/already/i.test(m))return '이미 있는 아이디예요';if(c==='invalid_credentials'||/invalid login/i.test(m))return '아이디나 비밀번호가 틀렸어요';if(c==='weak_password'||/password/i.test(m))return '비밀번호가 너무 약해요 (6자 이상)';if(c==='email_not_confirmed')return '계정 확인 설정이 켜져 있어요 (게임 주인이 꺼야 해요)';if(c==='over_request_rate_limit'||/rate/i.test(m))return '잠시 후 다시 시도해 주세요';if(/signup.*disabled/i.test(m))return '지금은 가입이 막혀 있어요';return (su?'가입':'로그인')+'하지 못했어요'+(m?' ('+m.slice(0,60)+')':'')}
+async function acLogin(id,pw,su){id=String(id||'').trim().toLowerCase();if(!/^[a-z0-9_]{3,16}$/.test(id))throw '아이디는 영문 소문자·숫자·_ 3~16자로 정해 주세요';if(String(pw||'').length<6)throw '비밀번호는 6자 이상이어야 해요';
+  let j;try{j=await acAuth(su?'signup':'token?grant_type=password',{email:id+AC_DOM,password:pw})}catch(e){throw acErr(e,su)}
+  if(!j.access_token)throw '가입은 됐는데 바로 로그인이 안 돼요 (Supabase에서 이메일 확인을 꺼야 해요)';
+  acSet(j,id);let srv=null;try{srv=await acPull()}catch(e){AC.err=1}
+  if(srv){if(SAVE.acct&&SAVE.acct!==AC.s.uid)acReplace(srv);else acReplace(acMerge(srv,SAVE))}else if(SAVE.acct&&SAVE.acct!==AC.s.uid)acReplace({});
+  SAVE.acct=AC.s.uid;if(!SAVE.nick)SAVE.nick=id;RK.uid=acPid();RK.bestW=0;try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}await acPush(true);return su}
+function acLogout(){acPush(true);AC.s=null;acStore();acReplace({});saveAll();RK.uid=sbId()[0];RK.bestW=0}
+async function acBoot(){if(!AC.s)return;RK.uid=acPid();try{const srv=await acPull();if(srv){acReplace(acMerge(srv,SAVE));SAVE.acct=AC.s.uid;try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}if($('mHome')&&$('mHome').classList.contains('on'))showMain('home')}acPush()}catch(e){AC.err=1}acUI()}
+function acUI(){const B=$('mAcct');if(!B)return;B.style.display=RK.sb?'':'none';B.innerHTML=AC.s?'👤 '+String(AC.s.id).replace(/[<>&"]/g,'')+(AC.err?' ⚠️':''):'👤 로그인';const M=$('acct');if(M&&M.style.display==='flex')acView()}
+function acView(msg,bad){const M=$('acct'),esc=t=>String(t).replace(/[<>&"]/g,'');M.style.display='flex';
+  M.innerHTML='<div class="acc">'+(AC.s?'<h2>👤 '+esc(AC.s.id)+'</h2><div class="ad">로그인됨 · 랭킹, 행성 해금, 영웅 조각·레벨, 랜덤박스, 스킬이 계정에 자동 저장돼요. 다른 기기에서 같은 아이디로 로그인하면 이어서 할 수 있어요.</div>'+(AC.err?'<div class="am bad">⚠️ 서버에 저장하지 못했어요. 인터넷을 확인해 주세요.</div>':'<div class="am">✅ 저장됨</div>')+'<button id="acOut" class="g2">로그아웃</button><button id="acX">닫기</button>'
+   :'<h2>👤 로그인</h2><div class="ad">아이디와 비밀번호만 정하면 돼요. 진행 상황이 저장되고 다른 기기에서도 이어서 할 수 있어요.</div><input id="acId" maxlength="16" placeholder="아이디 (영문 소문자·숫자 3~16자)" autocomplete="username" autocapitalize="off"><input id="acPw" type="password" maxlength="64" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"><div id="acM" class="am'+(bad?' bad':'')+'">'+(msg||'비밀번호는 찾을 수 없으니 꼭 기억해 두세요')+'</div><button id="acIn">로그인</button><button id="acUp" class="g2">처음이에요 — 가입하기</button><button id="acX" class="g3">닫기</button>')+'</div>';
+  $('acX').onclick=()=>{M.style.display='none'};M.onclick=e=>{if(e.target===M)M.style.display='none'};
+  if(AC.s){$('acOut').onclick=()=>{acLogout();toast('로그아웃했어요');acView();acUI();showMain('home')};return}
+  const go=su=>async()=>{const m=$('acM');m.className='am';m.textContent=su?'가입하는 중…':'로그인 중…';$('acIn').disabled=$('acUp').disabled=true;
+    try{await acLogin($('acId').value,$('acPw').value,su);toast(su?'🎉 가입 완료! 이제 자동 저장돼요':'👋 어서 와요, '+AC.s.id);acView();acUI();showMain('home')}catch(e){acView(typeof e==='string'?e:acErr(e,su),1)}};
+  const keep=()=>{const v=$('acId').value;return v};$('acIn').onclick=async()=>{const v=keep();await go(false)();if(!AC.s&&$('acId'))$('acId').value=v};$('acUp').onclick=async()=>{const v=keep();await go(true)();if(!AC.s&&$('acId'))$('acId').value=v};
+  $('acPw').onkeydown=e=>{if(e.key==='Enter')$('acIn').click()}}
+if(RK.sb){acLoad();if(AC.s)acBoot()}
 (async()=>{try{const C=window.claude;if(!C||!C.use)return;const[db,us]=await Promise.all([C.use('db'),C.use('user')]);if(!db||!us)return;RK.db=db;RK.us=us;RK.uid=await us.id();try{const me=await us.me();RK.name=me&&me.name||''}catch(e){}
   if(RK.uid){try{const d=await db.doc('rank/'+RK.uid).get();if(d.exists)RK.best=d.data()}catch(e){}}if($('mRank')&&$('mRank').classList.contains('on'))rkRender()}catch(e){}})();
 function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:206};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:207};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1553,7 +1592,7 @@ async function rkRender(){const M=$('rkMe'),L=$('rkList');if(!M)return;const esc
   L.innerHTML='<div style="text-align:center;opacity:.6;padding:12px">불러오는 중…</div>';
   try{const R=await rkFetch();L.innerHTML=R.length?R.slice(0,100).map((r,i)=>{const e=document.createElement('span');e.textContent=r.nick||'이름없음';const me=r.mine||r.id===RK.uid;return '<div class="rkr'+(i<3?' p'+(i+1):'')+(me?' me':'')+(RK.sb&&r.id===RK.last?' new':'')+'"><span class="n">'+(i<3?['🥇','🥈','🥉'][i]:i+1)+'</span><span class="nm">'+e.innerHTML+(me?' (나)':'')+'<small>처치 '+(r.k||0)+' · '+rkTime(r.t)+(RK.sb?(r.d?' · '+new Date(r.d).toLocaleDateString('ko-KR',{month:'numeric',day:'numeric'}):''):' · '+(r.g||1)+'판')+'</small></span><span class="w">웨이브 <b>'+r.w+'</b></span></div>'}).join(''):'<div style="text-align:center;opacity:.6;padding:12px">아직 아무도 없어요. 첫 기록을 남겨 보세요!</div>'}
   catch(e){L.innerHTML='<div style="text-align:center;opacity:.6;padding:12px">랭킹을 불러오지 못했어요.</div>'}}
-function saveAll(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}}
+function saveAll(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE))}catch(e){}if(typeof AC!=='undefined'&&AC&&AC.s)acPush();}
 function fragNeed(lv){return 10*lv}
 function boxReward(w){return Math.min(8,1+Math.floor(w/10))}
 function openBoxes(){const n=SAVE.boxes||0;if(!n)return null;const got={},ups=[],cards=[],W=[50,27,15,6,2],own=ownedList(),ts=[0,1,2,3,4].filter(t=>own.some(k=>U[k].t===t)),tw=ts.reduce((a,t)=>a+W[t],0);
@@ -1598,7 +1637,7 @@ function plRender(){const av=plAvail(),need=Math.min(PL_MAX,av.length),E=$('mPGr
     if(PLD.length===need){SAVE.pl=PLD.slice();saveAll()}plRender()})}
 function plBtn(){const B=$('mPlB');if(!B)return;const av=plAvail().length,all=plAll().length;B.innerHTML='🪐 행성 고르기'+(SAVE.plNew?' <b style="background:#ff4a6a;color:#fff;border-radius:8px;padding:0 6px;font-size:.7em;font-weight:400">NEW</b>':'')}
 function mainStart(){$('main').style.display='none';start()}
-$('mPlB').onclick=()=>{SAVE.plNew=0;saveAll();showMain('plan')};$('mPBack').onclick=()=>showMain('home');$('mPStart').onclick=()=>{const need=Math.min(PL_MAX,plAvail().length);if(PLD&&PLD.length===need){SAVE.pl=PLD.slice();saveAll()}mainStart()};plBtn();$('mStart').onclick=mainStart;$('mStart2').onclick=mainStart;$('mChar').onclick=()=>showMain('chars');$('mBack').onclick=()=>showMain('home');$('mRankB').onclick=()=>showMain('rank');$('mRBack').onclick=()=>showMain('home');$('mStart3').onclick=()=>$('mStart').click();
+$('mAcct').onclick=()=>acView();acUI();$('mPlB').onclick=()=>{SAVE.plNew=0;saveAll();showMain('plan')};$('mPBack').onclick=()=>showMain('home');$('mPStart').onclick=()=>{const need=Math.min(PL_MAX,plAvail().length);if(PLD&&PLD.length===need){SAVE.pl=PLD.slice();saveAll()}mainStart()};plBtn();$('mStart').onclick=mainStart;$('mStart2').onclick=mainStart;$('mChar').onclick=()=>showMain('chars');$('mBack').onclick=()=>showMain('home');$('mRankB').onclick=()=>showMain('rank');$('mRBack').onclick=()=>showMain('home');$('mStart3').onclick=()=>$('mStart').click();
 showMain('home');
 // ---------- 인트로 스토리 ----------
 const INTRO_BG=[__P(1511),__P(1512),__P(1513),__P(1514),__P(1515)],EMB_JERUK=__P(1516),EMB_COUNCIL=__P(1517);
