@@ -916,9 +916,13 @@ const SKF={
   const c=G.cells[bi];c.n--;if(c.n<=0)G.cells[bi]=null;const id=pickU(bt+1);if(!place(id)){c.n++;G.cells[bi]=c;return false}const at=G.cells.findIndex(q=>q&&q.u===id&&q.pop>0),[px,py]=cellXY(at<0?bi:at);burst(px,py,bt+1,true);fxv('blessing/fx',px,py+CS*.45,CS*1.5,{fps:8});G.fx.push({k:'t',x:px,y:py-26,t:1.2,T:1.2,s:'🙌 '+TN[bt+1]+'!',cr:true,dl:.05});SND.play('merge',bt+1);toast('🙌 축복 — '+U[id].n)},
  thunder(){if(!skAlive().length)return false;const d=mobHP(G.wave)*2.5;for(let q=0;q<14;q++)G.sched.push({t:q*.14,f:()=>{const ms=skAlive();if(!ms.length)return;const m=ms[Math.floor(Math.random()*ms.length)],[x,y]=pos(m.p);if(V5I['thunder/fx'])fxv('thunder/fx',x,y+6,CS*.9,{fps:12});else G.fx.push({k:'zap',x1:x+(Math.random()-.5)*40,y1:y-240,x2:x,y2:y,t:.25,T:.25,c:'#fff36a',w:3.5,dl:0});G.fx.push({k:'ring',x,y,r:26,t:.3,T:.3,c:'#fff36a',dl:0});hit(m,{},m.boss?d*.5:d,0,null);G.shake=Math.max(G.shake,.15);if(q%3===0)SND.play('special','zap',3)}})},
  judge(){const ms=skAlive().filter(o=>!o.boss).sort((a,b)=>b.p-a.p).slice(0,40);if(!ms.length)return false;ms.forEach((o,j)=>{const[x,y]=pos(o.p);if(j<14)fxv('judgement/fx',x,y+6,CS*.85,{fps:10,dl:j*.03});else if(G.fx.length<330)G.fx.push({k:'ray',x,y,t:.5,T:.5,c:'#fff3b0'});o.hp=0});G.flash=Math.max(G.flash||0,.35);G.shake=Math.max(G.shake,.5);SND.play('special','laser',4)}};
+// 자동 발사: 쿨타임이 차고 쓸 만한 상황이면 알아서 씀
+function skWant(k){const ms=skAlive(),n=ms.length,boss=ms.some(o=>o.boss);if(k==='gold'||k==='bless')return true;if(k==='judge')return ms.filter(o=>!o.boss).length>=30;if(k==='tstop')return n>=40||boss;return n>=8||boss}
+function skAutoTick(){if(!G||G.over||G.pause||G.menu)return;const eq=skEq();for(let j=0;j<eq.length;j++){const k=eq[j];if(!USK[k]||(G.uskc&&G.uskc[k]>0))continue;if(skWant(k))useSk(j,1)}}
+function skAutoBtn(){const B=$('skA');if(!B)return;const on=!!SAVE.skAuto,vis=skEq().length&&running&&!(G&&G.over),key=on+'|'+vis;if(B.dataset.k===key)return;B.dataset.k=key;B.style.display=vis?'block':'none';B.textContent=on?'자동 ON':'자동 OFF';B.classList.toggle('on',on)}
 function skEq(){return (typeof SAVE!=='undefined'&&SAVE.skEq)||[]}
-function useSk(j){const k=skEq()[j];if(!k||!USK[k]||!G||G.over||G.pause||G.menu||!running)return;G.uskc=G.uskc||{};if(G.uskc[k]>0)return;if(SKF[k]()===false)return;G.uskc[k]=USK[k].cd;G.nSk=(G.nSk||0)+1;toast(USK[k].e+' '+USK[k].n+'!');refresh()}
-function skHud(){const eq=skEq();for(let j=0;j<2;j++){const B=$('sk'+j);if(!B)continue;const k=eq[j];if(!k||!USK[k]){if(B.style.display!=='none')B.style.display='none';continue}
+function useSk(j,auto){const k=skEq()[j];if(!k||!USK[k]||!G||G.over||G.pause||G.menu||(!running&&!auto))return;G.uskc=G.uskc||{};if(G.uskc[k]>0)return;if(SKF[k]()===false)return;G.uskc[k]=USK[k].cd;G.nSk=(G.nSk||0)+1;toast(USK[k].e+' '+USK[k].n+'!'+(auto?' (자동)':''));refresh()}
+function skHud(){const eq=skEq();skAutoBtn();for(let j=0;j<2;j++){const B=$('sk'+j);if(!B)continue;const k=eq[j];if(!k||!USK[k]){if(B.style.display!=='none')B.style.display='none';continue}
   const cd=(G.uskc&&G.uskc[k])||0,p=Math.max(0,cd/USK[k].cd),key=k+Math.ceil(cd);if(B.dataset.k!==key){B.dataset.k=key;B.style.display='block';B.style.setProperty('--p',p.toFixed(3));B.innerHTML=(v5u(USKI[k])?v5img(USKI[k]):USK[k].e)+(cd>0?'<small>'+Math.ceil(cd)+'</small>':'');B.classList.toggle('rd',cd<=0);B.title=USK[k].n+' — '+USK[k].x}else B.style.setProperty('--p',p.toFixed(3))}}
 function rcpTick(){const E=$('rcp');if(!E)return;let best=null,bn=0;const have={};for(const c of G.cells)if(c)have[c.u]=1;for(const m in RECIPE){const r=rcp(m),n=r.filter(k=>have[k]).length;if(n>bn){bn=n;best=m}}
   const k=best?best+bn:'';if(k!==G.rcK){G.rcK=k;E.style.display=best&&bn>=2?'flex':'none';if(best)E.innerHTML=(U[best].url?'<img src="'+U[best].url+'" alt="">':'')+bn+'/'+rcp(best).length}}
@@ -1200,7 +1204,7 @@ function special(c,i,u,s,x,y,best){
   
 }
 function update(dt){
-  if(G.pause||G.menu)return;G.uiT=(G.uiT||0)-dt;if(G.uiT<=0){G.uiT=.25;msnTick();rcpTick();augTick()}btyTick(dt);if(G.freeT>0)G.freeT-=dt;if(G.cdLock>0)G.cdLock-=dt;if(A('warp')){G.warpT=(G.warpT??25)-dt;if(G.warpT<=0){G.warpT=25;for(const o of G.mobs)if(o.hp>0){o.st=Math.max(o.st||0,o.boss?1:2)}const[wx,wy]=cellXY(Math.floor(NC/2));for(let q=0;q<2;q++)G.fx.push({k:'ring',x:wx,y:wy,r:CS*(3+q*2),t:.6,T:.6,c:'#b48cff',dl:q*.1});toast('🌀 시간 왜곡!')}}if(G.uskc)for(const k in G.uskc)if(G.uskc[k]>0)G.uskc[k]-=dt;
+  if(G.pause||G.menu)return;G.uiT=(G.uiT||0)-dt;if(G.uiT<=0){G.uiT=.25;msnTick();rcpTick();augTick()}btyTick(dt);if(G.freeT>0)G.freeT-=dt;if(G.cdLock>0)G.cdLock-=dt;if(A('warp')){G.warpT=(G.warpT??25)-dt;if(G.warpT<=0){G.warpT=25;for(const o of G.mobs)if(o.hp>0){o.st=Math.max(o.st||0,o.boss?1:2)}const[wx,wy]=cellXY(Math.floor(NC/2));for(let q=0;q<2;q++)G.fx.push({k:'ring',x:wx,y:wy,r:CS*(3+q*2),t:.6,T:.6,c:'#b48cff',dl:q*.1});toast('🌀 시간 왜곡!')}}if(G.uskc)for(const k in G.uskc)if(G.uskc[k]>0)G.uskc[k]-=dt;if(SAVE.skAuto){G.skAT=(G.skAT||0)-dt;if(G.skAT<=0){G.skAT=.5;skAutoTick()}}
   G.time+=dt;G.waveT-=dt;if(G.shake>0)G.shake-=dt;if(G.flash>(G.fPrev||0)+1e-6){if(G.time-(G.fAt??-9)<2.5)G.flash=G.fPrev||0;else G.fAt=G.time}if(G.flash>0)G.flash-=dt*2.2;G.fPrev=Math.max(0,G.flash);
   if(G.spawnLeft>0){G.spawnT-=dt;if(G.spawnT<=0){spawn();G.spawnLeft--;G.spawnT=G.spawnFast?.18:.65}}
   for(const m of G.mobs){
@@ -1485,7 +1489,7 @@ function start(){buildBY();$('bSnd').style.display='';$('bMenu').style.display='
 tempArt();bake();
 $('bAll').onclick=mergeAll;$('bBty').onclick=bounty;$('bSnd').onclick=e=>{SND.cycle();sndBtn();toast(['🔊 소리 켜짐','🎵 배경음악 끔 (효과음만)','🔇 소리 끔'][SND.mode()])};sndBtn();$('rcp').onclick=()=>openSheet('myth');$('bCraft').onclick=()=>{let m=$('bCraft').dataset.m;if(!m||!canCraft(m))m=Object.keys(RECIPE).find(k=>canCraft(k));if(m){craft(m);refresh()}else{refresh();toast('지금은 조합할 수 없어요')}};lotInit();$('bMyth').onclick=()=>openSheet('myth');$('bGam').onclick=()=>openSheet('gam');$('bUp').onclick=()=>openSheet('up');
 $('summon').onclick=summon;$('bMenu').onclick=()=>{if(!G||G.over)return;G.menu=true;$('gmenu').style.display='flex'};$('gmGo').onclick=()=>{G.menu=false;$('gmenu').style.display='none'};
-$('gmRe').onclick=()=>{$('gmenu').style.display='none';if(G)G.menu=false;start()};$('gmHome').onclick=()=>{$('gmenu').style.display='none';if(G){G.menu=false;G.over=true}running=false;$('boon').style.display='none';$('lot').style.display='none';showMain('home')};$('sk0').onclick=()=>useSk(0);$('sk1').onclick=()=>useSk(1);$('augS').onclick=()=>{$('augL').style.display='block'};$('synS').onclick=()=>{synList();$('synL').style.display='block'};$('synL').onclick=()=>{$('synL').style.display='none'};$('augL').onclick=()=>{$('augL').style.display='none'};
+$('gmRe').onclick=()=>{$('gmenu').style.display='none';if(G)G.menu=false;start()};$('gmHome').onclick=()=>{$('gmenu').style.display='none';if(G){G.menu=false;G.over=true}running=false;$('boon').style.display='none';$('lot').style.display='none';showMain('home')};$('skA').onclick=()=>{SAVE.skAuto=!SAVE.skAuto;saveAll();skAutoBtn();toast(SAVE.skAuto?'🤖 스킬 자동 발사 ON':'스킬 자동 발사 OFF')};$('sk0').onclick=()=>useSk(0);$('sk1').onclick=()=>useSk(1);$('augS').onclick=()=>{$('augL').style.display='block'};$('synS').onclick=()=>{synList();$('synL').style.display='block'};$('synL').onclick=()=>{$('synL').style.display='none'};$('augL').onclick=()=>{$('augL').style.display='none'};
 $('speed').onclick=()=>{speed=speed%5+1;$('speed').textContent='x'+speed};
 $('start').onclick=start;
 // ---------- 메인 페이지 / 내 캐릭터 ----------
@@ -1493,7 +1497,8 @@ const SAVE_KEY='umd_save';let SAVE={lv:{},kills:{},frag:{},boxes:0,games:0,best:
 try{const r=localStorage.getItem(SAVE_KEY);if(r)Object.assign(SAVE,JSON.parse(r))}catch(e){}
 function saveClean(){for(const f of ['lv','frag','kills'])if(SAVE[f])delete SAVE[f].cheongram}saveClean();
 const LOCKP={lumiel:{w:100,x:'100웨이브 돌파'}},PL_MAX=7;
-function plUnlocked(p){return !LOCKP[p]||(SAVE.best||0)>LOCKP[p].w}
+const UNLOCK_ALL=['pwj0906']; // 이 계정은 잠긴 행성을 처음부터 열어 줌
+function plUnlocked(p){return !LOCKP[p]||(SAVE.best||0)>LOCKP[p].w||!!(typeof AC!=='undefined'&&AC&&AC.s&&UNLOCK_ALL.includes(AC.s.id))}
 function heroLocked(k){return !!(U[k]&&!plUnlocked(U[k].planet))}
 function plAll(){return Object.keys(PLANETS).filter(p=>Object.keys(U).some(k=>U[k].planet===p))}
 function plAvail(){return plAll().filter(plUnlocked)}
@@ -1558,7 +1563,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:211};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:212};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
