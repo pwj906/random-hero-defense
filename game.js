@@ -703,7 +703,8 @@ function upgrade(i){
 function planetLevel(k){return (G.upPlanet&&G.upPlanet[U[k].planet])||0}
 const LVF=['dur','st','bst','sl','vu','adur','hold','kbd','coinK'];
 function lvK(k){return 1+.05*(((typeof SAVE!=='undefined'&&SAVE.lv&&SAVE.lv[k])||1)-1)}
-function mult(k){return HERO_POW*TIER_POW[U[k].t]*(1+.25*planetLevel(k))*(G.buff>0?1.5:1)*lvK(k)*(G.bn?G.bn.atk:1)}
+const PL_POW={lumiel:1.12}; // 해금 행성 보상: 루미엘 영웅 공격력 +12%
+function mult(k){return HERO_POW*TIER_POW[U[k].t]*(PL_POW[U[k].planet]||1)*(1+.25*planetLevel(k))*(G.buff>0?1.5:1)*lvK(k)*(G.bn?G.bn.atk:1)}
 const TILEC=['','#b5dc65','#66d9ef','#c89cff','#ffd863','#ff7e87'];
 const TILEIMG={"1": __P(1488), "2": __P(1489), "3": __P(1490), "4": __P(1491), "5": __P(1492)};const TILE_ART={};
 if(typeof Image!=='undefined')for(const lv in TILEIMG){const im=new Image();im.src=TILEIMG[lv];TILE_ART[lv]=im}
@@ -1506,7 +1507,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:203};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:204};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1632,7 +1633,7 @@ const PLANET_DESC={
  mosaica:['저주받은 괴수들이 지배하는 행성','코인을 벌고, 매번 다른 효과로 판을 흔든다'],
  florasia:['살아 있는 식물들의 행성','독 장판·처형, 서로 붙어 있을수록 강해진다'],
  mongle:['말랑한 젤리족이 사는 행성','감속·밀치기·시간 정지로 적의 발을 묶는다'],
- lumiel:['달빛 요정들이 사는 행성','잠재우기·기절·아군 축복, 근접 대검까지 고루 갖췄다']};
+ lumiel:['달빛 요정들이 사는 행성 · 영웅 공격력 +12%','잠재우기·기절·아군 축복, 근접 대검까지 고루 갖췄다']};
 function pgWin(){pgState='win';SND.play('reveal');const p=pgOrder[pgI],hs=Object.keys(U).filter(k=>U[k].planet===p).sort((a,b)=>U[a].t-U[b].t);pgI++;pgDots();$('pgSub').innerHTML='<b style="color:#ffe066">'+PLANETS[p]+'</b> 행성과 평화협정 체결!';
   $('pgStage').innerHTML='<div id="pgWin" style="--pc:'+PLANET_COL[p]+'"><img class="big" src="'+PICON[p]+'" alt=""><div id="pgName" style="--pc:'+PLANET_COL[p]+'">'+PLANETS[p]+'</div>'+(PLANET_DESC[p]?'<div class="pgd">'+PLANET_DESC[p][0]+'<b>'+PLANET_DESC[p][1]+'</b></div>':'')+'<div id="pgCards">'+hs.map((k,j)=>'<div class="pgc" style="background:'+TC[U[k].t]+';animation-delay:'+(.1+j*.06)+'s"><small>'+TN[U[k].t]+'</small><img src="'+(U[k].url||'')+'" alt=""><b>'+U[k].n+'</b></div>').join('')+'</div></div>';
   $('pgHint').textContent=pgI<pgOrder.length?'화면을 눌러 다음 상자':'화면을 눌러 계속'}
