@@ -718,7 +718,7 @@ function upKCost(k){return Math.round((40+40*planetLevel(k))*(A('sponsor')?.6:1)
 function upgradeK(k){if(G.over||!U[k]||!PLANETS[U[k].planet])return;const p=U[k].planet,cost=upKCost(k);if(G.coins<cost)return;G.coins-=cost;G.upPlanet[p]=(G.upPlanet[p]||0)+1;
  for(let i=0;i<NC;i++){const c=G.cells[i];if(c&&U[c.u].planet===p){const[x,y]=cellXY(i);parts(x,y,10,'#ffd23e',110,3)}}toast(PLANETS[p]+' 지원 강화 Lv.'+G.upPlanet[p]);refresh()}
 function craftCost(){const n=(G&&G.nCraft)||0;return Math.round((CRAFT_C0+CRAFT_STEP*n)*Math.pow(CRAFT_GROW,n))}
-function canCraft(m){if(G&&G.coins<craftCost())return false;const need=rcp(m);if(!U[m]||U[m].t!==4||!Array.isArray(need)||!need.length)return false;const counts={};for(const id of need){if(!U[id]||U[id].t<0||U[id].t>3)return false;counts[id]=(counts[id]||0)+1}
+function canCraft(m,mat){if(!mat&&G&&G.coins<craftCost())return false;const need=rcp(m);if(!U[m]||U[m].t!==4||!Array.isArray(need)||!need.length)return false;const counts={};for(const id of need){if(!U[id]||U[id].t<0||U[id].t>3)return false;counts[id]=(counts[id]||0)+1}
  for(const id in counts)if(G.cells.reduce((n,c)=>n+(c&&c.u===id?c.n:0),0)<counts[id])return false;
  return G.cells.some(c=>!c)||G.cells.some(c=>c&&counts[c.u]>=c.n)}
 function merge(){
@@ -1247,10 +1247,10 @@ function end(win,why){
   o.innerHTML+='<div id="loot" style="font-size:14px;line-height:1.5;max-width:92%">🎁 랜덤박스 '+nb+'개 획득!'+(SAVE.boxes>nb?' (보유 '+SAVE.boxes+'개)':'')+'</div><button id="openBox" style="background:linear-gradient(#c58bff,#8a4fd6);color:#fff">박스 열기</button>';
   o.innerHTML+='<button id="toMain" style="background:linear-gradient(#9fe36a,#5fae4a);color:#1d3a14">메인으로</button>';
   $('openBox').textContent='박스 열기 ('+SAVE.boxes+')';$('openBox').onclick=()=>{const r=openBoxes();if(r){$('loot').innerHTML=lootHTML(r);const b=$('openBox');if(r.left>0)b.textContent='다음 박스 열기 ('+r.left+')';else b.style.display='none'}};
-  $('start').onclick=start;$('toMain').onclick=()=>{o.style.display='none';showMain('home')}
-  {const rk=document.createElement('div');rk.id='rkRes';rk.style.cssText='font-size:15px;color:#ffe066;min-height:20px;max-width:92%';o.insertBefore(rk,o.querySelector('#loot'));const W=G.wave,K=G.kills,TT=G.time;
+  $('start').onclick=()=>{rkFlush();start()};$('toMain').onclick=()=>{rkFlush();o.style.display='none';showMain('home')}
+  {const rk=document.createElement('div');rk.id='rkRes';rk.style.cssText='font-size:15px;color:#ffe066;min-height:20px;max-width:92%';o.insertBefore(rk,o.querySelector('#start'));const W=G.wave,K=G.kills,TT=G.time;
     const codeBox=()=>{const c=rkCode(W,K,TT);rk.innerHTML='<div style="font-size:13px;color:#fff">랭킹에 올리려면 이 <b style="color:#ffe066">기록 코드</b>를 게임 주인에게 보내 주세요</div><div style="font-size:13px;color:#fff;margin-top:4px">랭킹 이름 <input id="rkCN" maxlength="12" value="'+rkNick().replace(/[<>"&]/g,'')+'" style="width:40%;font-size:13px"></div><input id="rkCodeT" readonly value="'+c+'" style="width:100%;box-sizing:border-box;font-size:11px;margin:4px 0"><button id="rkCopy" style="font-size:14px;padding:4px 14px">📋 코드 복사</button>';$('rkCN').onchange=()=>{SAVE.nick=$('rkCN').value.trim().slice(0,12);saveAll();$('rkCodeT').value=rkCode(W,K,TT)};$('rkCopy').onclick=()=>{const t=$('rkCodeT');t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}if(navigator.clipboard)navigator.clipboard.writeText(c).then(()=>toast('복사했어요!'),()=>{if(!ok)toast('길게 눌러 직접 복사해 주세요')});else toast(ok?'복사했어요!':'길게 눌러 직접 복사해 주세요')}};
-    if(RK.db&&RK.uid&&RK.canW!==false){rk.textContent='🏆 랭킹 기록 중…';rkSubmit(W,K,TT).then(r=>{if(r)rk.textContent=(r.rec?'🏆 새 최고 기록! ':'🏆 ')+(r.rank?'전체 '+r.rank+'위':'');else codeBox()})}else codeBox()}
+    if(RK.db&&RK.uid&&RK.canW!==false){rk.className='rkBox';rkEndPanel(rk,W,K,TT)}else codeBox()}
 }
 function spr(img,e,x,y,s){if(img)cx.drawImage(img,x-s/2,y-s/2,s,s);else{cx.font=s*.6+'px sans-serif';cx.fillText(e,x,y)}}
 
@@ -1428,7 +1428,7 @@ function refresh(){
     for(const[m,have,need]of ord){const ok=canCraft(m),b=document.createElement('button'),pl=U[m].planet;
       b.className='mr'+(ok?' ok':'');
       b.innerHTML='<div class="mh">'+ic(m)+'<span class="mn"><b>'+U[m].n+'</b><small>'+pic(pl)+PLANETS[pl]+' 우주 히어로</small></span><span class="mp'+(have===need?' full':'')+'">'+have+' / '+need+'</span></div><div class="mi">'+
-        rcp(m).map(id=>{const h=hasUnit(id);return '<span class="ing'+(h?' h':'')+'">'+ic(id)+'<em>'+TN[U[id].t]+'</em>'+U[id].n+'<i>'+(h?'✓ 있음':'필요')+'</i></span>'}).join('')+'</div>'+(ok?'<div class="go">✦ 지금 조합할 수 있어요 — 누르면 합쳐져요</div>':'');
+        rcp(m).map(id=>{const h=hasUnit(id);return '<span class="ing'+(h?' h':'')+'">'+ic(id)+'<em>'+TN[U[id].t]+'</em>'+U[id].n+'<i>'+(h?'✓ 있음':'필요')+'</i></span>'}).join('')+'</div>'+(ok?'<div class="go">✦ 조합하기 <small>🪙'+craftCost()+'</small></div>':canCraft(m,1)?'<div class="go no">🪙'+craftCost()+' 필요 · '+(craftCost()-Math.floor(G.coins))+' 부족</div>':'');
       b.onclick=()=>{craft(m);refresh()};$('myth').appendChild(b)}
   }else if(sheet==='gam'){
     body.innerHTML='<h3><span>행운 도박 <small>행운석으로 뽑기</small></span>'+X+'<div class="row r3" id="gam">'+GAM.map((g,i)=>'<button id="g'+i+'">'+TN[g.t]+'<small style="white-space:nowrap">🍀'+g.c+' · '+g.p*100+'%</small></button>').join('')+'</div><div class="row" style="margin-top:6px"><button id="gLot" style="background:linear-gradient(#ffdf5a,#f5b921);color:#3a2a1a;width:100%">🎫 복권 긁기 🍀'+lotCost()+' <small>당첨금 🪙'+lotPrize()+' 기준 최대 20배 · 행성 히어로 잭팟</small></button></div>';
@@ -1481,13 +1481,34 @@ if(!(window.claude&&window.claude.use)&&SB_URL&&typeof fetch!=='undefined'){cons
   if(RK.uid){try{const d=await db.doc('rank/'+RK.uid).get();if(d.exists)RK.best=d.data()}catch(e){}}if($('mRank')&&$('mRank').classList.contains('on'))rkRender()}catch(e){}})();
 function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
-async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
+async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:201};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:202};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
 async function rkMyRank(){try{const L=await rkFetch();const i=L.findIndex(r=>r.id===RK.uid);return i<0?null:i+1}catch(e){return null}}
+// 게임 끝 화면: 랭킹을 바로 보여주고 닉네임 입력 → 등록. 등록 안 하고 나가면 그 이름으로 자동 등록.
+let RKP=null;
+function rkEsc(t){const s=document.createElement('span');s.textContent=t||'이름없음';return s.innerHTML}
+function rkEndPanel(box,W,K,T){RKP={w:W,k:K,t:T,done:false,busy:false};
+  box.innerHTML='<div class="rkT">🏆 랭킹</div><div class="rkIn"><input id="rkEN" maxlength="12" placeholder="닉네임 입력" value="'+String(SAVE.nick||RK.name||'').replace(/[<>"&]/g,'')+'"><button id="rkEB">등록</button></div><div id="rkEM" class="rkM">닉네임을 적고 등록하면 랭킹에 올라가요</div><div id="rkEL" class="rkL"><div class="rkM" style="text-align:center">불러오는 중…</div></div>';
+  $('rkEB').onclick=rkEndSubmit;$('rkEN').onkeydown=e=>{if(e.key==='Enter')rkEndSubmit()};$('rkEN').oninput=()=>{const t=$('rkTmpN');if(t)t.innerHTML=rkEsc($('rkEN').value.trim()||'나')};
+  const P=RKP;rkFetch().then(L=>{if(RKP===P&&!P.done)rkEndList(L,null)}).catch(()=>{if($('rkEL'))$('rkEL').innerHTML='<div class="rkM" style="text-align:center">랭킹을 불러오지 못했어요</div>'})}
+function rkEndList(L,myId){const P=RKP,E=$('rkEL');if(!P||!E)return;const rows=(L||[]).slice(0,100).map(r=>Object.assign({},r));let pos;
+  if(myId==null){pos=rows.findIndex(r=>r.w<P.w||(r.w===P.w&&((r.k||0)<P.k||((r.k||0)===P.k&&(r.t||0)>P.t))));if(pos<0)pos=rows.length;rows.splice(pos,0,{tmp:1,nick:'',w:P.w,k:P.k,t:P.t});
+    $('rkEM').innerHTML=pos<100?'이번 판은 예상 <b>'+(pos+1)+'위</b>! 닉네임을 적고 등록하세요':'이번 판은 100위 밖이에요. 그래도 등록할 수 있어요'}
+  else pos=rows.findIndex(r=>r.id===myId);
+  E.innerHTML=rows.length?rows.map((r,i)=>{const me=r.tmp||(myId!=null&&r.id===myId);return '<div class="rkr'+(i<3?' p'+(i+1):'')+(me?' me':'')+'"'+(me?' id="rkMeRow"':'')+'><span class="n">'+(i>=100?'—':i<3?['🥇','🥈','🥉'][i]:i+1)+'</span><span class="nm">'+(r.tmp?'<span id="rkTmpN">'+rkEsc(($('rkEN')&&$('rkEN').value.trim())||'나')+'</span><b class="tg">이번 판</b>':rkEsc(r.nick)+(me?'<b class="tg">방금 등록</b>':r.mine?' (나)':''))+'<small>처치 '+(r.k||0)+' · '+rkTime(r.t)+'</small></span><span class="w">웨이브 <b>'+r.w+'</b></span></div>'}).join(''):'<div class="rkM" style="text-align:center">아직 아무도 없어요</div>';
+  const m=$('rkMeRow');if(m)E.scrollTop=Math.max(0,m.offsetTop-E.clientHeight/2+m.offsetHeight/2)}
+async function rkEndSubmit(){const P=RKP;if(!P||P.done||P.busy)return;const inp=$('rkEN'),B=$('rkEB'),v=inp?inp.value.trim().slice(0,12):'';
+  if(!v){toast('닉네임을 입력해 주세요');if(inp)inp.focus();return}SAVE.nick=v;saveAll();P.busy=true;if(B){B.disabled=true;B.textContent='등록 중…'}
+  let r=null;try{r=await rkSubmit(P.w,P.k,P.t)}catch(e){}P.busy=false;if(RKP!==P)return;
+  if(!r){if(B){B.disabled=false;B.textContent='다시 시도'}$('rkEM').textContent='등록에 실패했어요. 다시 눌러 주세요';return}
+  P.done=true;if(inp)inp.disabled=true;if(B)B.textContent='완료 ✓';$('rkEM').innerHTML=(r.rec?'🎉 내 최고 기록! ':'')+(r.rank?'전체 <b>'+r.rank+'위</b>로 등록됐어요':'등록했어요 (100위 밖)');
+  try{rkEndList(RK.list||await rkFetch(),RK.sb?RK.last:RK.uid)}catch(e){}}
+function rkFlush(){const P=RKP;RKP=null;if(!P||P.done||P.busy)return;const inp=$('rkEN'),v=inp&&inp.value.trim().slice(0,12);if(v){SAVE.nick=v;saveAll()}rkSubmit(P.w,P.k,P.t).catch(()=>{})}
+window.addEventListener('pagehide',rkFlush);
 function rkTime(t){t=Math.round(t||0);return Math.floor(t/60)+'분 '+(t%60)+'초'}
 // 기록 코드: 랭킹에 직접 못 쓰는 사람(공개 링크 외부인·비로그인)이 주인에게 보내면 주인이 등록
 function rkHash(t){let h=2166136261;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(16).padStart(8,'0')}
