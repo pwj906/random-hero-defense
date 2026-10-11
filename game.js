@@ -722,6 +722,7 @@ function total(){return G.cells.reduce((a,c)=>a+(c?c.n:0),0)}
 function cost(){if(G.freeT>0||G.freeN>0||(G.free&&A('freebie')))return 0;return Math.max(1,Math.round(((12+(A('freeze')&&G.frzS!=null?G.summons-Math.min(15,G.summons-G.frzS):G.summons))*COST_K+4)*(G.bn?G.bn.cost:1)))}
 let COST_K=3.2,HERO_POW=2.2,CRAFT_C0=350,CRAFT_STEP=200,CRAFT_GROW=1,TIER_POW=[1.7,1.6,1.7,1.6,2.0]; // 소환 비싸게, 집~우주 전부 강하게, 우주 조합은 갈수록 크게 비싸짐 // 소환 비싸게 + 영웅 강하게 (판에 덜 깔리게)
 function killCoin(w){return Math.round((4+Math.floor(w/5))*(G.bn?G.bn.coin:1)*(A('greed')?2:1)*(G.plOn&&G.plOn.mosaica>0?1.3:1))}
+const PITY_N=40; // 행성 등급 없이 40번 소환하면 다음은 행성 등급 확정
 function odds(){const n=G.luck,w=[1,.09+.06*n,.018+.02*n,.003+.004*n],t=w[0]+w[1]+w[2]+w[3];return w.map(v=>v/t*100)}
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 function place(id){
@@ -749,10 +750,10 @@ function summon(){
   if(G.over)return;if(total()>=MAXU){toast('필드가 가득 찼어요!');return}
   const c=cost();if(G.coins<c)return;
   const o=odds();let r=Math.random()*100,t=0;while(t<3&&r>=o[t]){r-=o[t];t++}
-  let leap=false;if(A('leap')&&t<3&&Math.random()<.12){t=Math.min(3,t+2);leap=true}
+  let leap=false,pity=false;if(A('leap')&&t<3&&Math.random()<.12){t=Math.min(3,t+2);leap=true}G.pity=(G.pity||0)+1;if(t>=3)G.pity=0;else if(G.pity>=PITY_N&&BY[3].length){t=3;G.pity=0;pity=true}
   while(t>0&&!BY[t].length)t--;const id=pickU(t);
   if(!place(id)){toast('놓을 칸이 없어요');return}
-  G.coins-=c;if(c===0){if(G.freeN>0)G.freeN--;else if(!(G.freeT>0))G.free=0}G.summons++;SND.play('summon',t);if(leap)toast('🚀 도약 소환!');if(t>=1){const at=G.cells.findIndex(q=>q&&q.u===id&&q.pop>0),[px,py]=cellXY(at<0?0:at);burst(px,py,t,t>=2);G.fx.push({k:'t',x:px,y:py-26,t:1.2,T:1.2,s:(t>=2?'대박! ':'')+TN[t]+' 등급!',cr:true,dl:.05});toast((t>=2?'🎉 대박! ':'✨ ')+TN[t]+' 등급 소환 — '+U[id].n)}refresh()
+  G.coins-=c;if(c===0){if(G.freeN>0)G.freeN--;else if(!(G.freeT>0))G.free=0}G.summons++;SND.play('summon',t);if(leap)toast('🚀 도약 소환!');if(pity)toast('🎯 행성 등급 보장 소환!');if(t>=1){const at=G.cells.findIndex(q=>q&&q.u===id&&q.pop>0),[px,py]=cellXY(at<0?0:at);burst(px,py,t,t>=2);G.fx.push({k:'t',x:px,y:py-26,t:1.2,T:1.2,s:(t>=2?'대박! ':'')+TN[t]+' 등급!',cr:true,dl:.05});toast((t>=2?'🎉 대박! ':'✨ ')+TN[t]+' 등급 소환 — '+U[id].n)}refresh()
 }
 const GAM=[{t:1,c:1,p:.6},{t:2,c:1,p:.2},{t:3,c:2,p:.1}];
 function gamble(i){
@@ -870,19 +871,19 @@ function buffFx(x1,y1,x2,y2,txt,col,imgs){if(G.fx.length>330)return;if(imgs)G.fx
 
 // ---------- 판 안 재미 요소: 미션 · 현상금 · 보상 선택 · 조합 목표 ----------
 const MISSIONS=[
- {id:'kill',t:n=>'적 '+n+'마리 처치',n:w=>40+w*3,get:()=>G.kills,rw:w=>({c:30+w*2})},
+ {id:'kill',t:n=>'적 '+n+'마리 처치',n:w=>45,get:()=>G.kills,rw:w=>({c:30+w*2})},
  {id:'merge',t:n=>'승급 '+n+'회',n:()=>3,get:()=>G.nMerge||0,rw:()=>({s:1})},
  {id:'summon',t:n=>'소환 '+n+'회',n:()=>6,get:()=>G.summons,rw:w=>({c:30+w*2})},
- {id:'coin',t:n=>'코인 '+n+' 모으기',n:w=>150+w*25,abs:1,get:()=>G.coins,rw:()=>({s:1,c:30})},
+ {id:'coin',t:n=>'코인 '+n+' 모으기',n:w=>120+w*12,abs:1,get:()=>G.coins,rw:()=>({s:1,c:30})},
  {id:'planet',t:n=>'한 행성 영웅 '+n+'종 모으기',n:()=>3,abs:1,get:()=>{const m={};for(const c of G.cells)if(c&&U[c.u])(m[U[c.u].planet]=m[U[c.u].planet]||new Set()).add(c.u);return Math.max(0,...Object.values(m).map(s=>s.size))},rw:()=>({s:2})},
  {id:'tier',t:n=>'나라 등급 이상 '+n+'명 보유',n:()=>2,abs:1,get:()=>G.cells.reduce((a,c)=>a+(c&&U[c.u].t>=2?c.n:0),0),rw:()=>({s:1,c:60})},
  {id:'lot',t:n=>'복권 '+n+'장 긁기',n:()=>2,get:()=>G.lotN||0,rw:w=>({c:50+w*3})},
  {id:'bounty',t:n=>'현상금 몬스터 '+n+'마리 처치',n:()=>1,get:()=>G.nBounty||0,ok:()=>G.btyN>0||G.mobs.some(m=>m.bty>0),rw:()=>({s:2})}];
-function msnNew(){const pool=MISSIONS.filter(m=>!G.ms||m.id!==G.ms.d.id).filter(m=>(!m.abs||m.get()<m.n(G.wave))&&(!m.ok||m.ok())),d=pool[Math.floor(Math.random()*pool.length)]||MISSIONS[0];G.ms={d,need:d.n(G.wave),base:d.abs?0:d.get(),rw:d.rw(G.wave)};G.msK=''}
+function msnNew(){const pool=MISSIONS.filter(m=>!G.ms||m.id!==G.ms.d.id).filter(m=>(!m.abs||m.get()<m.n(G.wave))&&(!m.ok||m.ok())),d=pool[Math.floor(Math.random()*pool.length)]||MISSIONS[0];G.ms={d,need:d.n(G.wave),base:d.abs?0:d.get(),rw:d.rw(G.wave),until:G.wave+3};G.msK=''}
 function msnTick(){if(!G.ms)msnNew();const m=G.ms,v=Math.min(m.need,m.d.get()-m.base),E=$('msn');if(!E)return;
   if(v>=m.need){const q2=A('quest')?2:1;if(m.rw.c)G.coins+=m.rw.c*q2;if(m.rw.s)G.stones+=m.rw.s*q2;G.nMsn=(G.nMsn||0)+1;SND.play('mission');toast('📜 미션 완료! '+(m.rw.c?'🪙+'+m.rw.c+' ':'')+(m.rw.s?'🍀+'+m.rw.s:''));E.classList.remove('done');void E.offsetWidth;E.classList.add('done');G.flash=Math.max(G.flash||0,.08);msnNew();return msnTick()}
-  if(m.d.ok&&!m.d.ok()){msnNew();return msnTick()}
-  const k=m.d.id+v;if(k!==G.msK){G.msK=k;E.innerHTML='📜 <b>'+m.d.t(m.need)+'</b><div class="bar"><i style="width:'+(v/m.need*100)+'%"></i></div>'+v+'/'+m.need+' · '+(m.rw.c?'🪙'+m.rw.c+' ':'')+(m.rw.s?'🍀'+m.rw.s:'')}}
+  if(m.d.ok&&!m.d.ok()||m.until&&G.wave>m.until){msnNew();return msnTick()}
+  const k=m.d.id+v+'_'+G.wave;if(k!==G.msK){G.msK=k;E.innerHTML='📜 <b>'+m.d.t(m.need)+'</b><div class="bar"><i style="width:'+(v/m.need*100)+'%"></i></div>'+v+'/'+m.need+' · '+(m.rw.c?'🪙'+m.rw.c+' ':'')+(m.rw.s?'🍀'+m.rw.s:'')+(m.until?' · ⏳'+(m.until-G.wave+1)+'웨이브':'')}}
 function bounty(){if(G.over||G.pause||G.menu)return;if(G.btyN==null)G.btyN=1;if(G.btyN<=0)return;if(G.mobs.filter(m=>m.bty>0).length>=3){toast('현상금 몬스터는 동시에 3마리까지예요');return}G.btyN--;const w=G.wave,hp=Math.round(mobHP(w)*9);G.mobs.push({p:0,hp,max:hp,sl:0,st:0,boss:false,v:30,k:Math.min(4,Math.floor((w-1)/10)),el:1,bty:30});SND.play('bounty');toast('🎯 현상금 몬스터 등장! 30초 안에 처치');G.shake=Math.max(G.shake,.2)}
 function btyTick(dt){if(G.btyN==null){G.btyN=1;G.btyCd=0}if(G.btyN<BTY_MAX){if(!(G.btyCd>0))G.btyCd=A('hunter')?25:45;G.btyCd-=dt;if(G.btyCd<=0){G.btyN++;G.btyCd=G.btyN<BTY_MAX?(A('hunter')?25:45):0}}else G.btyCd=0;for(const m of G.mobs)if(m.bty>0){m.bty-=dt;if(m.bty<=0){m.bty=0;toast('현상금 실패… 그냥 강한 적이 됐어요')}}
   const B=$('bBty');if(!B)return;const act=G.mobs.filter(m=>m.bty>0).length,k=G.btyN+'/'+act+'/'+Math.ceil(G.btyCd||0);if(k!==G.btyK){G.btyK=k;B.disabled=G.btyN<=0;B.innerHTML='🎯 현상금 소환'+(G.btyN>0?' <b style="color:#ffe066">×'+G.btyN+'</b>':'')+'<small>'+(act?'추격 중 '+act+'마리 · ':'')+(G.btyN>=BTY_MAX?'가득 참 (최대 '+BTY_MAX+')':Math.ceil(G.btyCd||0)+'초 뒤 +1')+'</small>'}}
@@ -1663,7 +1664,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:227};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:228};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1862,7 +1863,7 @@ const TUTS=[
  {t:'👋 환영해!',x:'랜덤 히어로 디펜스의 모든 기능을 차근차근 익혀 보자. 설명 중에는 게임이 멈춰 있어.<br>언제든 <b>건너뛰기</b>를 누르면 바로 게임을 시작해.'},
  {t:'👾 적과 패배 조건',at:'path',x:'적은 바깥 <b>길</b>을 따라 계속 돌아.<br>필드의 적이 <b>200마리</b>가 되거나, <b>10웨이브마다 나오는 보스</b>를 제한 시간 안에 못 잡으면 게임 끝!'},
  {t:'⏱️ 웨이브',at:'#hud',x:'위에는 지금 웨이브, 다음 웨이브까지 남은 시간, 필드의 적 수가 보여. 웨이브가 높을수록 랭킹이 올라가.'},
- {t:'🎲 소환',at:'#summon',do:1,x:'<span class="do">소환 버튼을 3번 눌러 봐.</span><br>영웅이 랜덤 등급으로 나와 빈 칸에 자리 잡아. 뽑을수록 비용이 조금씩 올라.',
+ {t:'🎲 소환',at:'#summon',do:1,x:'<span class="do">소환 버튼을 3번 눌러 봐.</span><br>영웅이 랜덤 등급으로 나와 빈 칸에 자리 잡아. 뽑을수록 비용이 조금씩 올라.<br>운이 나빠도 <b>40번</b> 안에 행성 등급이 한 번은 꼭 나와.',
   on:()=>{G.coins=Math.max(G.coins,300);TUT.s0=G.summons;refresh()},ok:()=>G.summons>=TUT.s0+3},
  {t:'🪙 코인과 🍀 행운석',at:'#res',x:'<b>코인</b>은 적을 잡을 때마다 들어와. 소환·강화·조합에 써.<br><b>행운석</b>은 보스·현상금·미션으로 모으고, 행운 도박에 써.'},
  {t:'⭐ 승급',do:1,x:'같은 영웅 <b>3명</b>이 한 칸에 모이면 승급할 수 있어.<br><span class="do">반짝이는 칸을 눌러 봐.</span>',
@@ -1881,7 +1882,7 @@ const TUTS=[
  {t:'🍀 행운 도박',at:'#bGam',do:1,x:'<span class="do">행운 도박을 눌러 봐.</span>',ok:()=>sheet==='gam'},
  {t:'🍀 행운 도박',at:'#sheet',x:'<b>행운석</b>으로 높은 등급 영웅을 확률로 뽑을 수 있어.<br><b>🎫 복권</b>은 긁어서 코인·행운석·행성 히어로를 노려. 긁는 동안 게임은 멈춰. 10장 일괄 긁기도 있어.',off:()=>{sheet=null;refresh()}},
  {t:'🎯 현상금',at:'#bBty',x:'현상금 몬스터를 불러내 <b>30초 안에</b> 잡으면 코인과 행운석을 크게 줘. 시간이 지나면 다시 부를 수 있어.'},
- {t:'📜 미션',at:'#msn',x:'왼쪽 위 미션을 깨면 코인·행운석 보상이 들어오고 다음 미션이 나와.'},
+ {t:'📜 미션',at:'#msn',x:'왼쪽 위 미션을 깨면 코인·행운석 보상이 들어오고 다음 미션이 나와. <b>3웨이브</b> 안에 못 깨면 다른 미션으로 바뀌어.'},
  {t:'💎 증강',x:'<b>5웨이브</b>와 <b>보스를 잡을 때마다</b> 증강 3장 중 하나를 골라. 실버·골드·프리즘 등급이 있고 판 끝까지 유지돼. 마음에 안 들면 한 번 다시 뽑을 수 있어.'},
  {t:'🔮 소환사 스킬',at:()=>skEq().length?'#sk0':null,x:'랜덤박스에서 낮은 확률로 <b>소환사 스킬</b>을 얻어. 내 캐릭터에서 2개까지 장착하면 여기 버튼이 생겨.<br><b>자동</b>을 켜면 쿨타임마다 알아서 써.'},
  {t:'⏩ 배속·일시정지',at:'#speed',x:'배속 버튼으로 게임 속도를 바꿔. 오른쪽 위 ⏸ 로 멈추거나 처음부터 다시 할 수 있어.'},
