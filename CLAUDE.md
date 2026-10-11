@@ -33,6 +33,8 @@
 - 잠긴 행성은 `LOCKP`(루미엘: 최고 기록 100웨이브 초과 시 해금). 잠긴 영웅은 `ownedList()`에서 빠지고 내 캐릭터에 🔒 카드로 보인다.
 - 파우니아의 우주 히어로는 현무(`hyeonmu`, 조합식은 예전 청람 것 승계). 청람(`cheongram`)은 코드·그림·저장 데이터에서 전부 삭제했다(`saveClean()`이 옛 저장에서도 지움). 용족 행성의 청룡은 새로 만든다.
 - 드라카니스(`drakanis`, 정의로운 용족, 범위 공격 위주, 3판 이상 플레이 시 해금 `LOCKP.g`, `PL_POW` 1.12, 시너지 공격력 +20%): 뿔꼬마(hornkid)·용아 창병(fang_lancer)·흑철 용인(iron_dragonkin)·홍련 용장(hongryeon)·청룡(cheongryong). 기본공격 모양 `PV.shp`('line'/'cone', `shapeHit`), 부채꼴 특수기 `SP.cone`, 청룡 번개 연쇄 그림 `pk.chain`(bounce).
+- 비익성(조인족, 흰색·청록): 1~2단계(피유 feather_courier, 시엘 feather_archer)와 행성 아이콘만 받음 → `art-pending/biikseong-tier1-tier2-dev-v1.zip`에 보관. 3~5단계가 오면 같이 넣는다.
+- 우주 조합 비용: 350부터 200씩(`CRAFT_C0/STEP`, GROW 1). 다음 목표는 우주끼리 합치는 상위 우주 히어로.
 - 새 영웅 그림은 `PKG`에 넣는다(프레임 168px, 효과 144px, sock은 256 기준 ×4).
 
 ## 계정 (공개 배포판만)
