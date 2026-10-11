@@ -34,7 +34,7 @@
 - 파우니아의 우주 히어로는 현무(`hyeonmu`, 조합식은 예전 청람 것 승계). 청람(`cheongram`)은 코드·그림·저장 데이터에서 전부 삭제했다(`saveClean()`이 옛 저장에서도 지움). 용족 행성의 청룡은 새로 만든다.
 - 드라카니스(`drakanis`, 정의로운 용족, 범위 공격 위주, 3판 이상 플레이 시 해금 `LOCKP.g`, `PL_POW` 1.12, 시너지 공격력 +20%): 뿔꼬마(hornkid)·용아 창병(fang_lancer)·흑철 용인(iron_dragonkin)·홍련 용장(hongryeon)·청룡(cheongryong). 기본공격 모양 `PV.shp`('line'/'cone', `shapeHit`), 부채꼴 특수기 `SP.cone`, 청룡 번개 연쇄 그림 `pk.chain`(bounce).
 - 비익성(`biikseong`, 조인족, 110웨이브 돌파 해금, 시너지 공격속도 +20%·사거리 +0.5칸): 피유(feather_courier)·시엘(feather_archer)·오르윈(storm_owl)·아우렐(goldwing_commander)·주작(jujak).
-- 설령성(`seolryeong`, 눈·얼음 정령, 5판 이상 플레이 해금, 시너지 공격력 +15%·감속, `PL_POW` 1.2): 행성 설정·아이콘만 코드에 있음. 1~2단계(뭉치 snowkid, 빙키 icicle_bat — 박쥐는 공중형이라 띄워서 그릴 것) 그림은 `art-pending/seolryeong-tier1-tier2-dev-v1.zip`. 3~5단계가 오면 같이 넣는다.
+- 설령성(`seolryeong`, 눈·얼음 정령, 5판 이상 플레이 해금, 시너지 공격력 +15%·감속, `PL_POW` 1.2): 행성 설정·아이콘만 코드에 있음. 1~2단계(뭉치 snowkid, 빙키 icicle_bat — 박쥐는 공중형이라 띄워서 그릴 것) 그림은 `art-pending/seolryeong-tier1-tier2-dev-v1.zip`, 3~4단계(설봉 snow_yeti 근접 전방 강타, 빙각 ice_golem 적 위치 범위)는 `art-pending/seolryeong-tier3-tier4-dev-v1.zip`. 5단계가 오면 같이 넣는다.
 - 신규 행성 공격력 보너스 `PL_POW`: 루미엘 1.28, 드라카니스·비익성 1.2. 벤치마크(적 24마리 무적 더미 30초)에서 신규 행성 영웅은 같은 등급 기존 평균의 1.2~2.3배, 신규 우주는 모든 기존 우주보다 위.
 - 파우니아 행성 등급 백련(백호)은 무겸(흑웅관장)으로 교체: ID `mugyeom`, 능력 그대로, 옛 white_tiger 저장은 `saveClean()`이 무겸으로 옮김. 백호는 나중에 별도 행성.
 - 특수 조합 우주 히어로: `FUSION` 표(황룡=청룡+현무+주작, 천공의 뇌제=제욱스+아르케온, 영원의 월식=셀레네+크로넬, 운명의 인형사=루네트+벨카온). 지금은 내 캐릭터 '특수 조합' 칸에 미리 보기만 있음(그림 대기, 요청서 gpt-request-fusion-cosmic.md). 표기: 행성=재료 행성 합, 등급=우주.
