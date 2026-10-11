@@ -852,7 +852,7 @@ function hit(m,u,d,dl,src){if(!m||m.hp<=0)return;if(src)m.last=src;if(m.shd>0)d*
   if(u.rt&&!m.boss){m.rt=Math.max(m.rt||0,u.rt);m.rtT=u.rt}if(u.vu2)m.vu2=Math.max(m.vu2||0,u.vu2);else if(u.bm&&A('weak'))m.vu2=Math.max(m.vu2||0,3);if(u.fmk)m.fmk=u.fmk;
   if(u.st&&!m.boss&&Math.random()<u.st)m.st=1
 }
-const CUTIN={baekho:__P(1946),jujak:__P(1947),cheongryong:__P(1948),hyeonmu:__P(1949),selene:__P(1950),chronel:__P(1951),sylvaion:__P(1952),belkaon:__P(1953),zeus:__P(1954),archeon:__P(1955),lunette:__P(1956)},CUTCOL={baekho:'#e8f6ff',jujak:'#ff6a2a',cheongryong:'#7fd0ff',hyeonmu:'#3fe0b0',selene:'#b9a4ff',chronel:'#8fd0ff',sylvaion:'#b6f04a',belkaon:'#3fe08a',zeus:'#ffd23e',archeon:'#5fd8ff',lunette:'#c77dff'};let cutT=0;
+const CUTIN={clockweaver:__P(1946),jeokhwang:__P(1947),jinmu:__P(1948),astraon:__P(1949),hwangryong:__P(1950),unhwa:__P(1951),yeongeopsu:__P(1952),baekho:__P(1953),jujak:__P(1954),cheongryong:__P(1955),hyeonmu:__P(1956),selene:__P(1957),chronel:__P(1958),sylvaion:__P(1959),belkaon:__P(1960),zeus:__P(1961),archeon:__P(1962),lunette:__P(1963)},CUTCOL={baekho:'#e8f6ff',jujak:'#ff6a2a',cheongryong:'#7fd0ff',hyeonmu:'#3fe0b0',selene:'#b9a4ff',chronel:'#8fd0ff',sylvaion:'#b6f04a',belkaon:'#3fe08a',zeus:'#ffd23e',archeon:'#5fd8ff',lunette:'#c77dff',clockweaver:'#c48bff',jeokhwang:'#ff7a2a',jinmu:'#3fe0d0',astraon:'#8fd8ff',hwangryong:'#ffd23e',unhwa:'#ff5a9a',yeongeopsu:'#ffcf5a'};let cutT=0;
 const CUT_LT={baekho:1,jujak:1};
 function cutin(k,txt){const e=$('cutin');if(!CUTIN[k]||!e)return false;e.style.setProperty('--cc',CUTCOL[k]);const lt=!!CUT_LT[k],pr=txt.split(' — ');e.classList.toggle('lt',lt);e.innerHTML='<img src="'+CUTIN[k]+'" alt=""><b>'+(lt&&pr.length>1?pr[0]+'<small>'+pr.slice(1).join(' — ')+'</small>':txt)+'</b>';SND.play('cutin');e.classList.remove('on');void e.offsetWidth;e.classList.add('on');clearTimeout(cutT);cutT=setTimeout(()=>e.classList.remove('on'),1320);return true}
 function nthHit(h,m,u){const n=h.nh,[x,y]=pos(m.p);{const pk=h.c&&U[h.c.u]&&U[h.c.u].pk;if(pk&&pk.sfxhit&&G.fx.length<320){const T=pk.sfxhit.length/12;G.fx.push({k:'seq',imgs:pk.sfxhit,fps:12,w:n.r?n.r*2.4:CS*1.3,x,y,t:T,T,dl:0})}}if(G.fx.length<300){G.fx.push({k:'ring',x,y,r:n.r||22,t:.3,T:.3,c:u.col||'#ffe066',dl:0});G.fx.push({k:'star',x,y:y-6,r:18,t:.22,T:.22,c:'#fff',dl:0})}G.shake=Math.max(G.shake,.12);
@@ -863,7 +863,7 @@ function shapeHit(h,m,u){const ci=G.cells.indexOf(h.c);if(ci<0)return;const[sx,s
     if(u.shp==='line'){if(Math.abs(-dx*ny+dy*nx)>u.sw*CS)continue}else{let da=Math.abs(Math.atan2(dy,dx)-a);if(da>Math.PI)da=2*Math.PI-da;if(da>u.sa*Math.PI/180)continue}
     hit(o,u,h.d*u.sf2,0,h.c);if(u.smax&&++n>=u.smax)break}}
 function bounce(m0,n,dmg,c,pk,hop,w){const seen=new Set([m0]);let cur=m0,[px,py]=pos(m0.p);for(let k=0;k<n;k++){let nb=null,bd=hop;for(const o of G.mobs){if(o.hp<=0||o.p<28||seen.has(o))continue;const[ox,oy]=pos(o.p),dd=Math.hypot(ox-px,oy-py);if(dd<bd){bd=dd;nb=o}}if(!nb)break;seen.add(nb);const[nx,ny]=pos(nb.p),dl=.06*(k+1);if(pk&&pk.chain)G.fx.push({k:'bimg',imgs:pk.chain,x:px,y:py,a:Math.atan2(ny-py,nx-px),L:Math.hypot(nx-px,ny-py),w:30,t:.3,T:.3,dl});else G.fx.push({k:'zap',x1:px,y1:py,x2:nx,y2:ny,t:.3,T:.3,c:'#ff7ad9',w:2.2,dl});if(pk&&pk.hit&&G.fx.length<340)G.fx.push({k:'seq',imgs:pk.hit,fps:pk.cfg.hitFps,w:w||pk.cfg.hitW,m:nb,x:nx,y:ny,t:pk.hit.length/pk.cfg.hitFps,T:pk.hit.length/pk.cfg.hitFps,dl});hit(nb,{},dmg,dl,c);px=nx;py=ny}}
-const STIMG={"sl":[__P(1957),__P(1958)],"st":[__P(1959),__P(1960)],"rt":[__P(1961),__P(1962)],"vu":[__P(1963),__P(1964)],"sp":[__P(1965),__P(1966)]},STI={};if(typeof Image!=='undefined')for(const k in STIMG)STI[k]=STIMG[k].map(s=>{const im=new Image();im.src=s;return im});
+const STIMG={"sl":[__P(1964),__P(1965)],"st":[__P(1966),__P(1967)],"rt":[__P(1968),__P(1969)],"vu":[__P(1970),__P(1971)],"sp":[__P(1972),__P(1973)]},STI={};if(typeof Image!=='undefined')for(const k in STIMG)STI[k]=STIMG[k].map(s=>{const im=new Image();im.src=s;return im});
 setTimeout(()=>{if(typeof V5I!=='undefined'&&V5I['status/dot'])STI.dot=V5I['status/dot']},0);
 function burst(x,y,t,big){const col=TC[t]||'#ffd23e',P=o=>{if(G.fx.length<340)G.fx.push(o)};P({k:'ray',x,y,t:.6,T:.6,c:col});for(let q=0;q<(big?4:2);q++)P({k:'ring',x,y,r:30+t*14+q*22,t:.45,T:.45,c:q%2?'#fff':col,dl:q*.07});P({k:'star',x,y:y-6,r:16+t*5,t:.25,T:.25,c:'#fff',dl:0});parts(x,y,10+t*7,col,90+t*35,2.6+t*.5);parts(x,y,6+t*3,'#fff',70+t*25,2.2);G.shake=Math.max(G.shake,.1+t*.09);if(t>=2){G.flash=Math.max(G.flash||0,.1+t*.03);G.hs=Math.max(G.hs||0,t>=3?.16:.08)}}
 function buffFx(x1,y1,x2,y2,txt,col,imgs){if(G.fx.length>330)return;if(imgs)G.fx.push({k:'bimg',imgs,x:x1,y:y1-8,a:Math.atan2(y2-y1,x2-x1),L:Math.hypot(x2-x1,y2-y1),w:46,t:.6,T:.6,dl:0});else G.fx.push({k:'tr',x1,y1:y1-8,x2,y2:y2-8,w:4,c:col,t:.4,T:.4,dl:0});G.fx.push({k:'ring',x:x2,y:y2,r:20,t:.45,T:.45,c:col,dl:.1});G.fx.push({k:'t',x:x2,y:y2-24,t:1.1,T:1.1,s:txt,cr:false,dl:.12})}
@@ -1584,7 +1584,7 @@ function loop(ts){
   requestAnimationFrame(loop)
 }
 const TEST_START=false; // 테스트 기간: 시작 시 모든 캐릭터 1명씩 배치
-function start(){buildBY();$('bSnd').style.display='';$('bMenu').style.display='block';$('gmenu').style.display='none';SND.bg(false,0);$('over').style.display='none';$('boon').style.display='none';$('augL').style.display='none';$('synL').style.display='none';reset();augUI();G.synK='';synTick();['sk0','sk1'].forEach(id=>$(id).dataset.k='');if(TEST_START){Object.keys(U).sort((a,b)=>U[b].t-U[a].t).forEach((k,i)=>{G.cells[[12,7,17,11,13,6,8,16,18][i]??i]={u:k,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[k]?SP[k].cd:0}});refresh()}running=true;last=performance.now();requestAnimationFrame(loop)}
+function start(){buildBY();$('bSnd').style.display='';$('bMenu').style.display='block';$('gmenu').style.display='none';SND.bg(false,0);$('over').style.display='none';$('boon').style.display='none';$('augL').style.display='none';$('synL').style.display='none';reset();augUI();G.synK='';synTick();['sk0','sk1'].forEach(id=>$(id).dataset.k='');if(TEST_START){Object.keys(U).sort((a,b)=>U[b].t-U[a].t).forEach((k,i)=>{G.cells[[12,7,17,11,13,6,8,16,18][i]??i]={u:k,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[k]?SP[k].cd:0}});refresh()}running=true;last=performance.now();requestAnimationFrame(loop);if(!SAVE.tut&&!window.NO_TUT)setTimeout(()=>{if(G&&!G.over&&!SAVE.tut&&!TUT)tutStart()},700)}
 
 tempArt();bake();
 $('bAll').onclick=mergeAll;$('bBty').onclick=bounty;$('bSnd').onclick=e=>{SND.cycle();sndBtn();toast(['🔊 소리 켜짐','🎵 배경음악 끔 (효과음만)','🔇 소리 끔'][SND.mode()])};sndBtn();$('rcp').onclick=()=>openSheet('myth');$('bCraft').onclick=()=>{let m=$('bCraft').dataset.m;if(!m||!canCraft(m))m=Object.keys(RECIPE).find(k=>canCraft(k));if(m){craft(m);refresh()}else{refresh();toast('지금은 조합할 수 없어요')}};lotInit();$('bMyth').onclick=()=>openSheet('myth');$('bGam').onclick=()=>openSheet('gam');$('bUp').onclick=()=>openSheet('up');
@@ -1663,7 +1663,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:225};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:226};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1736,7 +1736,6 @@ const FUSION={astraon:{n:'아스트라온',nick:'천벌 궤도 포격 · 약화'
  yeongeopsu:{n:'영겁수',nick:'시간 속박 · 지속 피해',mat:['sylvaion','chronel']},
  unhwa:{n:'운화',nick:'운명 룰렛 · 아군 지원',mat:['sylvaion','belkaon']},
  clockweaver:{n:'운명의 시계술사',nick:'시간 속박 · 운명 폭발',mat:['chronel','lunette','belkaon']},
- nox:{n:'녹스',nick:'운명 표식 · 강력한 참격',mat:['lunette','belkaon','selene']},
  hwangryong:{n:'황룡',nick:'사신 순환 · 최종 영웅',mat:['jinmu','jeokhwang']}};
 const FU_SPAWN={jinmu:{m:6,st:2,bst:.6},jeokhwang:{m:8,st:1,bst:.3,burn:1,burnT:4},astraon:{m:8,st:1.5,bst:.4},yeongeopsu:{m:6,st:1.5,bst:.3},unhwa:{m:5,st:1,bst:.2},clockweaver:{m:8,st:1.5,bst:.3},hwangryong:{m:12,st:3,bst:1}};
 function fuStartLv(id){const mats=FUSION[id].mat;if(mats.every(k=>U[k]&&U[k].fu)){let sp=0;for(const k of mats){const l=(G.fuLv&&G.fuLv[k])||0;sp+=80*l+40*l*(l-1)}sp*=.7;let l=0,acc=0;while(acc+80+80*l<=sp){acc+=80+80*l;l++}return l}
@@ -1748,7 +1747,7 @@ function fuUpCost(id){return 80+80*((G.fuLv&&G.fuLv[id])||0)}
 function fuUp(id){if(G.over||!G.cells.some(c=>c&&c.u===id))return;const c=fuUpCost(id);if(G.coins<c)return;G.coins-=c;(G.fuLv=G.fuLv||{})[id]=(G.fuLv[id]||0)+1;G.cells.forEach((q,i)=>{if(q&&q.u===id){const[x,y]=cellXY(i);parts(x,y,16,'#ffe066',140,3)}});toast(U[id].n+' 개별 강화 Lv.'+G.fuLv[id]);refresh()}
 function fuse(id){if(G.over||!canFuse(id)){toast(!fuseReady(id)?'재료 우주 히어로가 모자라요':'🪙 코인이 '+(fuseCost()-Math.floor(G.coins))+' 더 필요해요');return}
   const sl0=fuStartLv(id);G.coins-=fuseCost();G.nFuse=(G.nFuse||0)+1;G.fuLv=G.fuLv||{};if(sl0>(G.fuLv[id]||0)){G.fuLv[id]=sl0;G.sched.push({t:1.6,f:()=>toast(FUSION[id].n+' — 재료 강화를 이어받아 개별 강화 Lv.'+sl0+'로 시작')})}let at=-1;for(const k of FUSION[id].mat){const i=G.cells.findIndex(c=>c&&c.u===k);if(at<0)at=i;G.cells[i]=null}
-  G.cells[at]={u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0};G.sel=null;SND.play('cosmic');const[x,y]=cellXY(at),u=U[id],pk=u.pk||{};
+  G.cells[at]={u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0};G.sel=null;SND.play('cosmic');const[x,y]=cellXY(at),u=U[id],pk=u.pk||{};cutin(id,u.n+' — 특수 조합 탄생!');G.cutAt=G.time;
   if(pk.descent)fxs2(pk.descent,x,y-CS*.6,CS*2.6,10,0);G.fx.push({k:'t',x,y:y-40,t:1.8,T:1.8,s:'✨ 특수 조합 — '+u.n+'!',cr:true,dl:.1});G.flash=Math.max(G.flash||0,.15);
   G.sched.push({t:.42,f:()=>{const S=FU_SPAWN[id]||{m:6,st:1,bst:.3},atk=u.d*mult(id);if(pk.spawn)fxs2(pk.spawn,x,y-CS*.2,CS*5,12,0);G.flash=Math.max(G.flash||0,.28);G.shake=Math.max(G.shake,.8);G.hs=.5;
     for(const o of G.mobs.slice()){if(o.hp<=0||o.p<28)continue;const[ox,oy]=pos(o.p);if(G.fx.length<320)G.fx.push({k:'zap',x1:x,y1:y-30,x2:ox,y2:oy,t:.3,T:.3,c:u.hc||'#fff',w:3,dl:Math.random()*.15});hit(o,{},atk*S.m,.05,G.cells[at]);if(o.hp>0){o.st=Math.max(o.st||0,o.boss?S.bst:S.st);if(S.burn){o.dot=Math.max(o.dotT>0?o.dot:0,atk*S.burn);o.dotT=S.burnT;o.dsrc=G.cells[at]}}}}});
@@ -1838,7 +1837,7 @@ function mainStart(){$('main').style.display='none';start()}
 $('mAcct').onclick=()=>acView();acUI();$('mSortT').onclick=()=>{SAVE.cSort='tier';saveAll();renderChars()};$('mSortP').onclick=()=>{SAVE.cSort='planet';saveAll();renderChars()};$('mPlB').onclick=()=>{SAVE.plNew=0;saveAll();showMain('plan')};$('mPBack').onclick=()=>showMain('home');$('mPStart').onclick=()=>{const need=Math.min(PL_MAX,plAvail().length);if(PLD&&PLD.length===need){SAVE.pl=PLD.slice();saveAll()}mainStart()};plBtn();$('mStart').onclick=mainStart;$('mStart2').onclick=mainStart;$('mChar').onclick=()=>showMain('chars');$('mBack').onclick=()=>showMain('home');$('mRankB').onclick=()=>showMain('rank');$('mRBack').onclick=()=>showMain('home');$('mStart3').onclick=()=>$('mStart').click();
 showMain('home');
 // ---------- 인트로 스토리 ----------
-const INTRO_BG=[__P(1967),__P(1968),__P(1969),__P(1970),__P(1971)],EMB_JERUK=__P(1972),EMB_COUNCIL=__P(1973);
+const INTRO_BG=[__P(1974),__P(1975),__P(1976),__P(1977),__P(1978)],EMB_JERUK=__P(1979),EMB_COUNCIL=__P(1980);
 const INTRO=[
  {t:'우주에는 수많은 행성과<br>다양한 생명이 존재합니다.',a:()=>''},
  {t:'각 행성마다 위대한 영웅들이 있고,<br>모든 영웅은 각자의 <b>집</b>에서, <b>동네</b>에서,<br><b>나라</b>에서, <b>행성</b>에서 존경받습니다.',h:'60%',a:()=>['gamer','veteran','napoleon','jir'].map((k,i)=>U[k]&&U[k].url?'<span class="step" style="animation-delay:'+i*.25+'s;text-shadow:0 2px 4px #000"><img style="--h:'+(9+i*2.6)+'" src="'+U[k].url+'">'+TN[i]+'</span>':'').join('')},
@@ -1850,6 +1849,58 @@ function introShow(i){introI=i;const sc=INTRO[i],I=$('intro');I.classList.toggle
   $('iHint').textContent=i===INTRO.length-1?'화면을 눌러 시작':'화면을 눌러 계속';const T=$('iTxt'),full=sc.t;clearInterval(introTm);let n=0;const plain=full.replace(/<[^>]+>/g,'');T.dataset.done='';
   introTm=setInterval(()=>{n+=1;let out='',c=0,tag=false;for(const ch of full){if(ch==='<')tag=true;if(tag){out+=ch;if(ch==='>')tag=false;continue}if(c>=n)break;out+=ch;c++}T.innerHTML=out;if(n>=plain.length){clearInterval(introTm);T.innerHTML=full;T.dataset.done='1'}},38)}
 function introOpen(){$('intro').style.display='flex';introShow(0)}
+
+// ---------- 튜토리얼 (첫 판 / 메인에서 다시 하기) ----------
+let TUT=null;
+function tutRect(t){const st=$('stage').getBoundingClientRect(),k=st.width/$('stage').offsetWidth;
+  if(typeof t==='number'){const cr=cv.getBoundingClientRect(),[x,y]=cellXY(t),sx=cr.width/W,sy=cr.height/H;return{x:(cr.left-st.left)/k+(x-CS/2)*sx/k-3,y:(cr.top-st.top)/k+(y-CS/2)*sy/k-3,w:CS*sx/k+6,h:CS*sy/k+6}}
+  if(t==='board'){const cr=cv.getBoundingClientRect(),[x0,y0]=cellXY(0),[x1,y1]=cellXY(NC-1),sx=cr.width/W,sy=cr.height/H;return{x:(cr.left-st.left)/k+(x0-CS*.6)*sx/k,y:(cr.top-st.top)/k+(y0-CS*.6)*sy/k,w:(x1-x0+CS*1.2)*sx/k,h:(y1-y0+CS*1.2)*sy/k}}
+  if(t==='path'){const cr=cv.getBoundingClientRect(),[x0,y0]=cellXY(0),[x1,y1]=cellXY(NC-1),sx=cr.width/W,sy=cr.height/H,e=CS*1.15;const X0=Math.max(0,x0-CS/2-e),Y0=Math.max(0,y0-CS/2-e),X1=Math.min(W,x1+CS/2+e),Y1=Math.min(H,y1+CS/2+e);return{x:(cr.left-st.left)/k+X0*sx/k,y:(cr.top-st.top)/k+Y0*sy/k,w:(X1-X0)*sx/k,h:(Y1-Y0)*sy/k}}
+  const e=typeof t==='string'?document.querySelector(t):null;if(!e||!e.offsetParent&&getComputedStyle(e).position!=='fixed')return null;const r=e.getBoundingClientRect();if(!r.width)return null;return{x:(r.left-st.left)/k-4,y:(r.top-st.top)/k-4,w:r.width/k+8,h:r.height/k+8}}
+function tutCellK(){for(const i of [12,11,13,7,17,6,8,16,18,2,22,10,14]){if(i<NC&&!G.cells[i])return i}return G.cells.findIndex(c=>!c)}
+const TUTS=[
+ {t:'👋 환영해!',x:'랜덤 히어로 디펜스의 모든 기능을 차근차근 익혀 보자. 설명 중에는 게임이 멈춰 있어.<br>언제든 <b>건너뛰기</b>를 누르면 바로 게임을 시작해.'},
+ {t:'👾 적과 패배 조건',at:'path',x:'적은 바깥 <b>길</b>을 따라 계속 돌아.<br>필드의 적이 <b>200마리</b>가 되거나, <b>10웨이브마다 나오는 보스</b>를 제한 시간 안에 못 잡으면 게임 끝!'},
+ {t:'⏱️ 웨이브',at:'#hud',x:'위에는 지금 웨이브, 다음 웨이브까지 남은 시간, 필드의 적 수가 보여. 웨이브가 높을수록 랭킹이 올라가.'},
+ {t:'🎲 소환',at:'#summon',do:1,x:'<span class="do">소환 버튼을 3번 눌러 봐.</span><br>영웅이 랜덤 등급으로 나와 빈 칸에 자리 잡아. 뽑을수록 비용이 조금씩 올라.',
+  on:()=>{G.coins=Math.max(G.coins,300);TUT.s0=G.summons;refresh()},ok:()=>G.summons>=TUT.s0+3},
+ {t:'🪙 코인과 🍀 행운석',at:'#res',x:'<b>코인</b>은 적을 잡을 때마다 들어와. 소환·강화·조합에 써.<br><b>행운석</b>은 보스·현상금·미션으로 모으고, 행운 도박에 써.'},
+ {t:'⭐ 승급',do:1,x:'같은 영웅 <b>3명</b>이 한 칸에 모이면 승급할 수 있어.<br><span class="do">반짝이는 칸을 눌러 봐.</span>',
+  on:()=>{const i=tutCellK(),k=BY[0][0];G.cells[i]={u:k,n:3,cd:0,b:0,pop:.25,ax:0,ay:0,sc:0};TUT.mi=i;TUT.mk=k;G.sel=null;refresh()},at:()=>TUT.mi,ok:()=>G.sel===TUT.mi},
+ {t:'⭐ 승급',at:'#bM',do:1,x:'<span class="do">승급 버튼을 눌러.</span> 한 단계 위 등급 영웅이 랜덤으로 나와.<br>여러 칸이 준비되면 가운데 <b>일괄 승급</b> 버튼으로 한 번에 올릴 수 있어.',
+  ok:()=>{const c=G.cells[TUT.mi];return !c||c.u!==TUT.mk||c.n<3},skipIf:()=>!$('bM')},
+ {t:'📋 영웅 정보·판매',at:'#sel',x:'칸을 누르면 영웅의 공격력·사거리·특수기가 보여.<br><b>판매</b>하면 코인이나 행운석을 돌려받고, <b>🔒 승급 잠금</b>을 걸면 일괄 승급에서 빠져.',
+  on:()=>{const i=G.cells.findIndex(c=>c);if(i>=0){G.sel=i;refresh()}},off:()=>{G.sel=null;refresh()}},
+ {t:'✋ 자리 옮기기',at:'board',do:1,x:'<span class="do">영웅을 꾹 눌러 다른 칸으로 끌어 봐.</span><br>같은 영웅 칸에 놓으면 합쳐지고, 다른 영웅이면 자리가 바뀌어. 강화된 칸(빛나는 판)에 센 영웅을 두면 좋아.',
+  on:()=>{TUT.mv=0},ok:()=>TUT.mv,next:1},
+ {t:'🪐 행성 시너지',at:'#synS',x:'같은 행성의 <b>서로 다른 영웅</b>을 여러 종 모으면 그 행성 시너지가 켜져(보통 3종·4종). 왼쪽 아래 행성 칩을 누르면 행성마다 효과를 볼 수 있어.'},
+ {t:'⬆ 강화',at:'#bUp',do:1,x:'<span class="do">강화를 눌러 봐.</span>',ok:()=>sheet==='up'},
+ {t:'⬆ 강화',at:'#sheet',x:'<b>소환 확률 강화</b>: 높은 등급이 더 잘 나와.<br><b>랜덤판 강화</b>: 칸 하나를 영구로 강화해.<br><b>행성 지원</b>: 그 행성 영웅 전체 공격력이 올라.<br><b>특수조합 개별 강화</b>: 특수 조합 영웅을 하나씩 따로 키워.',off:()=>{sheet=null;refresh()}},
+ {t:'🌌 우주 조합',at:'#bMyth',do:1,x:'<span class="do">우주 조합을 눌러 봐.</span>',ok:()=>sheet==='myth'},
+ {t:'🌌 우주 조합',at:'#sheet',x:'같은 행성 영웅을 <b>등급마다 1명씩</b> 모으면 최강 등급 <b>우주 히어로</b>로 합칠 수 있어. 재료가 모이면 버튼이 반짝이고 화면에 조합 버튼이 떠.<br>아래 <b>✨ 특수 조합</b>은 서로 다른 행성의 우주 히어로끼리 합친 최상위 영웅이야. 재료보다 훨씬 강해.',off:()=>{sheet=null;refresh()}},
+ {t:'🍀 행운 도박',at:'#bGam',do:1,x:'<span class="do">행운 도박을 눌러 봐.</span>',ok:()=>sheet==='gam'},
+ {t:'🍀 행운 도박',at:'#sheet',x:'<b>행운석</b>으로 높은 등급 영웅을 확률로 뽑을 수 있어.<br><b>🎫 복권</b>은 긁어서 코인·행운석·행성 히어로를 노려. 긁는 동안 게임은 멈춰. 10장 일괄 긁기도 있어.',off:()=>{sheet=null;refresh()}},
+ {t:'🎯 현상금',at:'#bBty',x:'현상금 몬스터를 불러내 <b>30초 안에</b> 잡으면 코인과 행운석을 크게 줘. 시간이 지나면 다시 부를 수 있어.'},
+ {t:'📜 미션',at:'#msn',x:'왼쪽 위 미션을 깨면 코인·행운석 보상이 들어오고 다음 미션이 나와.'},
+ {t:'💎 증강',x:'<b>5웨이브</b>와 <b>보스를 잡을 때마다</b> 증강 3장 중 하나를 골라. 실버·골드·프리즘 등급이 있고 판 끝까지 유지돼. 마음에 안 들면 한 번 다시 뽑을 수 있어.'},
+ {t:'🔮 소환사 스킬',at:()=>skEq().length?'#sk0':null,x:'랜덤박스에서 낮은 확률로 <b>소환사 스킬</b>을 얻어. 내 캐릭터에서 2개까지 장착하면 여기 버튼이 생겨.<br><b>자동</b>을 켜면 쿨타임마다 알아서 써.'},
+ {t:'⏩ 배속·일시정지',at:'#speed',x:'배속 버튼으로 게임 속도를 바꿔. 오른쪽 위 ⏸ 로 멈추거나 처음부터 다시 할 수 있어.'},
+ {t:'🏆 판이 끝나면',x:'기록이 <b>랭킹</b>에 올라가고 <b>랜덤박스</b>를 받아. 박스에서 영웅 조각·소환사 스킬이 나와.<br>메인 화면 <b>🪐 행성 고르기</b>에서 데려갈 행성 7개를 고르고, <b>내 캐릭터</b>에서 모은 영웅과 스킬을 확인해. 해금되는 새 행성도 있어!'},
+ {t:'🚀 준비 끝!',x:'이제 실전이야. 소환하고, 3명 모아 승급하고, 운에 맡겨 봐!<br>튜토리얼은 메인 화면에서 다시 볼 수 있어.'}];
+function tutStart(){if(!G)return;TUT={i:-1};G.pause=true;G.tutOn=1;$('tut').style.display='block';tutGo(0);clearInterval(TUT.tm);TUT.tm=setInterval(tutTick,200)}
+function tutGo(i){const P=TUTS[TUT.i];if(P&&P.off)P.off();TUT.i=i;while(TUT.i<TUTS.length&&TUTS[TUT.i].skipIf&&TUTS[TUT.i].skipIf())TUT.i++;if(TUT.i>=TUTS.length)return tutEnd();const S=TUTS[TUT.i];if(S.on)S.on();tutDraw()}
+function tutNext(){tutGo(TUT.i+1)}
+function tutEnd(){if(!TUT)return;const P=TUTS[TUT.i];if(P&&P.off)P.off();clearInterval(TUT.tm);TUT=null;$('tut').style.display='none';SAVE.tut=1;saveAll();if(G){G.tutOn=0;G.pause=false;sheet=null;refresh()}}
+function tutDraw(){if(!TUT)return;const S=TUTS[TUT.i],B=$('tutB'),Hh=$('tutH'),C=$('tutC');let at=typeof S.at==='function'?S.at():S.at;const R=at!=null?tutRect(at):null;
+  if(R){Object.assign(Hh.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});Hh.className='th'+(S.do?' pulse':'')}else{Object.assign(Hh.style,{left:'50%',top:'50%',width:'0px',height:'0px'});Hh.className='th no'}
+  C.style.display=S.do?'none':'block';
+  B.innerHTML='<div class="tt">'+S.t+'</div>'+S.x+'<div class="tf"><button class="sk" id="tutSk">건너뛰기</button><small>'+(TUT.i+1)+' / '+TUTS.length+'</small>'+(S.do&&!S.next?'<span style="width:60px"></span>':'<button id="tutNx">'+(TUT.i===TUTS.length-1?'시작! ▶':S.do?'넘어가기 ▶':'다음 ▶')+'</button>')+'</div>';
+  const sh=$('stage').offsetHeight,bh=B.offsetHeight;B.style.bottom='';let top;if(!R)top=sh*.32;else{const below=R.y+R.h+10,above=R.y-10-bh;if(R.y+R.h/2>sh*.5)top=above>=6?above:(below+bh<=sh-6?below:sh-bh-6);else top=below+bh<=sh-6?below:(above>=6?above:sh-bh-6)}B.style.top=Math.max(6,Math.min(sh-bh-6,top))+'px';
+  $('tutSk').onclick=e=>{e.stopPropagation();tutEnd()};if($('tutNx'))$('tutNx').onclick=e=>{e.stopPropagation();tutNext()};TUT.key=JSON.stringify(R)}
+function tutTick(){if(!TUT)return;if(!G||G.over||$('main').style.display==='flex'){tutEnd();return}const S=TUTS[TUT.i];G.pause=true;
+  if(S.do&&S.ok&&S.ok()){tutNext();return}const at=typeof S.at==='function'?S.at():S.at,R=at!=null?tutRect(at):null;if(JSON.stringify(R)!==TUT.key)tutDraw()}
+$('tutC').onclick=()=>{if(TUT&&!TUTS[TUT.i].do)tutNext()};
+$('mTut').onclick=()=>{SAVE.tut=0;saveAll();mainStart()};
 function introClose(){clearInterval(introTm);$('intro').style.display='none';SAVE.intro=1;saveAll();if(!SAVE.pg)pgOpen()}
 $('intro').onclick=e=>{if(e.target.id==='iSkip'){introClose();return}const T=$('iTxt');if(!T.dataset.done){clearInterval(introTm);T.innerHTML=INTRO[introI].t;T.dataset.done='1';return}if(introI<INTRO.length-1)introShow(introI+1);else introClose()};
 
@@ -1885,7 +1936,7 @@ $('mStory').onclick=introOpen;$('mPg').onclick=pgOpen;if(!SAVE.intro||!SAVE.pg)s
 drag=null;
 function evPos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]}
 function cellAt(x,y){for(let i=0;i<NC;i++){const[cx,cy]=cellXY(i);if(Math.abs(x-cx)<=CS/2&&Math.abs(y-cy)<=CS/2)return i}return-1}
-function moveCell(a,b){const A=G.cells[a],C=G.cells[b];if(!A)return;
+function moveCell(a,b){const A=G.cells[a],C=G.cells[b];if(!A)return;if(TUT)TUT.mv=1;
   if(C&&C.u===A.u&&C.n+A.n<=3&&U[C.u].t<4){C.n+=A.n;C.sc=Math.max(C.sc||0,A.sc||0);C.cd=Math.max(C.cd||0,A.cd||0);C.kills=(C.kills||0)+(A.kills||0);C.pop=.2;G.cells[a]=null;if(C.n===3)hint3(C.u)}else{G.cells[b]=A;G.cells[a]=C;A.pop=.2;if(C&&C.u!==A.u)toast(U[A.u].n+' ↔ '+U[C.u].n+' 자리 교체 (같은 캐릭터만 묶여요)');else if(C&&C.u===A.u&&C.n+A.n>3)toast('한 칸에는 3명까지! 3명 모인 칸을 눌러 승급하세요')}}
 cv.addEventListener('pointerdown',e=>{
   if(!G||G.over)return;const[x,y]=evPos(e),i=cellAt(x,y);
