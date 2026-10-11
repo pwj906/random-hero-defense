@@ -1620,7 +1620,7 @@ function rkNick(){return (SAVE.nick||RK.name||'').slice(0,12)||'이름없음'}
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:221};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:222};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:x.nick,w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1695,6 +1695,7 @@ const FUSION={astraon:{n:'아스트라온',nick:'보스 집중 포격 · 약화'
  hwangryong:{n:'황룡',nick:'사신수의 힘을 합친 최종 영웅',mat:['jinmu','geumikbaekho']}};
 function fuName(k){return U[k]?U[k].n:FUSION[k]?FUSION[k].n:k}
 function fuBase(k){return FUSION[k]?FUSION[k].mat.flatMap(fuBase):[k]}
+function heroHead(){return '<div class="lockH hh">🪐 <b>행성 영웅</b> <small>각 행성의 영웅들</small></div>'}
 function fusionCards(){return '<div class="lockH fuh">✨ <b>특수 조합</b> <small>우주 히어로끼리 합친 최상위 영웅 · 준비 중</small></div>'+Object.keys(FUSION).map(id=>{const f=FUSION[id];
   return '<div class="card fu"><div class="pk fp">✨특수조합</div><div class="k">'+TN[4]+'</div><div class="im fim">'+fuBase(id).map(k=>U[k]&&U[k].url?'<img src="'+cardUrl(k)+'" alt="">':'').join('')+'</div><div class="lv">🔜 준비 중</div><div class="nm"><small>'+f.nick+'</small>'+f.n+'</div><div class="fx2">'+f.mat.map(fuName).join(' + ')+'</div></div>'}).join('')}
 function lockCards(){const L=Object.keys(U).filter(k=>!U[k].hidden&&heroLocked(k)).sort((a,b)=>U[a].t-U[b].t);if(!L.length)return '';
@@ -1704,8 +1705,8 @@ function renderChars(){const own=ownedList();const g=$('mGrid');SAVE.frag=SAVE.f
     return '<div class="card" style="background:'+TC[u.t]+'"><div class="pk">'+pic(u.planet)+PLANETS[u.planet]+'</div><div class="k">'+TN[u.t]+'</div><div class="im">'+(u.url?'<img src="'+cardUrl(k)+'" alt="">':'<span style="font-size:calc(5*var(--sh))">'+u.e+'</span>')+'</div><div class="lv">Lv.'+lv+(lv>1?' <small style="opacity:.85">+'+(lv-1)*5+'%</small>':'')+'</div><div class="bar"><i style="width:'+(pc/need*100)+'%"></i><b>🧩 '+pc+'/'+need+'</b></div><div class="nm">'+(u.nick?'<small>'+u.nick+'</small>':'')+u.n+'</div><div class="tgs">'+tagH([...new Set([rngTag(k)].concat(PVT[k]||[],SPT[k]||[]))])+'</div></div>'};
   const ps=SAVE.cSort==='planet';$('mSortT').classList.toggle('on',!ps);$('mSortP').classList.toggle('on',ps);
   if(ps){const pls=[...new Set(own.map(k=>U[k].planet))].sort((a,b)=>PLANETS[a].localeCompare(PLANETS[b],'ko'));
-    g.innerHTML=fusionCards()+pls.map(p=>{const hs=own.filter(k=>U[k].planet===p).sort((a,b)=>U[a].t-U[b].t);return '<div class="lockH pgh">'+pic(p)+' <b>'+PLANETS[p]+'</b> <small>'+hs.length+'종</small></div>'+hs.map(card).join('')}).join('')+lockCards()}
-  else g.innerHTML=fusionCards()+own.slice().sort((a,b)=>U[b].t-U[a].t||(SAVE.lv[b]||1)-(SAVE.lv[a]||1)).map(card).join('')+lockCards();
+    g.innerHTML=fusionCards()+heroHead()+pls.map(p=>{const hs=own.filter(k=>U[k].planet===p).sort((a,b)=>U[a].t-U[b].t);return '<div class="lockH pgh">'+pic(p)+' <b>'+PLANETS[p]+'</b> <small>'+hs.length+'종</small></div>'+hs.map(card).join('')}).join('')+lockCards()}
+  else g.innerHTML=fusionCards()+heroHead()+own.slice().sort((a,b)=>U[b].t-U[a].t||(SAVE.lv[b]||1)-(SAVE.lv[a]||1)).map(card).join('')+lockCards();
   skStrip();
   $('mOwn').textContent=own.length+'종';$('mBox').innerHTML=(v5u('random_box/closed')?v5img('random_box/closed','','width:1.8em;height:1.8em;vertical-align:middle'):'')+(SAVE.boxes||0)+'개';$('mOpen').disabled=!(SAVE.boxes>0);$('mCnt').textContent=own.length+'/'+Object.keys(U).filter(k=>!U[k].hidden).length;
   $('mOpen').onclick=()=>{const r=openBoxes();if(r){const L=$('mLoot');renderChars();L.style.display='block';L.style.color='#fff';L.style.textAlign='center';L.onclick=e=>{if(e.target.closest('.lootX')){L.style.display='none';L.innerHTML=''}};L.innerHTML='<button class="lootX">✕ 닫기</button>'+(v5u('random_box/open')?'<div style="text-align:center">'+v5img('random_box/open','','width:30%;max-width:120px;animation:pgflip .4s both')+'</div>':'')+lootHTML(r)}}}
