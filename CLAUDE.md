@@ -20,6 +20,7 @@
 - GitHub Pages(공개 배포판): Supabase `https://loegtuubjzsfkexehuvn.supabase.co`, publishable 키는 코드에 있음(공개용).
   - 테이블 `public.runs`: 판마다 한 줄(pid, nick, w, k, t, created_at). 누구나 읽기·추가만 가능, 수정·삭제 불가.
   - 순위: 웨이브 내림차순 → 처치 내림차순 → 시간 오름차순, 상위 100.
+  - 닉네임 비속어 필터 `cleanNick`(`BADW` 목록 → `NICE` 귀여운 단어로 치환, 띄어쓰기·숫자 끼운 우회는 '착한 용사NNN'). runs 표는 수정 불가라 화면 표시·새 저장 모두 필터에서 처리.
   - 예전 `public.rank` 표와 `submit_score`/`set_nick` 함수는 안 쓴다.
 
 ## 그림
