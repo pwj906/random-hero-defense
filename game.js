@@ -974,8 +974,8 @@ const BTY_MAX=5;
 const AUGT=['실버','골드','프리즘'],AUGC=['#d9e2f0','#ffd24a','#d7b8ff'];
 const AUG={
  trio:{t:0,e:'⚔️',n:'삼총사',x:'3명 꽉 찬 칸 공격력 +40%'},
- close:{t:0,e:'🥊',n:'근접 본능',x:'사거리 짧은 영웅(2칸대) 공격력 +50%'},
- far:{t:0,e:'🔭',n:'저격 본능',x:'사거리 긴 영웅(4칸 이상) 공격력 +35%'},
+ close:{t:0,e:'🥊',n:'근접 본능',x:'근접 영웅(사거리 1.6칸 이하) 공격력 +50%'},
+ far:{t:0,e:'🔭',n:'저격 본능',x:'사거리 긴 영웅(2.1칸 이상 — 단일·관통·저격) 공격력 +35%'},
  frost:{t:0,e:'❄️',n:'서리 길',x:'모든 적 이동속도 -12%'},
  freebie:{t:0,e:'🎟️',n:'첫 소환 무료',x:'매 웨이브 첫 소환이 공짜'},
  interest:{t:0,e:'🏦',n:'이자',x:'웨이브마다 보유 코인의 5% (최대 60)'},
@@ -1008,7 +1008,7 @@ const AUG={
  ricochet:{t:1,e:'🎱',n:'도탄',x:'모든 기본공격이 근처 1명에게 40% 튐'},
  wideaura:{t:1,e:'📶',n:'확장 오라',x:'버프 영웅 오라 범위 2칸 (주변 24칸)'},
  ampaura:{t:1,e:'🔊',n:'오라 증폭',x:'버프 영웅 오라 효과 2배'},
- brawl:{t:1,e:'👊',n:'백병전',x:'근접 영웅(사거리 2칸 미만) 공격속도 +60%'},
+ brawl:{t:1,e:'👊',n:'백병전',x:'근접 영웅(사거리 1.6칸 이하) 공격속도 +60%'},
  shock:{t:1,e:'💫',n:'충격탄',x:'기본공격 5% 확률로 0.6초 기절'},
  rainbow:{t:1,e:'🌈',n:'무지개 연합',x:'필드에 행성 5곳 이상이면 전체 공격력 +30%'},
  grass:{t:1,e:'🌱',n:'풀뿌리',x:'동네 등급 영웅 공격력 3배'},
@@ -1042,7 +1042,8 @@ const AUGP={hunter:()=>{if(G.btyCd>25)G.btyCd=25},seed:()=>{G.coins+=300},freeze
 function evolveOne(){let bi=-1,bt=9;G.cells.forEach((c,i)=>{if(!c)return;const t=U[c.u].t;if(!c.lk&&t<2&&BY[t+1].length&&t<bt){bt=t;bi=i}});if(bi<0)return;const c=G.cells[bi];c.n--;if(c.n<=0)G.cells[bi]=null;const id=pickU(bt+1);if(!place(id)){c.n++;G.cells[bi]=c;return}const at=G.cells.findIndex(q=>q&&q.u===id&&q.pop>0),[px,py]=cellXY(at<0?bi:at);burst(px,py,bt+1,false);G.fx.push({k:'t',x:px,y:py-26,t:1.1,T:1.1,s:'🧬 진화!',cr:true,dl:.05})}
 function A(k){return G&&G.aug&&G.aug[k]?1:0}
 function rcp(m){let r=RECIPE[m];if(NO_HOME&&r)r=r.filter(k=>!U[k]||U[k].t!==0);return A('short')&&r&&r.length>3?r.slice(0,r.length-1):r}
-function augA(c){if(!G.aug)return 1;let k=1;const u=U[c.u];if(G.aug.eye&&G.cells.indexOf(c)===G.eyeI)k*=1.3;if(G.aug.trio&&c.n>=3)k*=1.4;if(G.aug.grass&&u.t<=1)k*=3;if(G.aug.rainbow&&G.pl&&Object.keys(G.pl).length>=5)k*=1.3;if(G.aug.packed&&!G.cells.some(q=>!q))k*=1.6;if(G.aug.close&&(u.r0||u.r)<=CS*2.45)k*=1.5;if(G.aug.far&&(u.r0||u.r)>=CS*4)k*=1.35;if(G.aug.guard&&c.lk)k*=1.5;if(G.aug.solo&&c.n===1&&u.t<4)k*=1.4;if(G.aug.resonate&&G.plOn&&G.plOn[u.planet]>0)k*=1.25;if(G.aug.grit&&G.mobN>100)k*=1.4;if(G.aug.majesty&&u.t>=4)k*=1.4;if(G.aug.dice&&G.diceS&&G.diceS.includes(c))k*=2;return k}
+function rCells(k){return (U[k].r-16)/CS}
+function augA(c){if(!G.aug)return 1;let k=1;const u=U[c.u];if(G.aug.eye&&G.cells.indexOf(c)===G.eyeI)k*=1.3;if(G.aug.trio&&c.n>=3)k*=1.4;if(G.aug.grass&&u.t<=1)k*=3;if(G.aug.rainbow&&G.pl&&Object.keys(G.pl).length>=5)k*=1.3;if(G.aug.packed&&!G.cells.some(q=>!q))k*=1.6;if(G.aug.close&&rCells(c.u)<=1.65)k*=1.5;if(G.aug.far&&rCells(c.u)>=2.05)k*=1.35;if(G.aug.guard&&c.lk)k*=1.5;if(G.aug.solo&&c.n===1&&u.t<4)k*=1.4;if(G.aug.resonate&&G.plOn&&G.plOn[u.planet]>0)k*=1.25;if(G.aug.grit&&G.mobN>100)k*=1.4;if(G.aug.majesty&&u.t>=4)k*=1.4;if(G.aug.dice&&G.diceS&&G.diceS.includes(c))k*=2;return k}
 function plNeed(){return A('clan')?[2,3]:[3,4]}
 function synTick(){const P={};for(const c of G.cells)if(c&&!U[c.u].fu)(P[U[c.u].planet]=P[U[c.u].planet]||new Set()).add(c.u);const nd=plNeed();G.pl={};G.plOn={};for(const p in P){G.pl[p]=P[p].size;G.plOn[p]=P[p].size>=nd[1]?2:P[p].size>=nd[0]?1:0}
   const ar=A('wideaura')?2:1,ak=A('ampaura')?2:1;for(const c of G.cells)if(c){c.pa=1;c.pas=1;c.pcd=1;c.prg=A('tailwind')?.3*CS:0;c.psl=0;c.pcr=0;c.aur=0;c.aurL=[]}
@@ -1425,7 +1426,7 @@ function update(dt){
       fire(c.u,c,x,y,tx,ty,best);c.tg.forEach((m,j)=>{const[ux,uy]=pos(m.p);G.pend.push({m,u,d:dj,t:c.tgT[j],x:ux,y:uy,c,nh:j===0?nh:null})})}
     else{const dl2=fire(c.u,c,x,y,tx,ty,best);best.inc=(best.inc||0)+d;G.pend.push({m:best,u,d,t:dl2,x:tx,y:ty,c,nh});if(u.sp)G.fx.push({k:'c',x:tx,y:ty,r:u.sp,t:.3,T:.3,c:u.col,dl:dl2})}
 
-    c.cd=c.ncd=1/u.s/(c.as>0?c.asv||1:1)/(G.bn?G.bn.spd:1)/(c.pas||1)/(A('brawl')&&(u0.r0||u0.r)<CS*2+16?1.6:1)/(A('quick')?1.1:1)/(G.odOn?1.5:1)/concSpd(c)
+    c.cd=c.ncd=1/u.s/(c.as>0?c.asv||1:1)/(G.bn?G.bn.spd:1)/(c.pas||1)/(A('brawl')&&rCells(c.u)<=1.65?1.6:1)/(A('quick')?1.1:1)/(G.odOn?1.5:1)/concSpd(c)
   });
   if(G.zones&&G.zones.length){const dpp=(a,b)=>((a-b+PER*1.5)%PER)-PER/2;for(const z of G.zones){z.t-=dt;if(z.dot){z.tk-=dt;if(z.tk<=0){z.tk+=.5;for(const o of G.mobs){if(o.hp<=0||o.p<28||(!z.all&&Math.abs(dpp(o.p,z.p))>z.seg))continue;if(z.sl)o.sl=Math.max(o.sl,z.sl);hit(o,{},z.d,0,z.c)}}continue}for(const o of G.mobs){if(o.hp<=0||o.p<28||z.seen.has(o)||Math.abs(dpp(o.p,z.p))>z.seg)continue;z.seen.add(o);if(o.boss)o.sl=Math.max(o.sl,z.hold);else{o.rt=Math.max(o.rt||0,z.hold);o.rtT=z.hold}hit(o,{},z.d,0,z.c)}}G.zones=G.zones.filter(z=>z.t>0)}
   for(const q of G.sched){q.t-=dt;if(q.t<=0)q.f()}G.sched=G.sched.filter(q=>q.t>0);
@@ -1775,7 +1776,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:266};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:267};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1993,7 +1994,7 @@ function heroDetail(k){const u=U[k];if(!u)return;let D=$('hDet');if(!D){D=docume
   const dmg=t=>{let n=0;const o=(t||'').replace(/(^|[^\-\d.])(\d+(?:\.\d+)?)%(?!p)(?!\s*(?:확률|감속|빨리|느리|쿨|더|추가 피해 증가))/g,(m0,pre,v,off)=>{if(pre==='+'&&t[off+m0.length]!==')')return m0;if(/확률\s*$/.test(t.slice(0,t.indexOf(m0)+pre.length)))return m0;n++;return pre+v+'% <b class="dv">'+fmt(atk*v/100)+'</b>'});return[o,n]};
   const [bx,bn]=dmg(pv&&pv.x?pv.x:u.x||''),[sx,sn]=s?dmg(s.x||SPD[k]||''):['',0];
   let h='<div class="hdp"><button class="hdX">✕</button><div class="hdT" style="background:'+(fu?'linear-gradient(135deg,#6a3fd0,#d9a520)':TC[u.t])+'">'+(u.url?'<img src="'+cardUrl(k)+'" alt="">':'<span class="hdE">'+u.e+'</span>')+'<div><small>'+(fu?'✨ 특수 조합 (우주 둘 이상을 합친 상위 영웅)':pic(u.planet)+PLANETS[u.planet]+' · '+TN[u.t])+'</small><div class="hdN">'+u.n+'</div><small>'+(u.nick||(FUSION[k]&&FUSION[k].nick)||'')+'</small>'+(lv?'<div class="hdL">카드 Lv.'+lv+(lv>1?' (공격력 +'+(lv-1)*5+'%)':'')+(lock?' · 🔒 잠김':'')+'</div>':'')+'</div></div>';
-  h+='<div class="hdS">'+row('⏱️ 공격 간격',f1(iv)+'초 <small>(초당 '+f1(u.s)+'회)</small>')+row('🎯 사거리',(+rc.toFixed(1))+'칸 <small>'+(u.rr||'')+'</small>')+(s?row('★ 특수기 쿨타임',s.cd+'초'):'')+'</div>';
+  h+='<div class="hdS">'+row('⏱️ 공격 간격',f1(iv)+'초 <small>(초당 '+f1(u.s)+'회)</small>')+row('🎯 사거리',(+rc.toFixed(1))+'칸 <small>(반지름) '+(u.rr||'')+'</small>')+(s?row('★ 특수기 쿨타임',s.cd+'초'):'')+'</div>';
   h+='<div class="hdB"><div class="hdH">기본공격 '+tagH([rngTag(k)].concat(PVT[k]||[]))+'</div><p>'+bx+'</p><div class="dl">💥 1회 피해 <b>'+fmt(atk*bm)+'</b>'+(bn?'':' <small>('+Math.round(bm*100)+'%)</small>')+' · 초당 <b>'+fmt(atk*bm*u.s)+'</b> <small>(적 1명 기준)</small></div>'+(u.cr?'<p class="hm">치명타 확률 '+Math.round(u.cr*100)+'% · 치명타 피해 '+(u.cm||2)+'배</p>':'')+((u.bossK||1)*(FUB[k]||1)!==1?'<div class="dl">👑 보스에게 1회 피해 <b>'+fmt(atk*bm*(u.bossK||1)*(FUB[k]||1))+'</b></div>':'')+'</div>';
   if(s)h+='<div class="hdB sp"><div class="hdH">★ '+s.n+' '+tagH(SPT[k]||[])+'</div><p>'+sx+'</p>'+(!sn&&s.m?'<div class="dl">💥 피해 <b>'+fmt(atk*s.m)+'</b> <small>('+Math.round(s.m*100)+'%)</small></div>':'')+(SPD[k]&&s.x&&SPD[k]!==s.x?'<p class="hm">'+SPD[k]+'</p>':'')+'<p class="hm">쿨타임 '+s.cd+'초'+(u.spR?(u.spR>1e4?' · 사거리 전장 전체':' · 사거리 '+(+((u.spR-16)/CS).toFixed(1))+'칸'):'')+'</p></div>';
   if(AURA[k])h+='<div class="hdB au"><div class="hdH">✨ 상시 오라</div><p>'+AURA[k].x+'</p><p class="hm">주변 칸 아군에게 적용 (게임에서 초록 점선 칸)</p></div>';
