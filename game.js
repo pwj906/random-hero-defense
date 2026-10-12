@@ -74,7 +74,7 @@ const U={
  astraon:{planet:'fusion',fu:1,hidden:1,n:'아스트라온',nick:'천벌의 번개 정령',e:'⚡',t:4,d:120000,s:1/1.4,r:'4.5c',inst:1,hc:'#8fd8ff',scale:1.3,x:'궤도 심판 — 보스 우선 위성 광선, 근처 3명에게 튐 + 받는 피해 증가 (1.4초 간격)'},
  yeongeopsu:{planet:'fusion',fu:1,hidden:1,n:'영겁수',nick:'시간을 품은 세계수',e:'🌳',t:4,d:120000,s:1/1.6,r:'2c',melee:1,ml:1,lgK:.2,hc:'#ffcf5a',scale:1.3,x:'뿌리권 — 근접 광역, 주먹으로 내려쳐 주변 적까지 피해 + 감속 (1.6초 간격)'},
  unhwa:{planet:'fusion',fu:1,hidden:1,n:'운화',nick:'흑화한 운명의 정령',e:'🎲',t:4,d:120000,s:1/1.5,r:'4c',hc:'#ff5a9a',scale:1.3,x:'검은 행운의 칩 — 착탄 주변 범위 피해 (1.5초 간격)'},
- clockweaver:{planet:'fusion',fu:1,hidden:1,n:'운명의 시계술사',nick:'초승달 시계의 주인',e:'🕰️',t:4,d:120000,s:1/1.4,r:'4.5c',hc:'#c48bff',scale:1.3,x:'운명의 실침 — 보스 우선, 주변 범위 피해 + 운명 표식 (1.4초 간격)'},
+ clockweaver:{planet:'fusion',fu:1,hidden:1,n:'시운',nick:'초승달 시계의 주인',e:'🕰️',t:4,d:120000,s:1/1.4,r:'4.5c',hc:'#c48bff',scale:1.3,x:'운명의 실침 — 보스 우선, 주변 범위 피해 + 운명 표식 (1.4초 간격)'},
  nox:{planet:'fusion',fu:1,hidden:1,n:'녹스',nick:'월식의 지배자',e:'🌘',t:4,d:120000,s:1/1.3,r:'2c',melee:1,ml:1,lgK:.27,hc:'#c9a6ff',scale:1.3,x:'월아참 — 근접 암살, 보스 우선 단일 참격 + 8초 운명 표식 (1.3초 간격)'},
  hwangryong:{planet:'fusion',fu:1,hidden:1,n:'황룡',nick:'사신을 거느린 황금 군주',e:'🐉',t:4,d:120000,s:1,r:'4.5c',melee:1,ml:1,lgK:.35,hc:'#ffd23e',scale:1.4,x:'황천참 — 표적 주변 1.4칸 최대 8명 참격 (1초 간격)'},
  gamer:{planet:'earth',n:'민준',nick:'잠들지 않는 게이머',e:'🎮',t:0,d:100,s:1/1.4,r:'2c',scale:1.5,x:'슬리퍼 투척 — 원거리 단일 (1.4초 간격)'},
@@ -1765,7 +1765,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:261};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:262};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1839,7 +1839,7 @@ const FUSION={astraon:{n:'아스트라온',nick:'천벌 궤도 포격 · 약화'
  jeokhwang:{n:'적황',nick:'빠른 참격 · 화상 · 보스 화력',mat:['jujak','baekho']},
  yeongeopsu:{n:'영겁수',nick:'시간 속박 · 지속 피해',mat:['sylvaion','chronel']},
  unhwa:{n:'운화',nick:'운명 룰렛 · 아군 지원',mat:['sylvaion','belkaon']},
- clockweaver:{n:'운명의 시계술사',nick:'시간 속박 · 운명 폭발',mat:['chronel','lunette','belkaon']},
+ clockweaver:{n:'시운',nick:'시간 속박 · 운명 폭발',mat:['chronel','lunette','belkaon']},
  nox:{n:'녹스',nick:'운명 표식 · 월식 참격',mat:['lunette','selene']},
  cheora:{n:'철아',nick:'근접 땅치기 · 광역 분쇄',mat:['archeon','baekho']},
  wolroe:{n:'월뢰',nick:'쌍도끼 부채꼴 베기 · 낙뢰',mat:['zeus','selene']},
