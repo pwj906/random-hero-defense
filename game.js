@@ -6,69 +6,69 @@ function pic(p){return PICON[p]?'<img class="pic" src="'+PICON[p]+'" alt="">':''
 
 // 승급의 행성 유지 여부는 미확정: 기존 전체 등급 풀 유지.
 const U={
- veteran:{planet:'earth',n:'춘식',nick:'돌아온 참전용사',e:'🎖️',t:1,d:550,s:1/1.2,r:'4c',scale:1.5,x:'소총 발사 — 원거리 단일 (1.2초 간격, 사거리 4칸)'},
- zeus:{planet:'earth',n:'제욱스',nick:'전기의 신',e:'⚡',t:4,d:120000,s:1/0.8,r:'4c',scale:1.3,x:'번개창 투척 — 원거리 단일 (0.8초 간격, 사거리 4칸)'},
- jir:{planet:'earth',n:'볼트란',nick:'번개의 계승자',e:'⚡',t:3,d:21000,s:1/0.9,r:'3c',scale:1.5,x:'찌릿 탄 — 원거리 단일 (0.9초 간격, 사거리 3칸)'},
- napoleon:{planet:'earth',n:'레오폴',nick:'몰락한 정복자',e:'🎩',t:2,d:3000,s:1/1.0,r:'3c',scale:1.5,x:'권총 발사 — 원거리 단일 (1.0초 간격, 사거리 3칸)'},
- archeon:{planet:'gearon',n:'아르케온',nick:'최초의 코어',e:'🛰️',t:4,d:120000,s:1/0.8,r:'4c',scale:1.3,x:'코어 광탄 — 원거리 단일 (0.8초 간격, 사거리 4칸)'},
- policebot:{planet:'gearon',n:'센트론',nick:'강철의 집행자',e:'🚨',t:2,d:3000,s:1/1.0,r:'3c',scale:1.15,x:'레이저 사격 — 원거리 단일 (1.0초 간격, 사거리 3칸)'},
- fortressbot:{planet:'gearon',n:'바스티온',nick:'움직이는 요새',e:'💥',t:3,d:21000,s:1/1.3,r:'4c',scale:1.2,sp:'0.8c',sf:.15,smax:2,x:'중포 발사 — 단일 100% + 주변 0.8칸 최대 2명에게 15% (1.3초 간격, 사거리 4칸)'},
- cleanbot:{planet:'gearon',n:'모프',nick:'버려진 거리의 청소부',e:'🧹',t:0,d:100,s:1/1.4,r:'2c',scale:1.15,x:'나사 발사 — 원거리 단일 (1.4초 간격, 사거리 2칸)'},
- deliverybot:{planet:'gearon',n:'덱스',nick:'멈추지 않는 배달부',e:'📦',t:1,d:550,s:1/1.2,r:'3c',scale:1.2,x:'택배 투척 — 원거리 단일 (1.2초 간격, 사거리 3칸)'},
- hyeonmu:{planet:'purmia',n:'현무',nick:'대지를 다스리는 왕',e:'🐢',t:4,d:120000,s:1/1.1,r:'3.5c',inst:1,hc:'#3fe0b0',scale:1.3,x:'지맥 강타 — 적 위치에 지면 충격파 (1.1초 간격, 사거리 3.5칸)'},
- orca:{planet:'purmia',n:'오르칸',nick:'밀물의 인도자',e:'🐋',t:2,d:3000,s:1/1.0,r:'3c',scale:1.35,x:'물방울 탄 — 원거리 단일 (1.0초 간격, 사거리 3칸)'},
- mugyeom:{planet:'purmia',n:'무겸',nick:'흑웅관장',e:'🐻',t:3,d:21000,s:1/0.9,r:'1.6c',scale:1.25,x:'곰권 연타 — 근접 주먹 (0.9초 간격, 사거리 1.6칸)'},
- mole:{planet:'purmia',n:'두린',nick:'땅속의 개척자',e:'🦫',t:0,d:100,s:1/1.4,r:'2c',scale:2,x:'흙덩이 던지기 — 원거리 단일 (1.4초 간격, 사거리 2칸)'},
- alpaca:{planet:'purmia',n:'알바',nick:'초원의 심술꾼',e:'🦙',t:1,d:550,s:1/1.2,r:'3c',scale:1.5,x:'침 뱉기 — 원거리 단일 (1.2초 간격, 사거리 3칸)'},
- lunette:{planet:'toytopia',n:'루네트',nick:'버려진 소원의 주인',e:'🪆',t:4,d:120000,s:1/0.8,r:'4c',inst:1,hc:'#c77dff',scale:1.3,x:'저주 실 — 적 위치 직접 타격 (0.8초 간격, 사거리 4칸)'},
- bricks:{planet:'toytopia',n:'브릭스',nick:'먼 곳을 꿰뚫는 눈',e:'🎯',t:2,d:5400,s:1/2.0,r:'6c',scale:1.5,x:'블록 탄환 — 초장거리 단일 (2.0초 간격, 사거리 6칸)'},
- mold:{planet:'toytopia',n:'몰드',nick:'흐르는 손아귀',e:'🫠',t:3,d:34000,s:1/1.0,r:'2c',melee:1,sp:'0.9c',sf:.25,smax:2,scale:1.5,x:'찰흙 후려치기 — 근접 100% + 주변 0.9칸 최대 2명에게 25% (1.0초 간격, 사거리 2칸)'},
- pico:{planet:'toytopia',n:'피코',nick:'작은 태엽의 용사',e:'🐤',t:0,d:160,s:1/1.0,r:'1.5c',melee:1,scale:1.5,x:'부리 쪼기 — 근접 단일 (1.0초 간격, 사거리 1.5칸)'},
- jacko:{planet:'toytopia',n:'잭코',nick:'상자 속 도전자',e:'🥊',t:1,d:850,s:1/1.0,r:'1.5c',melee:1,scale:1.5,x:'근거리 펀치 — 근접 단일 (1.0초 간격, 사거리 1.5칸)'},
- orbin:{planet:'mosaica',n:'오르빈',nick:'빠진 송곳니의 노신사',e:'🦷',t:0,d:105,s:1/1.3,r:'2.5c',scale:1.5,x:'틀니 투척 — 원거리 단일 (1.3초 간격, 사거리 2.5칸)'},
- nero:{planet:'mosaica',n:'네로',nick:'골목의 동전 수집가',e:'🪙',t:1,d:500,s:1/1.1,r:'3c',scale:1.5,x:'동전 투척 — 원거리 단일 (1.1초 간격, 사거리 3칸)'},
- vargon:{planet:'mosaica',n:'바르곤',nick:'끝없는 식욕의 수집가',e:'🍲',t:2,d:3000,s:1/1.1,r:'3c',scale:1.5,x:'냄비 투척 — 원거리 단일 (1.1초 간격, 사거리 3칸)'},
- seraphine:{planet:'mosaica',n:'세라핀',nick:'운명의 실을 엮는 자',e:'🧵',t:3,d:15000,s:1/1.0,r:'3c',scale:1.5,x:'금빛 실 — 원거리 단일 (1.0초 간격, 사거리 3칸)'},
- belkaon:{planet:'mosaica',n:'벨카온',nick:'운명을 거는 군주',e:'🎲',t:4,d:100000,s:1/0.8,r:'4c',scale:1.3,x:'칩 투척 — 원거리 단일 (0.8초 간격, 사거리 4칸)'},
- floret:{planet:'florasia',n:'플로렛',nick:'배고픈 꽃봉오리',e:'🌺',t:0,d:100,s:1/1.3,r:'2.5c',scale:1.5,x:'씨앗 투척 — 원거리 단일 (1.3초 간격, 사거리 2.5칸)'},
- sporun:{planet:'florasia',n:'스포룬',nick:'포자 우산지기',e:'🍄',t:1,d:480,s:1/1.2,r:'3c',scale:1.5,x:'포자 투척 — 원거리 단일 (1.2초 간격, 사거리 3칸)'},
- cacton:{planet:'florasia',n:'칵톤',nick:'가시의 집행자',e:'🌵',t:2,d:6000,s:1/1.0,r:'2c',melee:1,scale:1.5,x:'가시 주먹 — 근접 단일 (1.0초 간격, 사거리 2칸)'},
- elderon:{planet:'florasia',n:'엘더론',nick:'뿌리 깊은 숲의 수호자',e:'🌳',t:3,d:32000,s:1/1.0,r:'2c',melee:1,syn:1.4,scale:1.5,x:'뿌리 주먹 — 근접 단일 (1.0초 간격, 사거리 2칸). 옆 칸(대각 포함)에 플로라시아 아군이 있으면 피해 +40%'},
- sylvaion:{planet:'florasia',n:'실바이온',nick:'별빛을 품은 세계수',e:'🌳',t:4,d:110000,s:1/0.8,r:'4c',scale:1.3,x:'황금 씨앗 — 원거리 단일 (0.8초 간격, 사거리 4칸)'},
- momo:{planet:'mongle',n:'모모',nick:'통통 파동 도우미',e:'🫧',t:0,d:95,s:1/1.3,r:'2.5c',scale:1.5,x:'젤리 구슬 — 원거리 단일 (1.3초 간격, 사거리 2.5칸)'},
- pulu:{planet:'mongle',n:'푸루',nick:'느릿한 젤리 비행사',e:'🪼',t:1,d:450,s:1/1.2,r:'3c',sl:.6,scale:1.5,x:'끈적 구슬 — 원거리 단일 + 0.6초 감속 (1.2초 간격, 사거리 3칸)'},
- bubon:{planet:'mongle',n:'부본',nick:'압축 파동 주먹',e:'👊',t:2,d:5800,s:1/1.0,r:'2c',melee:1,scale:1.5,x:'압축 젤리 주먹 — 근접 단일 (1.0초 간격, 사거리 2칸)'},
- stella:{planet:'mongle',n:'스텔라',nick:'튀어 오르는 별의 파동',e:'⭐',t:3,d:15000,s:1/1.0,r:'3c',bnc:2,bf:.6,scale:1.5,x:'별 구슬 — 맞은 적에서 근처 적 2명에게 60%씩 튕김 (1.0초 간격, 사거리 3칸)'},
- chronel:{planet:'mongle',n:'크로넬',nick:'시간을 붙잡는 젤리 군주',e:'⏳',t:4,d:105000,s:1/0.8,r:'4c',scale:1.3,x:'황금 핵 구슬 — 원거리 단일 (0.8초 간격, 사거리 4칸)'},
- lulu:{planet:'lumiel',n:'루루',nick:'꿈별 잠꾸러기',e:'⭐',t:0,d:100,s:1/1.3,r:'2.5c',scale:1.5,x:'별가루 — 원거리 단일 (1.3초 간격, 사거리 2.5칸)'},
- miel:{planet:'lumiel',n:'미엘',nick:'달꽃 배달부',e:'🌼',t:1,d:550,s:1/1.1,r:'3c',scale:1.5,x:'달꽃 던지기 — 원거리 단일 (1.1초 간격, 사거리 3칸)'},
- noctia:{planet:'lumiel',n:'녹티아',nick:'월식 기사',e:'🔨',t:2,d:3000,s:1/1.3,r:'1.6c',melee:1,scale:1.5,x:'월식 강타 — 근접 (1.3초 간격, 사거리 1.6칸)'},
- aurielle:{planet:'lumiel',n:'오리엘',nick:'여명의 별 사제',e:'🌟',t:3,d:21000,s:1/1.0,r:'3.5c',scale:1.5,x:'성광탄 — 원거리 단일 (1.0초 간격, 사거리 3.5칸)'},
- selene:{planet:'lumiel',n:'셀레네',nick:'월광의 여왕',e:'🌙',t:4,d:120000,s:1/0.9,r:'1.8c',melee:1,scale:1.3,x:'초승달 대검 — 근접 범위 (0.9초 간격, 사거리 1.8칸)'},
- hornkid:{planet:'drakanis',n:'뿔꼬마',nick:'불씨 악동',e:'🔥',t:0,d:100,s:1/1.2,r:'2.5c',scale:1.5,x:'불씨 퉤 — 불씨가 터지며 좁은 범위 (1.2초 간격, 사거리 2.5칸)'},
- fang_lancer:{planet:'drakanis',n:'용아 창병',nick:'청록의 관통 창병',e:'🔱',t:1,d:550,s:1/1.1,r:'2.4c',melee:1,scale:1.5,x:'용아 관통 — 창을 뻗어 일직선 관통 (1.1초 간격, 사거리 2.4칸)'},
- iron_dragonkin:{planet:'drakanis',n:'흑철 용인',nick:'검은 강철의 용',e:'👊',t:2,d:3000,s:1/1.3,r:'2.6c',inst:1,hc:'#ff8a3c',scale:1.5,x:'흑철 강타 — 표적 주변 지면 충격파 (1.3초 간격, 사거리 2.6칸)'},
- hongryeon:{planet:'drakanis',n:'홍련 용장',nick:'붉은 도끼의 용장',e:'🪓',t:3,d:21000,s:1/1.1,r:'1.9c',melee:1,scale:1.5,x:'홍련 휩쓸기 — 도끼로 앞쪽 부채꼴을 벰 (1.1초 간격, 사거리 1.9칸)'},
- cheongryong:{planet:'drakanis',n:'청룡',nick:'창천을 다스리는 정의의 용',e:'🐉',t:4,d:120000,s:1/0.9,r:'4c',inst:1,hc:'#7fd0ff',scale:1.3,x:'천뢰 연쇄 — 낙뢰가 근처 적들로 이어짐 (0.9초 간격, 사거리 4칸)'},
- feather_courier:{planet:'biikseong',n:'피유',nick:'깃털 배달부',e:'🪶',t:0,d:100,s:1/1.0,r:'2.8c',scale:1.5,x:'바람 깃털 — 작은 바람탄, 맞은 곳 좁은 범위 (1.0초 간격, 사거리 2.8칸)'},
- feather_archer:{planet:'biikseong',n:'시엘',nick:'비익 궁수',e:'🏹',t:1,d:550,s:1/1.0,r:'3.8c',scale:1.5,x:'깃털 화살 — 일직선으로 꿰뚫음 (1.0초 간격, 사거리 3.8칸)'},
- storm_owl:{planet:'biikseong',n:'오르윈',nick:'폭풍 부엉이 현자',e:'🦉',t:2,d:3000,s:1/1.2,r:'3.2c',inst:1,hc:'#5fd0ff',scale:1.5,x:'작은 회오리 — 적 위치에 회오리 범위 (1.2초 간격, 사거리 3.2칸)'},
- goldwing_commander:{planet:'biikseong',n:'아우렐',nick:'금익 창장',e:'🦅',t:3,d:21000,s:1/1.0,r:'2c',melee:1,scale:1.5,x:'황금 창 휩쓸기 — 앞쪽 부채꼴 (1.0초 간격, 사거리 2칸)'},
- jujak:{planet:'biikseong',n:'주작',nick:'홍익의 우주 신조',e:'🐦‍🔥',t:4,d:120000,s:1/0.85,r:'4.2c',scale:1.3,x:'불꽃 깃털 비 — 깃털이 터지며 넓은 범위 (0.85초 간격, 사거리 4.2칸)'},
- snowkid:{planet:'seolryeong',n:'뭉치',nick:'눈뭉치 꼬마',e:'☃️',t:0,d:100,s:1/1.1,r:'2.6c',scale:1.5,x:'눈덩이 투척 — 좁은 범위 + 감속 (1.1초 간격, 사거리 2.6칸)'},
- icicle_bat:{planet:'seolryeong',n:'빙키',nick:'고드름 박쥐',e:'🦇',t:1,d:550,s:1/1.0,r:'3.4c',scale:1.5,x:'고드름 파편 — 일직선 관통 + 감속 (1.0초 간격, 사거리 3.4칸)'},
- snow_yeti:{planet:'seolryeong',n:'설봉',nick:'설산 예티',e:'🦍',t:2,d:3000,s:1/1.2,r:'1.9c',melee:1,scale:1.5,x:'주먹 강타 — 앞쪽 범위 + 감속 (1.2초 간격, 사거리 1.9칸)'},
- ice_golem:{planet:'seolryeong',n:'빙각',nick:'빙정 골렘',e:'🧊',t:3,d:21000,s:1/1.2,r:'2.8c',inst:1,hc:'#8fe0ff',scale:1.5,x:'얼음 주먹 — 적 위치 범위 강타 + 감속 (1.2초 간격, 사거리 2.8칸)'},
- baekho:{planet:'seolryeong',n:'백호',nick:'서천을 다스리는 신수',e:'🐯',t:4,d:120000,s:1/0.6,r:'1.9c',melee:1,scale:1.3,x:'발톱 연격 — 빠른 근접 범위 (0.6초 간격, 사거리 1.9칸)'},
- jinmu:{planet:'fusion',fu:1,hidden:1,n:'진무',nick:'천지를 지키는 수호장',e:'⚔️',t:4,d:120000,s:1/1.2,r:'4c',inst:1,hc:'#3fe0d0',scale:1.3,x:'창천참 — 표적 주변 범위 참격 (1.2초 간격, 사거리 4칸)'},
- jeokhwang:{planet:'fusion',fu:1,hidden:1,n:'적황',nick:'태양을 두른 백호 군주',e:'🔥',t:4,d:120000,s:1/0.9,r:'4c',inst:1,hc:'#ffb040',scale:1.3,x:'백염조 — 표적 주변 범위 발톱 (0.9초 간격, 사거리 4칸)'},
- astraon:{planet:'fusion',fu:1,hidden:1,n:'아스트라온',nick:'천벌의 번개 정령',e:'⚡',t:4,d:120000,s:1/1.4,r:'4.5c',inst:1,hc:'#8fd8ff',scale:1.3,x:'궤도 심판 — 보스 우선 위성 광선, 근처 3명에게 튐 + 받는 피해 증가 (1.4초 간격, 사거리 4.5칸)'},
- yeongeopsu:{planet:'fusion',fu:1,hidden:1,n:'영겁수',nick:'시간을 품은 세계수',e:'🌳',t:4,d:120000,s:1/1.6,r:'2c',melee:1,ml:1,lgK:.2,hc:'#ffcf5a',scale:1.3,x:'뿌리권 — 근접 광역, 주먹으로 내려쳐 주변 적까지 피해 + 감속 (1.6초 간격, 사거리 2칸)'},
- unhwa:{planet:'fusion',fu:1,hidden:1,n:'운화',nick:'흑화한 운명의 정령',e:'🎲',t:4,d:120000,s:1/1.5,r:'4c',hc:'#ff5a9a',scale:1.3,x:'검은 행운의 칩 — 착탄 주변 범위 피해 (1.5초 간격, 사거리 4칸)'},
- clockweaver:{planet:'fusion',fu:1,hidden:1,n:'운명의 시계술사',nick:'초승달 시계의 주인',e:'🕰️',t:4,d:120000,s:1/1.4,r:'4.5c',hc:'#c48bff',scale:1.3,x:'운명의 실침 — 보스 우선, 주변 범위 피해 + 운명 표식 (1.4초 간격, 사거리 4.5칸)'},
- nox:{planet:'fusion',fu:1,hidden:1,n:'녹스',nick:'월식의 지배자',e:'🌘',t:4,d:120000,s:1/1.3,r:'2c',melee:1,ml:1,lgK:.27,hc:'#c9a6ff',scale:1.3,x:'월아참 — 근접 암살, 보스 우선 단일 참격 + 8초 운명 표식 (1.3초 간격, 사거리 2칸)'},
- hwangryong:{planet:'fusion',fu:1,hidden:1,n:'황룡',nick:'사신을 거느린 황금 군주',e:'🐉',t:4,d:120000,s:1,r:'4.5c',inst:1,hc:'#ffd23e',scale:1.4,x:'황천참 — 표적 주변 1.4칸 최대 8명 참격 (1초 간격, 사거리 4.5칸)'},
- gamer:{planet:'earth',n:'민준',nick:'잠들지 않는 게이머',e:'🎮',t:0,d:100,s:1/1.4,r:'2c',scale:1.5,x:'슬리퍼 투척 — 원거리 단일 (1.4초 간격, 사거리 2칸)'},
+ veteran:{planet:'earth',n:'춘식',nick:'돌아온 참전용사',e:'🎖️',t:1,d:550,s:1/1.2,r:'4c',scale:1.5,x:'소총 발사 — 원거리 단일 (1.2초 간격)'},
+ zeus:{planet:'earth',n:'제욱스',nick:'전기의 신',e:'⚡',t:4,d:120000,s:1/0.8,r:'4c',scale:1.3,x:'번개창 투척 — 원거리 단일 (0.8초 간격)'},
+ jir:{planet:'earth',n:'볼트란',nick:'번개의 계승자',e:'⚡',t:3,d:21000,s:1/0.9,r:'3c',scale:1.5,x:'찌릿 탄 — 원거리 단일 (0.9초 간격)'},
+ napoleon:{planet:'earth',n:'레오폴',nick:'몰락한 정복자',e:'🎩',t:2,d:3000,s:1/1.0,r:'3c',scale:1.5,x:'권총 발사 — 원거리 단일 (1.0초 간격)'},
+ archeon:{planet:'gearon',n:'아르케온',nick:'최초의 코어',e:'🛰️',t:4,d:120000,s:1/0.8,r:'4c',scale:1.3,x:'코어 광탄 — 원거리 단일 (0.8초 간격)'},
+ policebot:{planet:'gearon',n:'센트론',nick:'강철의 집행자',e:'🚨',t:2,d:3000,s:1/1.0,r:'3c',scale:1.15,x:'레이저 사격 — 원거리 단일 (1.0초 간격)'},
+ fortressbot:{planet:'gearon',n:'바스티온',nick:'움직이는 요새',e:'💥',t:3,d:21000,s:1/1.3,r:'4c',scale:1.2,sp:'0.8c',sf:.15,smax:2,x:'중포 발사 — 단일 100% + 주변 0.8칸 최대 2명에게 15% (1.3초 간격)'},
+ cleanbot:{planet:'gearon',n:'모프',nick:'버려진 거리의 청소부',e:'🧹',t:0,d:100,s:1/1.4,r:'2c',scale:1.15,x:'나사 발사 — 원거리 단일 (1.4초 간격)'},
+ deliverybot:{planet:'gearon',n:'덱스',nick:'멈추지 않는 배달부',e:'📦',t:1,d:550,s:1/1.2,r:'3c',scale:1.2,x:'택배 투척 — 원거리 단일 (1.2초 간격)'},
+ hyeonmu:{planet:'purmia',n:'현무',nick:'대지를 다스리는 왕',e:'🐢',t:4,d:120000,s:1/1.1,r:'3.5c',inst:1,hc:'#3fe0b0',scale:1.3,x:'지맥 강타 — 적 위치에 지면 충격파 (1.1초 간격)'},
+ orca:{planet:'purmia',n:'오르칸',nick:'밀물의 인도자',e:'🐋',t:2,d:3000,s:1/1.0,r:'3c',scale:1.35,x:'물방울 탄 — 원거리 단일 (1.0초 간격)'},
+ mugyeom:{planet:'purmia',n:'무겸',nick:'흑웅관장',e:'🐻',t:3,d:21000,s:1/0.9,r:'1.6c',scale:1.25,x:'곰권 연타 — 근접 주먹 (0.9초 간격)'},
+ mole:{planet:'purmia',n:'두린',nick:'땅속의 개척자',e:'🦫',t:0,d:100,s:1/1.4,r:'2c',scale:2,x:'흙덩이 던지기 — 원거리 단일 (1.4초 간격)'},
+ alpaca:{planet:'purmia',n:'알바',nick:'초원의 심술꾼',e:'🦙',t:1,d:550,s:1/1.2,r:'3c',scale:1.5,x:'침 뱉기 — 원거리 단일 (1.2초 간격)'},
+ lunette:{planet:'toytopia',n:'루네트',nick:'버려진 소원의 주인',e:'🪆',t:4,d:120000,s:1/0.8,r:'4c',inst:1,hc:'#c77dff',scale:1.3,x:'저주 실 — 적 위치 직접 타격 (0.8초 간격)'},
+ bricks:{planet:'toytopia',n:'브릭스',nick:'먼 곳을 꿰뚫는 눈',e:'🎯',t:2,d:5400,s:1/2.0,r:'6c',scale:1.5,x:'블록 탄환 — 초장거리 단일 (2.0초 간격)'},
+ mold:{planet:'toytopia',n:'몰드',nick:'흐르는 손아귀',e:'🫠',t:3,d:34000,s:1/1.0,r:'2c',melee:1,sp:'0.9c',sf:.25,smax:2,scale:1.5,x:'찰흙 후려치기 — 근접 100% + 주변 0.9칸 최대 2명에게 25% (1.0초 간격)'},
+ pico:{planet:'toytopia',n:'피코',nick:'작은 태엽의 용사',e:'🐤',t:0,d:160,s:1/1.0,r:'1.5c',melee:1,scale:1.5,x:'부리 쪼기 — 근접 단일 (1.0초 간격)'},
+ jacko:{planet:'toytopia',n:'잭코',nick:'상자 속 도전자',e:'🥊',t:1,d:850,s:1/1.0,r:'1.5c',melee:1,scale:1.5,x:'근거리 펀치 — 근접 단일 (1.0초 간격)'},
+ orbin:{planet:'mosaica',n:'오르빈',nick:'빠진 송곳니의 노신사',e:'🦷',t:0,d:105,s:1/1.3,r:'2.5c',scale:1.5,x:'틀니 투척 — 원거리 단일 (1.3초 간격)'},
+ nero:{planet:'mosaica',n:'네로',nick:'골목의 동전 수집가',e:'🪙',t:1,d:500,s:1/1.1,r:'3c',scale:1.5,x:'동전 투척 — 원거리 단일 (1.1초 간격)'},
+ vargon:{planet:'mosaica',n:'바르곤',nick:'끝없는 식욕의 수집가',e:'🍲',t:2,d:3000,s:1/1.1,r:'3c',scale:1.5,x:'냄비 투척 — 원거리 단일 (1.1초 간격)'},
+ seraphine:{planet:'mosaica',n:'세라핀',nick:'운명의 실을 엮는 자',e:'🧵',t:3,d:15000,s:1/1.0,r:'3c',scale:1.5,x:'금빛 실 — 원거리 단일 (1.0초 간격)'},
+ belkaon:{planet:'mosaica',n:'벨카온',nick:'운명을 거는 군주',e:'🎲',t:4,d:100000,s:1/0.8,r:'4c',scale:1.3,x:'칩 투척 — 원거리 단일 (0.8초 간격)'},
+ floret:{planet:'florasia',n:'플로렛',nick:'배고픈 꽃봉오리',e:'🌺',t:0,d:100,s:1/1.3,r:'2.5c',scale:1.5,x:'씨앗 투척 — 원거리 단일 (1.3초 간격)'},
+ sporun:{planet:'florasia',n:'스포룬',nick:'포자 우산지기',e:'🍄',t:1,d:480,s:1/1.2,r:'3c',scale:1.5,x:'포자 투척 — 원거리 단일 (1.2초 간격)'},
+ cacton:{planet:'florasia',n:'칵톤',nick:'가시의 집행자',e:'🌵',t:2,d:6000,s:1/1.0,r:'2c',melee:1,scale:1.5,x:'가시 주먹 — 근접 단일 (1.0초 간격)'},
+ elderon:{planet:'florasia',n:'엘더론',nick:'뿌리 깊은 숲의 수호자',e:'🌳',t:3,d:32000,s:1/1.0,r:'2c',melee:1,syn:1.4,scale:1.5,x:'뿌리 주먹 — 근접 단일 (1.0초 간격). 옆 칸(대각 포함)에 플로라시아 아군이 있으면 피해 +40%'},
+ sylvaion:{planet:'florasia',n:'실바이온',nick:'별빛을 품은 세계수',e:'🌳',t:4,d:110000,s:1/0.8,r:'4c',scale:1.3,x:'황금 씨앗 — 원거리 단일 (0.8초 간격)'},
+ momo:{planet:'mongle',n:'모모',nick:'통통 파동 도우미',e:'🫧',t:0,d:95,s:1/1.3,r:'2.5c',scale:1.5,x:'젤리 구슬 — 원거리 단일 (1.3초 간격)'},
+ pulu:{planet:'mongle',n:'푸루',nick:'느릿한 젤리 비행사',e:'🪼',t:1,d:450,s:1/1.2,r:'3c',sl:.6,scale:1.5,x:'끈적 구슬 — 원거리 단일 + 0.6초 감속 (1.2초 간격)'},
+ bubon:{planet:'mongle',n:'부본',nick:'압축 파동 주먹',e:'👊',t:2,d:5800,s:1/1.0,r:'2c',melee:1,scale:1.5,x:'압축 젤리 주먹 — 근접 단일 (1.0초 간격)'},
+ stella:{planet:'mongle',n:'스텔라',nick:'튀어 오르는 별의 파동',e:'⭐',t:3,d:15000,s:1/1.0,r:'3c',bnc:2,bf:.6,scale:1.5,x:'별 구슬 — 맞은 적에서 근처 적 2명에게 60%씩 튕김 (1.0초 간격)'},
+ chronel:{planet:'mongle',n:'크로넬',nick:'시간을 붙잡는 젤리 군주',e:'⏳',t:4,d:105000,s:1/0.8,r:'4c',scale:1.3,x:'황금 핵 구슬 — 원거리 단일 (0.8초 간격)'},
+ lulu:{planet:'lumiel',n:'루루',nick:'꿈별 잠꾸러기',e:'⭐',t:0,d:100,s:1/1.3,r:'2.5c',scale:1.5,x:'별가루 — 원거리 단일 (1.3초 간격)'},
+ miel:{planet:'lumiel',n:'미엘',nick:'달꽃 배달부',e:'🌼',t:1,d:550,s:1/1.1,r:'3c',scale:1.5,x:'달꽃 던지기 — 원거리 단일 (1.1초 간격)'},
+ noctia:{planet:'lumiel',n:'녹티아',nick:'월식 기사',e:'🔨',t:2,d:3000,s:1/1.3,r:'1.6c',melee:1,scale:1.5,x:'월식 강타 — 근접 (1.3초 간격)'},
+ aurielle:{planet:'lumiel',n:'오리엘',nick:'여명의 별 사제',e:'🌟',t:3,d:21000,s:1/1.0,r:'3.5c',scale:1.5,x:'성광탄 — 원거리 단일 (1.0초 간격)'},
+ selene:{planet:'lumiel',n:'셀레네',nick:'월광의 여왕',e:'🌙',t:4,d:120000,s:1/0.9,r:'1.8c',melee:1,scale:1.3,x:'초승달 대검 — 근접 범위 (0.9초 간격)'},
+ hornkid:{planet:'drakanis',n:'뿔꼬마',nick:'불씨 악동',e:'🔥',t:0,d:100,s:1/1.2,r:'2.5c',scale:1.5,x:'불씨 퉤 — 불씨가 터지며 좁은 범위 (1.2초 간격)'},
+ fang_lancer:{planet:'drakanis',n:'용아 창병',nick:'청록의 관통 창병',e:'🔱',t:1,d:550,s:1/1.1,r:'2.4c',melee:1,scale:1.5,x:'용아 관통 — 창을 뻗어 일직선 관통 (1.1초 간격)'},
+ iron_dragonkin:{planet:'drakanis',n:'흑철 용인',nick:'검은 강철의 용',e:'👊',t:2,d:3000,s:1/1.3,r:'2.6c',inst:1,hc:'#ff8a3c',scale:1.5,x:'흑철 강타 — 표적 주변 지면 충격파 (1.3초 간격)'},
+ hongryeon:{planet:'drakanis',n:'홍련 용장',nick:'붉은 도끼의 용장',e:'🪓',t:3,d:21000,s:1/1.1,r:'1.9c',melee:1,scale:1.5,x:'홍련 휩쓸기 — 도끼로 앞쪽 부채꼴을 벰 (1.1초 간격)'},
+ cheongryong:{planet:'drakanis',n:'청룡',nick:'창천을 다스리는 정의의 용',e:'🐉',t:4,d:120000,s:1/0.9,r:'4c',inst:1,hc:'#7fd0ff',scale:1.3,x:'천뢰 연쇄 — 낙뢰가 근처 적들로 이어짐 (0.9초 간격)'},
+ feather_courier:{planet:'biikseong',n:'피유',nick:'깃털 배달부',e:'🪶',t:0,d:100,s:1/1.0,r:'2.8c',scale:1.5,x:'바람 깃털 — 작은 바람탄, 맞은 곳 좁은 범위 (1.0초 간격)'},
+ feather_archer:{planet:'biikseong',n:'시엘',nick:'비익 궁수',e:'🏹',t:1,d:550,s:1/1.0,r:'3.8c',scale:1.5,x:'깃털 화살 — 일직선으로 꿰뚫음 (1.0초 간격)'},
+ storm_owl:{planet:'biikseong',n:'오르윈',nick:'폭풍 부엉이 현자',e:'🦉',t:2,d:3000,s:1/1.2,r:'3.2c',inst:1,hc:'#5fd0ff',scale:1.5,x:'작은 회오리 — 적 위치에 회오리 범위 (1.2초 간격)'},
+ goldwing_commander:{planet:'biikseong',n:'아우렐',nick:'금익 창장',e:'🦅',t:3,d:21000,s:1/1.0,r:'2c',melee:1,scale:1.5,x:'황금 창 휩쓸기 — 앞쪽 부채꼴 (1.0초 간격)'},
+ jujak:{planet:'biikseong',n:'주작',nick:'홍익의 우주 신조',e:'🐦‍🔥',t:4,d:120000,s:1/0.85,r:'4.2c',scale:1.3,x:'불꽃 깃털 비 — 깃털이 터지며 넓은 범위 (0.85초 간격)'},
+ snowkid:{planet:'seolryeong',n:'뭉치',nick:'눈뭉치 꼬마',e:'☃️',t:0,d:100,s:1/1.1,r:'2.6c',scale:1.5,x:'눈덩이 투척 — 좁은 범위 + 감속 (1.1초 간격)'},
+ icicle_bat:{planet:'seolryeong',n:'빙키',nick:'고드름 박쥐',e:'🦇',t:1,d:550,s:1/1.0,r:'3.4c',scale:1.5,x:'고드름 파편 — 일직선 관통 + 감속 (1.0초 간격)'},
+ snow_yeti:{planet:'seolryeong',n:'설봉',nick:'설산 예티',e:'🦍',t:2,d:3000,s:1/1.2,r:'1.9c',melee:1,scale:1.5,x:'주먹 강타 — 앞쪽 범위 + 감속 (1.2초 간격)'},
+ ice_golem:{planet:'seolryeong',n:'빙각',nick:'빙정 골렘',e:'🧊',t:3,d:21000,s:1/1.2,r:'2.8c',inst:1,hc:'#8fe0ff',scale:1.5,x:'얼음 주먹 — 적 위치 범위 강타 + 감속 (1.2초 간격)'},
+ baekho:{planet:'seolryeong',n:'백호',nick:'서천을 다스리는 신수',e:'🐯',t:4,d:120000,s:1/0.6,r:'1.9c',melee:1,scale:1.3,x:'발톱 연격 — 빠른 근접 범위 (0.6초 간격)'},
+ jinmu:{planet:'fusion',fu:1,hidden:1,n:'진무',nick:'천지를 지키는 수호장',e:'⚔️',t:4,d:120000,s:1/1.2,r:'4c',melee:1,ml:1,lgK:.35,hc:'#3fe0d0',scale:1.3,x:'창천참 — 표적 주변 범위 참격 (1.2초 간격)'},
+ jeokhwang:{planet:'fusion',fu:1,hidden:1,n:'적황',nick:'태양을 두른 백호 군주',e:'🔥',t:4,d:120000,s:1/0.9,r:'4c',melee:1,ml:1,lgK:.35,hc:'#ffb040',scale:1.3,x:'백염조 — 표적 주변 범위 발톱 (0.9초 간격)'},
+ astraon:{planet:'fusion',fu:1,hidden:1,n:'아스트라온',nick:'천벌의 번개 정령',e:'⚡',t:4,d:120000,s:1/1.4,r:'4.5c',inst:1,hc:'#8fd8ff',scale:1.3,x:'궤도 심판 — 보스 우선 위성 광선, 근처 3명에게 튐 + 받는 피해 증가 (1.4초 간격)'},
+ yeongeopsu:{planet:'fusion',fu:1,hidden:1,n:'영겁수',nick:'시간을 품은 세계수',e:'🌳',t:4,d:120000,s:1/1.6,r:'2c',melee:1,ml:1,lgK:.2,hc:'#ffcf5a',scale:1.3,x:'뿌리권 — 근접 광역, 주먹으로 내려쳐 주변 적까지 피해 + 감속 (1.6초 간격)'},
+ unhwa:{planet:'fusion',fu:1,hidden:1,n:'운화',nick:'흑화한 운명의 정령',e:'🎲',t:4,d:120000,s:1/1.5,r:'4c',hc:'#ff5a9a',scale:1.3,x:'검은 행운의 칩 — 착탄 주변 범위 피해 (1.5초 간격)'},
+ clockweaver:{planet:'fusion',fu:1,hidden:1,n:'운명의 시계술사',nick:'초승달 시계의 주인',e:'🕰️',t:4,d:120000,s:1/1.4,r:'4.5c',hc:'#c48bff',scale:1.3,x:'운명의 실침 — 보스 우선, 주변 범위 피해 + 운명 표식 (1.4초 간격)'},
+ nox:{planet:'fusion',fu:1,hidden:1,n:'녹스',nick:'월식의 지배자',e:'🌘',t:4,d:120000,s:1/1.3,r:'2c',melee:1,ml:1,lgK:.27,hc:'#c9a6ff',scale:1.3,x:'월아참 — 근접 암살, 보스 우선 단일 참격 + 8초 운명 표식 (1.3초 간격)'},
+ hwangryong:{planet:'fusion',fu:1,hidden:1,n:'황룡',nick:'사신을 거느린 황금 군주',e:'🐉',t:4,d:120000,s:1,r:'4.5c',melee:1,ml:1,lgK:.35,hc:'#ffd23e',scale:1.4,x:'황천참 — 표적 주변 1.4칸 최대 8명 참격 (1초 간격)'},
+ gamer:{planet:'earth',n:'민준',nick:'잠들지 않는 게이머',e:'🎮',t:0,d:100,s:1/1.4,r:'2c',scale:1.5,x:'슬리퍼 투척 — 원거리 단일 (1.4초 간격)'},
 };
 const SP={
  veteran:{n:'수류탄 투척',full:1,cd:30,m:1.3,max:3,r:'1c',nade:1,x:'착지점 반경 1칸 안 최대 3명에게 각 130% 피해 (보스 포함)'},
@@ -490,7 +490,7 @@ function tempArt(){for(const [k,pl,t,n,mo,pj,im] of TEMP){const col=PLANET_COL[p
 function fire(k,c,x,y,tx,ty,best){
   if(U[k].pk){const u=U[k],pk=u.pk,cf=pk.cfg,A=u.ani.attack,d0=Math.hypot(tx-x,ty-y)||1,asc=Math.min(1,(c.ncd||9)*.9/A.T),rl=A.rel*asc;c.bT=A.T*asc;c.b=c.bT;c.ax=(tx-x)/d0;c.ay=(ty-y)/d0;c.ad=d0;
     const i=G.cells.indexOf(c),[sx,sy]=sockXY(c,i,u,'attack'),fl=Math.max(.12,Math.hypot(tx-sx,ty-sy)/(cf.projCps*CS)),P=o=>{if(G.fx.length<340)G.fx.push(o)};
-    if(u.ml){const m=(c.tg&&c.tg[0])||best,[ux,uy]=pos(m.p),[sx2,sy2]=sockXY(c,i,u,'attack'),a=Math.atan2(uy-sy2,ux-sx2),L=Math.hypot(ux-sx2,uy-sy2);c.tgT=[rl];
+    if(u.ml&&(k==='nox'||k==='yeongeopsu')){const m=(c.tg&&c.tg[0])||best,[ux,uy]=pos(m.p),[sx2,sy2]=sockXY(c,i,u,'attack'),a=Math.atan2(uy-sy2,ux-sx2),L=Math.hypot(ux-sx2,uy-sy2);c.tgT=[rl];
       if(k==='nox'){kpf(pk.slash[0],(sx2+ux)/2,(sy2+uy)/2,Math.max(CS*.9,L*1.15),.28,{s0:.35,ang:a,fo:.45,dl:Math.max(0,rl-.12),add:1});P({k:'seq',imgs:pk.hit,fps:cf.hitFps,w:CS*.95,m,x:ux,y:uy,t:.3,T:.3,dl:rl})}
       else{P({k:'root',x1:sx2,y1:sy2,x2:ux,y2:uy,t:.38,T:.38,dl:Math.max(0,rl-.16)});kpf(pk.hit[0],ux,uy,CS*1.05,.3,{s0:.5,fo:.5,dl:rl});kpf(pk.spawn[0],ux,uy,CS*1.5,.32,{s0:.4,a:.35,fo:.3,dl:rl})}
       return rl}
@@ -691,10 +691,12 @@ function rngTag(k){const u=U[k];return u.melee?'근접':((u.r0||u.r)-16)/CS>=4.9
 for(const k in PV){const u=U[k],v=PV[k];if(!u)continue;for(const f in v){if(f==='r')u.r=Math.round(v.r*CS+16);else if(f==='sm')u.s*=v.sm;else if(f==='sp')u.sp=Math.round(v.sp*CS);else if(f==='kbd')u.kbd=v.kbd*CS;else if(f==='nth')u.nth=Object.assign({},v.nth,v.nth.r?{r:v.nth.r*CS}:{});else if(f!=='x')u[f]=v[f]}}
 // 사거리 축소(v236): 자리 선택이 의미 있게. 원래 사거리는 r0(증강 판정용)
 // 특징별 사거리(칸): 근접 짧게, 범위·버프 중간, 단일 원거리 길게, 저격 가장 길게. 원래보다 길어지지는 않음.
-function rangeRole(k){const u=U[k],r0=(u.r0-16)/CS,t=PVT[k]||[];if(u.ml)return['근접',2];if(u.melee||r0<=2)return['근접',1.5];if(r0>=4.9)return['저격',4.6];if(AURA[k])return['버프',2.1];if(u.bnc||t.includes('연쇄'))return['연쇄',2.6];if(t.includes('관통'))return['관통',2.9];if(u.sp||u.shp||t.includes('범위'))return['범위',2.3];return['단일',3]}
+const MELEE2=['hyeonmu','iron_dragonkin','ice_golem','vargon']; // 그림이 근접(주먹·발 구르기)인 행성 영웅
+for(const k of MELEE2)if(U[k])U[k].melee=1;
+function rangeRole(k){const u=U[k],r0=(u.r0-16)/CS,t=PVT[k]||[];if(u.melee||r0<=2)return['근접',1.2];if(r0>=4.9)return['저격',3.2];if(AURA[k])return['버프',1.6];if(u.bnc||t.includes('연쇄'))return['연쇄',1.9];if(t.includes('관통'))return['관통',2];if(u.sp||u.shp||t.includes('범위'))return['범위',1.7];return['단일',2.1]}
 for(const k in U){const u=U[k];if(typeof u.r!=='number')continue;u.r0=u.r;const[rr,b]=rangeRole(k),r0=(u.r0-16)/CS,nr=Math.min(r0,b+.1*u.t);u.rr=rr;u.r=Math.round(nr*CS+16)}
 // 근접으로 바뀐 특수조합: 특수기 사거리는 기본 사거리와 따로(녹스는 전장 전체, 영겁수는 예전 2.7칸)
-U.nox.spR=1e5;U.yeongeopsu.spR=Math.round(2.7*CS+16);
+for(const k of ['yeongeopsu','jinmu','jeokhwang','hwangryong',...MELEE2]){const u=U[k];if(u)u.spR=Math.round(Math.min((u.r0-16)/CS,1.7+.1*u.t)*CS+16)}U.nox.spR=1e5;
 let drag=null;let H=1581/MAPK,T=220/MAPK,B=1190/MAPK,PH=B-T,PER=2*(PW+PH),GY=CYS[0]-CS/2,FS=1;let MAXU=NC*3;
 // 백수형 사거리 +2칸은 미확정. 기존 200px 유지.
 const UIIMG={"btn_summon_normal": __P(1732), "btn_summon_pressed": __P(1733), "btn_summon_disabled": __P(1734), "btn_combine_normal": __P(1735), "btn_combine_pressed": __P(1736), "btn_combine_disabled": __P(1737), "btn_luck_normal": __P(1738), "btn_luck_pressed": __P(1739), "btn_luck_disabled": __P(1740), "btn_upgrade_normal": __P(1741), "btn_upgrade_pressed": __P(1742), "btn_upgrade_disabled": __P(1743), "wave_panel": __P(1744), "enemy_counter_track": __P(1745), "resource_bar": __P(1746), "speed_pill": __P(1747)};
@@ -791,7 +793,7 @@ const LVF=['dur','st','bst','sl','vu','adur','hold','kbd','coinK'];
 function lvK(k){if(U[k]&&U[k].fu){const b=fuBase(k);return b.reduce((a,q)=>a+lvK(q),0)/b.length}return 1+.05*(((typeof SAVE!=='undefined'&&SAVE.lv&&SAVE.lv[k])||1)-1)}
 const PL_POW={lumiel:1.28,drakanis:1.2,biikseong:1.2,seolryeong:1.2}; // 해금 행성 보상: 루미엘 영웅 공격력 +12%
 // 영웅별 세기 보정 (신규 행성: 해금이 늦을수록 강하게 — 드라카니스 < 설령성 < 루미엘 < 비익성)
-const HPW={nox:20.1,jinmu:2.0,jeokhwang:4.12,astraon:3.04,yeongeopsu:3.69,unhwa:2.88,clockweaver:2.15,hwangryong:6.58,hornkid:1.02,fang_lancer:.83,iron_dragonkin:1.09,hongryeon:1.11,cheongryong:.8,snowkid:.76,icicle_bat:.79,snow_yeti:.8,ice_golem:.73,baekho:1.04,lulu:1.38,miel:1.24,noctia:1.35,aurielle:1.11,selene:1.06,feather_courier:1.1,feather_archer:.86,storm_owl:1.01,goldwing_commander:1.2,jujak:1.12};
+const HPW={nox:20.38,jinmu:2.31,jeokhwang:5.64,astraon:2.56,yeongeopsu:4.45,unhwa:3.06,clockweaver:2.18,hwangryong:7.7,hornkid:1.02,fang_lancer:.83,iron_dragonkin:1.09,hongryeon:1.11,cheongryong:.8,snowkid:.76,icicle_bat:.79,snow_yeti:.8,ice_golem:.73,baekho:1.04,lulu:1.38,miel:1.24,noctia:1.35,aurielle:1.11,selene:1.06,feather_courier:1.1,feather_archer:.86,storm_owl:1.01,goldwing_commander:1.2,jujak:1.12};
 function mult(k){return HERO_POW*TIER_POW[U[k].t]*(PL_POW[U[k].planet]||1)*(HPW[k]||1)*(U[k].fu?(1+.3*((G&&G.fuLv&&G.fuLv[k])||0))*(A('fuslab')?1.2:1)*(A('ascend')?1.35:1):1+.25*planetLevel(k))*(G.buff>0?1.5:G&&G.unhB>0?1.25:1)*lvK(k)*(G.bn?G.bn.atk:1)}
 const TILEC=['','#b5dc65','#66d9ef','#c89cff','#ffd863','#ff7e87'];
 const TILEIMG={"1": __P(2031), "2": __P(2032), "3": __P(2033), "4": __P(2034), "5": __P(2035)};const TILE_ART={};
@@ -1150,6 +1152,7 @@ function sndKind(s){if(s.nade||s.aoe||s.salvo||s.dust||s.roots||s.poison)return 
 function sndBtn(){const b=$('bSnd');if(b)b.textContent=['🔊','🎵','🔇'][SND.mode()];}
 function synOn(i,u){const[x,y]=cellXY(i);for(let j=0;j<NC;j++){const o=G.cells[j];if(!o||j===i||U[o.u].planet!==u.planet)continue;const[ox,oy]=cellXY(j);if(Math.hypot(ox-x,oy-y)<=CS*1.6)return true}return false}
 function special(c,i,u,s,x,y,best){
+  if(u.spR)u=Object.assign(Object.create(u),{r:u.spR});
   {const L=lvK(c.u);if(L>1){s=Object.assign({},s);for(const f of LVF)if(typeof s[f]==='number')s[f]*=L}}
   const d=u.d*(c.pa||1)*c.n*mult(c.u)*tileMult(i)*(c.sh>0?1.3:1)*(c.sy||1)*augA(c)*s.m,col=u.col,P=o=>G.fx.push(o);c.bT=.6;c.b=.6;
   SND.play('special',sndKind(s),u.t);if(!(G.time-(G.cutAt??-99)>=15&&cutin(c.u,u.n+' — '+s.n+'!')&&(G.cutAt=G.time)))toast(u.n+' — '+s.n+'!');if(u.t>=3)G.flash=Math.max(G.flash||0,.15);G.shake=Math.max(G.shake,u.t>=3?.15:.06);
@@ -1597,7 +1600,7 @@ function refresh(){
         rcp(m).map(id=>{const h=hasUnit(id);return '<span class="ing'+(h?' h':'')+'">'+ic(id)+'<em>'+TN[U[id].t]+'</em>'+U[id].n+'<i>'+(h?'✓ 있음':'필요')+'</i></span>'}).join('')+'</div>'+(ok?'<div class="go">✦ 조합하기 <small>🪙'+craftCost()+'</small></div>':canCraft(m,1)?'<div class="go no">🪙'+craftCost()+' 필요 · '+(craftCost()-Math.floor(G.coins))+' 부족</div>':'');
       b.onclick=()=>{craft(m);refresh()};$('myth').appendChild(b)}
     {const h=document.createElement('div');h.className='fuhd';h.innerHTML='✨ <b>특수 조합</b> <small>서로 다른 행성의 우주 히어로를 합쳐 최상위 영웅으로 (지금 🪙'+fuseCost()+')</small>';$('myth').appendChild(h);
-     for(const id of Object.keys(FUSION)){const f=FUSION[id],ready=fuseReady(id),ok=canFuse(id),art=!!U[id],b=document.createElement('button');b.className='mr fu'+(ok?' ok':'');
+     for(const id of Object.keys(FUSION).filter(fuAvail)){const f=FUSION[id],ready=fuseReady(id),ok=canFuse(id),art=!!U[id],b=document.createElement('button');b.className='mr fu'+(ok?' ok':'');
       b.innerHTML='<div class="mh">'+(art?ic(id):'✨')+'<span class="mn"><b>'+f.n+'</b><small>특수조합 · '+f.nick+'</small></span><span class="mp'+(ready?' full':'')+'">'+f.mat.filter(k=>G.cells.some(c=>c&&c.u===k)).length+' / '+f.mat.length+'</span></div><div class="mi">'+f.mat.map(k=>{const h=G.cells.some(c=>c&&c.u===k),nm=U[k]?U[k].n:FUSION[k]?FUSION[k].n:k;return '<span class="ing'+(h?' h':'')+'">'+(U[k]?ic(k):'✨')+'<em>우주</em>'+nm+'<i>'+(h?'✓ 있음':'필요')+'</i></span>'}).join('')+'</div>'+(!art?'<div class="go no">그림 준비 중</div>':ok?'<div class="go">✦ 특수 조합하기 <small>🪙'+fuseCost()+'</small></div>':ready?'<div class="go no">🪙'+fuseCost()+' 필요 · '+(fuseCost()-Math.floor(G.coins))+' 부족</div>':'');
       b.onclick=()=>{if(art)fuse(id)};$('myth').appendChild(b)}}
   }else if(sheet==='gam'){
@@ -1609,7 +1612,7 @@ function refresh(){
       '<button id="u3">소환 확률 강화<br>Lv.'+(l+1)+(l>=10?' 최대':' 🪙'+upCost(3))+'</button><button id="u4" style="background:#7a4fc0">랜덤판 강화<br>🪙'+tileCost()+' <small>(판 1칸 +100%, 최대 ×6)</small></button></div><div style="font-size:11px;opacity:.85;margin-top:6px">행성 지원은 같은 출신 히어로 전체에 적용됩니다. 1강당 기본 공격력 +25%, 현재·이후 소환 모두 적용.</div>';
     body.innerHTML+='<div class="row" id="planetUp" style="display:grid;grid-template-columns:1fr 1fr"></div>';
     for(const p of plIn()){const keys=Object.keys(U).filter(k=>U[k].planet===p),key=keys[0],count=G.cells.reduce((n,c)=>n+(c&&U[c.u].planet===p?c.n:0),0),lv=G.upPlanet[p]||0,b=document.createElement('button');b.innerHTML=pic(p)+PLANETS[p]+' · '+count+'명 · Lv.'+lv+(key?' · 🪙'+upKCost(key):' · 준비 중');b.disabled=!count||!key||G.coins<upKCost(key);b.onclick=()=>upgradeK(key);$('planetUp').appendChild(b)}
-    {const ids=Object.keys(FUSION).filter(id=>U[id]);if(ids.length){body.insertAdjacentHTML('beforeend','<div class="fuhd" style="margin-top:8px">✨ <b>특수조합 개별 강화</b> <small>영웅마다 따로 · 1강당 공격력 +30%</small></div><div class="row" id="fuUp" style="display:grid;grid-template-columns:1fr 1fr"></div>');
+    {const ids=Object.keys(FUSION).filter(id=>U[id]&&fuAvail(id));if(ids.length){body.insertAdjacentHTML('beforeend','<div class="fuhd" style="margin-top:8px">✨ <b>특수조합 개별 강화</b> <small>영웅마다 따로 · 1강당 공격력 +30%</small></div><div class="row" id="fuUp" style="display:grid;grid-template-columns:1fr 1fr"></div>');
       for(const id of ids){const on=G.cells.some(c=>c&&c.u===id),lv=(G.fuLv&&G.fuLv[id])||0,b=document.createElement('button');b.dataset.id=id;b.innerHTML=(U[id].url?'<img src="'+cardUrl(id)+'" style="height:1.6em;vertical-align:middle">':'')+U[id].n+' · Lv.'+lv+(on?' · 🪙'+fuUpCost(id):' · 미보유');b.disabled=!on||G.coins<fuUpCost(id);b.onclick=()=>fuUp(id);$('fuUp').appendChild(b)}}}
     $('u3').onclick=()=>upgrade(3);$('u4').onclick=upgradeTile
   }
@@ -1710,7 +1713,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:243};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:245};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1801,7 +1804,7 @@ function fuse(id){if(G.over||!canFuse(id)){toast(!fuseReady(id)?(FUSION[id].mat.
   G.sched.push({t:.42,f:()=>{const S=FU_SPAWN[id]||{m:6,st:1,bst:.3},atk=u.d*mult(id);if(pk.spawn)fxs2(pk.spawn,x,y-CS*.2,CS*5,12,0);G.flash=Math.max(G.flash||0,.28);G.shake=Math.max(G.shake,.8);G.hs=.5;
     for(const o of G.mobs.slice()){if(o.hp<=0||o.p<28)continue;const[ox,oy]=pos(o.p);if(G.fx.length<320)G.fx.push({k:'zap',x1:x,y1:y-30,x2:ox,y2:oy,t:.3,T:.3,c:u.hc||'#fff',w:3,dl:Math.random()*.15});hit(o,{},atk*S.m,.05,G.cells[at]);if(id==='nox'&&G.cells[at])markSet(o,G.cells[at],8);if(o.hp>0){o.st=Math.max(o.st||0,o.boss?S.bst:S.st);if(S.burn){o.dot=Math.max(o.dotT>0?o.dot:0,atk*S.burn);o.dotT=S.burnT;o.dsrc=G.cells[at]}}}}});
   if(!cutin(id,'특수 조합! '+u.n))toast('✨ 특수 조합 — '+u.n+'!');refresh()}
-const FUB={nox:0.228,astraon:1.48,yeongeopsu:1.124,unhwa:1.4,clockweaver:1.89,jinmu:1,jeokhwang:1,hwangryong:2.52}; // 특수조합 보스 피해 보정(재료 합 대비 2.6배 맞춤)
+const FUB={nox:0.221,astraon:1.348,yeongeopsu:0.895,unhwa:1.203,clockweaver:1.828,jinmu:0.591,jeokhwang:0.803,hwangryong:2.917}; // 특수조합 보스 피해 보정(재료 합 대비 2.6배 맞춤)
 function kpf(im,x,y,w,T,o){if(!im||G.fx.length>=330)return;G.fx.push(Object.assign({k:'kp',im,x,y,w,t:T,T,dl:0},o||{}))}
 
 // ---------- 특수 조합 영웅 특수기 ----------
@@ -1859,6 +1862,8 @@ const FUSK={
 function fxs2(imgs,x,y,w,fps,dl){if(imgs&&imgs.length===1)return kpf(imgs[0],x,y,w,.9,{dl:dl||0,s0:.4});if(G.fx.length<330)G.fx.push({k:'seq',imgs,fps,w,x,y,t:imgs.length/fps,T:imgs.length/fps,dl:dl||0})}
 function fuName(k){return U[k]?U[k].n:FUSION[k]?FUSION[k].n:k}
 function fuBase(k){return FUSION[k]?FUSION[k].mat.flatMap(fuBase):[k]}
+// 이번 판 행성으로 만들 수 있는 특수 조합만
+function fuAvail(id){const on=plIn();return fuBase(id).every(k=>U[k]&&on.includes(U[k].planet))}
 // 내 캐릭터 — 영웅 상세 (스킬·공격력·공속·사거리)
 function heroDetail(k){const u=U[k];if(!u)return;let D=$('hDet');if(!D){D=document.createElement('div');D.id='hDet';document.body.appendChild(D);D.onclick=e=>{if(e.target===D||e.target.closest('.hdX'))D.style.display='none'}}
   const fu=!!u.fu,lv=fu?null:(SAVE.lv[k]||1),atk=u.d*HERO_POW*TIER_POW[u.t]*(PL_POW[u.planet]||1)*(HPW[k]||1)*lvK(k),bm=u.bm||1,iv=1/u.s,rc=(u.r-16)/CS,s=u.sp2,pv=PV[k],lock=!fu&&heroLocked(k);
@@ -1902,7 +1907,7 @@ let PLD=null;
 function plRender(){const av=plAvail(),need=Math.min(PL_MAX,av.length),E=$('mPGrid');if(!E)return;if(!PLD)PLD=plIn().slice();
   E.innerHTML=plAll().map(p=>{const lk=!plUnlocked(p),on=PLD.includes(p),hs=Object.keys(U).filter(k=>U[k].planet===p).sort((a,b)=>U[a].t-U[b].t),d=PLANET_DESC[p]||['',''];
     return '<button class="pc'+(on?' on':'')+(lk?' lock':'')+'" data-p="'+p+'"><span class="ck">'+(lk?'🔒':on?'✅':'')+'</span><div class="ph">'+(PICON[p]?'<img src="'+PICON[p]+'" alt="">':'')+'<b>'+PLANETS[p]+'</b></div><div class="hs">'+hs.map(k=>U[k].url?'<img src="'+U[k].url+'" alt="">':'').join('')+'</div><div>'+d[0]+'</div><div class="sy">시너지 · '+(PSYN[p]?PSYN[p].x:'-')+'</div>'+(lk?'<div class="lk">🔒 '+LOCKP[p].x+' 시 해금<br>(내 최고 '+(SAVE.best||0)+'웨이브)</div>':'')+'</button>'}).join('');
-  {let F=$('mPFu');if(!F){F=document.createElement('div');F.id='mPFu';E.after(F)}const ids=Object.keys(FUSION).filter(id=>U[id]),row=id=>{const pls=[...new Set(fuBase(id).map(k=>U[k].planet))],ok=pls.every(q=>PLD.includes(q));return [ok,'<div class="fur'+(ok?' ok':'')+'">'+(U[id].url?'<img class="fp" src="'+cardUrl(id)+'" alt="">':'')+'<div class="ft"><b>'+FUSION[id].n+'</b><small>'+FUSION[id].nick+'</small><span>'+pls.map(q=>'<i class="'+(PLD.includes(q)?'y':'n')+'">'+(PICON[q]?'<img src="'+PICON[q]+'" alt="">':'')+PLANETS[q]+'</i>').join('')+'</span></div><em>'+(ok?'✨ 가능':'행성 부족')+'</em></div>']};
+  {const F0=$('mPFu');if(F0)F0.remove();const F=document.createElement('div');F.id='mPFu';E.appendChild(F);const ids=Object.keys(FUSION).filter(id=>U[id]),row=id=>{const pls=[...new Set(fuBase(id).map(k=>U[k].planet))],ok=pls.every(q=>PLD.includes(q));return [ok,'<div class="fur'+(ok?' ok':'')+'">'+(U[id].url?'<img class="fp" src="'+cardUrl(id)+'" alt="">':'')+'<div class="ft"><b>'+FUSION[id].n+'</b><small>'+FUSION[id].nick+'</small><span>'+pls.map(q=>'<i class="'+(PLD.includes(q)?'y':'n')+'">'+(PICON[q]?'<img src="'+PICON[q]+'" alt="">':'')+PLANETS[q]+'</i>').join('')+'</span></div><em>'+(ok?'✨ 가능':'행성 부족')+'</em></div>']};
    const R=ids.map(row).sort((a,b)=>b[0]-a[0]);F.innerHTML='<div class="fuh2">✨ 이 행성들로 만들 수 있는 특수 조합 <b>'+R.filter(r=>r[0]).length+'</b> / '+R.length+'</div>'+R.map(r=>r[1]).join('')}
   $('mPCnt').textContent=PLD.length+' / '+need;$('mPStart').disabled=PLD.length!==need;
   E.querySelectorAll('.pc').forEach(b=>b.onclick=()=>{const p=b.dataset.p;if(!plUnlocked(p)){toast('🔒 '+PLANETS[p]+' — '+LOCKP[p].x+' 시 해금');return}
