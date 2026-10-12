@@ -679,7 +679,9 @@ function tagH(a){return (a||[]).map(t=>'<span class="tg" style="--c:'+(TAGC[t]||
 function rngTag(k){const u=U[k];return u.melee?'근접':((u.r0||u.r)-16)/CS>=4.9?'저격':'원거리'}
 for(const k in PV){const u=U[k],v=PV[k];if(!u)continue;for(const f in v){if(f==='r')u.r=Math.round(v.r*CS+16);else if(f==='sm')u.s*=v.sm;else if(f==='sp')u.sp=Math.round(v.sp*CS);else if(f==='kbd')u.kbd=v.kbd*CS;else if(f==='nth')u.nth=Object.assign({},v.nth,v.nth.r?{r:v.nth.r*CS}:{});else if(f!=='x')u[f]=v[f]}}
 // 사거리 축소(v236): 자리 선택이 의미 있게. 원래 사거리는 r0(증강 판정용)
-const RANGE_K=[1,.95,.85,.78,.72],RANGE_MIN=1.5;for(const k in U){const u=U[k];if(typeof u.r!=='number')continue;u.r0=u.r;u.r=Math.round(Math.max(RANGE_MIN,(u.r-16)/CS*RANGE_K[u.t])*CS+16)}
+// 특징별 사거리(칸): 근접 짧게, 범위·버프 중간, 단일 원거리 길게, 저격 가장 길게. 원래보다 길어지지는 않음.
+function rangeRole(k){const u=U[k],r0=(u.r0-16)/CS,t=PVT[k]||[];if(u.melee||r0<=2)return['근접',1.5];if(r0>=4.9)return['저격',4.6];if(AURA[k])return['버프',2.1];if(u.bnc||t.includes('연쇄'))return['연쇄',2.6];if(t.includes('관통'))return['관통',2.9];if(u.sp||u.shp||t.includes('범위'))return['범위',2.3];return['단일',3]}
+for(const k in U){const u=U[k];if(typeof u.r!=='number')continue;u.r0=u.r;const[rr,b]=rangeRole(k),r0=(u.r0-16)/CS,nr=Math.min(r0,b+.1*u.t);u.rr=rr;u.r=Math.round(nr*CS+16)}
 let drag=null;let H=1581/MAPK,T=220/MAPK,B=1190/MAPK,PH=B-T,PER=2*(PW+PH),GY=CYS[0]-CS/2,FS=1;let MAXU=NC*3;
 // 백수형 사거리 +2칸은 미확정. 기존 200px 유지.
 const UIIMG={"btn_summon_normal": __P(1703), "btn_summon_pressed": __P(1704), "btn_summon_disabled": __P(1705), "btn_combine_normal": __P(1706), "btn_combine_pressed": __P(1707), "btn_combine_disabled": __P(1708), "btn_luck_normal": __P(1709), "btn_luck_pressed": __P(1710), "btn_luck_disabled": __P(1711), "btn_upgrade_normal": __P(1712), "btn_upgrade_pressed": __P(1713), "btn_upgrade_disabled": __P(1714), "wave_panel": __P(1715), "enemy_counter_track": __P(1716), "resource_bar": __P(1717), "speed_pill": __P(1718)};
@@ -1687,7 +1689,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:236};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:237};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
