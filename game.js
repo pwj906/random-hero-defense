@@ -1524,8 +1524,8 @@ function draw(){
       cx.fillStyle='#2a1d14';rrect(cx,x-w/2-1,hy-1,w+2,5,2);cx.fill();cx.fillStyle=m.boss?'#ff3b3b':'#ffd23e';cx.fillRect(x-w/2,hy,w*Math.max(0,m.hp/m.max),3)}
   };
   if(G.zones)for(const z of G.zones){const im=z.imgs&&z.imgs[Math.floor(tm*8)%z.imgs.length];if(!im||!im.complete||!im.naturalWidth)continue;const[zx,zy]=pos(z.p),w=z.seg*2.5,al=Math.min(1,z.t/.4,(z.T-z.t)/.25);cx.globalAlpha=Math.max(0,al)*.92;if(z.all){for(let q=CS*.5;q<PER;q+=CS*.95){const[ax,ay]=pos(q);cx.drawImage(im,ax-CS*.75,ay-CS*.75+3,CS*1.5,CS*1.5)}}else cx.drawImage(im,zx-w/2,zy-w/2+3,w,w);cx.globalAlpha=1}
-  for(const m of G.mobs)if(pos(m.p)[1]<GY)mob(m);
-  for(let i=0;i<NC;i++){
+  for(const m of G.mobs)if(pos(m.p)[1]<GY)try{mob(m)}catch(e){repErr(e,'mob '+(m.bk||m.k)+(m.sk||''));G.__dirty=1}
+  for(let i=0;i<NC;i++){try{
     const c=G.cells[i];if(!c)continue;const u=U[c.u],dg=drag&&drag.on&&drag.i===i,[x,y]=dg?[drag.x,drag.y-16]:cellXY(i);
     const k=(dg?1.15:1)*(c.pop>0?1+Math.sin((1-c.pop/.25)*Math.PI)*.4:1),K_=c.pop>0?1+Math.sin((1-c.pop/.25)*Math.PI)*.4:1,M=motion(c,c.u);
     if(c.b>0&&AT[c.u].mo==='cast'){cx.globalAlpha=.5*Math.sin((1-c.b/c.bT)*Math.PI);cx.fillStyle=u.col;cx.beginPath();cx.ellipse(x,y+13,24,10,0,0,7);cx.fill();cx.globalAlpha=1}
@@ -1566,7 +1566,7 @@ function draw(){
     
     if(c.n===3&&u.t<3&&BY[u.t+1].length&&!dg&&!c.lk){const pu=.5+.5*Math.sin(tm*5),bw=34,bh=13,bx=x-bw/2,by=y-CS/2-3+Math.sin(tm*6)*1.5;cx.save();
       cx.strokeStyle='rgba(255,224,102,'+(.55+.45*pu)+')';cx.lineWidth=2+pu*1.5;rrect(cx,x-CS/2+2,y-CS/2+2,CS-4,CS-4,6);cx.save();cx.globalAlpha=.3*pu+.15;cx.lineWidth=7;cx.stroke();cx.restore();cx.stroke();cx.restore()}
-  }
+  }catch(e){repErr(e,'cell '+(G.cells[i]&&G.cells[i].u));G.__dirty=1}}
   if(A('eye')&&G.eyeI>=0&&G.cells[G.eyeI]){const[ex,ey]=cellXY(G.eyeI),pu=.5+.5*Math.sin(tm*4);cx.save();cx.strokeStyle='rgba(215,184,255,'+(.6+.4*pu)+')';cx.lineWidth=2.5+pu*2;rrect(cx,ex-CS/2+3,ey-CS/2+3,CS-6,CS-6,7);cx.stroke();cx.font='11px sans-serif';cx.shadowBlur=0;cx.fillText('👁️',ex+CS/2-9,ey-CS/2+9);cx.restore()}
   for(let i=0;i<NC;i++){const c=G.cells[i];if(!c||!(c.k>1)||(drag&&drag.on&&drag.i===i))continue;const[x,y]=cellXY(i),tx='🔮'+c.k+'겹';cx.save();cx.font="bold "+Math.round(CS*.24)+"px 'Jua',sans-serif";cx.textAlign='center';cx.textBaseline='middle';const w=cx.measureText(tx).width+8,h=CS*.28,bx=x-CS*.5+w/2+1,by=(G.tile[i]>0?y+CS*.5-Math.round(CS*.27)-4-h/2:y+CS*.5-h/2-9);cx.fillStyle='rgba(60,20,90,.9)';rrect(cx,bx-w/2,by-h/2,w,h,h/2);cx.fill();cx.lineWidth=1.5;cx.strokeStyle='#ffd23e';cx.stroke();cx.fillStyle='#ffe98a';cx.fillText(tx,bx,by+1);cx.restore()}
   if(SAVE.roleI!==0)for(let i=0;i<NC;i++){const c=G.cells[i];if(!c||(drag&&drag.on&&drag.i===i))continue;const[x,y]=cellXY(i),ri=roleIcons(c.u);cx.save();cx.font=Math.round(CS*.22)+"px sans-serif";cx.textAlign='center';cx.textBaseline='middle';ri.forEach((e,q)=>{const ex=x-CS*.5+CS*.15+q*CS*.27,ey=y-CS*.5+CS*.15,im=roleBadge(e),bw=CS*.3;cx.drawImage(im,ex-bw/2,ey-bw/2,bw,bw)});
@@ -1574,7 +1574,7 @@ function draw(){
   if(G.sel!==null&&G.cells[G.sel]&&AURA[G.cells[G.sel].u]){const sx=G.sel%COLS,sy=Math.floor(G.sel/COLS),ar=A('wideaura')?2:1;cx.save();for(let j=0;j<NC;j++){const jx=j%COLS,jy=Math.floor(j/COLS);if(j===G.sel||Math.max(Math.abs(jx-sx),Math.abs(jy-sy))>ar)continue;const[x,y]=cellXY(j);cx.fillStyle='rgba(111,232,200,.18)';rrect(cx,x-CS/2+2,y-CS/2+2,CS-4,CS-4,7);cx.fill();cx.strokeStyle='rgba(111,232,200,.8)';cx.lineWidth=1.5;cx.stroke()}cx.restore()}
   for(let i=0;i<NC;i++){if(!cellOut(i)||(drag&&drag.on&&drag.i===i))continue;const[x,y]=cellXY(i),c=G.cells[i],big=U[c.u].t>=4,by=y-CS*.33+Math.sin(tm*3+i)*CS*.03,r=CS*.16;cx.save();cx.globalAlpha=.92;cx.fillStyle='rgba(60,10,16,.85)';cx.beginPath();cx.arc(x,by,r,0,7);cx.fill();cx.lineWidth=2;cx.strokeStyle='#ff6b6b';cx.stroke();cx.beginPath();cx.arc(x,by,r*.55,0,7);cx.lineWidth=1.6;cx.strokeStyle='#ffd0d0';cx.stroke();cx.beginPath();cx.moveTo(x-r*.7,by+r*.7);cx.lineTo(x+r*.7,by-r*.7);cx.lineWidth=2.4;cx.strokeStyle='#ff6b6b';cx.stroke();cx.restore()}
   drawTileUpgradeLabels();cx.textAlign='center';cx.textBaseline='middle';
-  for(const m of G.mobs)if(pos(m.p)[1]>=GY)mob(m);
+  for(const m of G.mobs)if(pos(m.p)[1]>=GY)try{mob(m)}catch(e){repErr(e,'mob '+(m.bk||m.k)+(m.sk||''));G.__dirty=1}
   for(const f of G.fx){
     if(f.dl>0)continue;const q=1-f.t/f.T;
     if(FXD[f.k]){cx.save();FXD[f.k](cx,f,q);cx.restore();continue}
@@ -1694,11 +1694,14 @@ function refresh(){
   hud()
 }
 const PERF={a:17,n:0};
+// 오류가 나도 게임이 멈추지 않게: 기록하고 같은 오류는 한 번만 알림
+const __ERR={};function repErr(e,w){const k=(w||'')+':'+(e&&e.message);if(__ERR[k])return;__ERR[k]=1;console.error(w,e);try{(SAVE.errLog=SAVE.errLog||[]).push(new Date().toISOString().slice(5,16)+' w'+(G&&G.wave)+' '+k+' @'+((e&&e.stack||'').split('\n')[1]||'').trim().slice(0,80));SAVE.errLog=SAVE.errLog.slice(-20);saveAll()}catch(_){}try{toast('⚠ 오류 '+k.slice(0,60))}catch(_){}}
 function loop(ts){
   if(!running)return;
   let dt=Math.min(.05,(ts-last)/1000);last=ts;
-  if(G.hs>0){G.hs-=dt;update(dt*.12)}else for(let i=0;i<speed&&!G.over;i++)update(dt);
-  draw();if(!G.over)hud();
+  try{if(G.hs>0){G.hs-=dt;update(dt*.12)}else for(let i=0;i<speed&&!G.over;i++)update(dt)}catch(e){repErr(e,'update')}
+  if(G.__dirty){G.__dirty=0;try{if(cx.reset)cx.reset();cx.setTransform(dpr,0,0,dpr,0,0);cx.imageSmoothingQuality='medium'}catch(_){}}
+  try{draw()}catch(e){repErr(e,'draw');G.__dirty=1}try{if(!G.over)hud()}catch(e){repErr(e,'hud')}
   // 느린 기기: 프레임이 계속 밀리면 화면 해상도를 한 단계씩 낮춤
   {const fr=dt*1000;PERF.a=PERF.a*.97+fr*.03;if(++PERF.n>120&&PERF.a>26&&dpr>1){dpr=Math.max(1,dpr-.5);PERF.n=0;PERF.a=17;layout()}}
   requestAnimationFrame(loop)
@@ -1790,7 +1793,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:274};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:275};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
