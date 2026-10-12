@@ -152,6 +152,11 @@ const SP={
  gamer:{n:'슬리퍼 강속구',full:1,cd:20,m:2.4,pkg:1,x:'단일 대상 240% 피해 (불꽃 강속구)'},
 };
 for(const k in SP){SP[k].cd=Math.round(SP[k].cd*.7);U[k].sp2=SP[k]}for(const k of ['astraon','yeongeopsu','unhwa','clockweaver','nox','jinmu','jeokhwang','cheora','wolroe','bideung'])SP[k].cd=60;SP.hwangryong.cd=15;
+// 특수기: 더 드물게, 대신 그만큼 세게 (황룡 15초 순환은 그대로)
+const SPK=1.5,SPK_NO=new Set(['hwangryong','orca','seraphine','sporun','momo','chronel','belkaon']); // 버프·시간정지 특수기는 그대로
+for(const k in SP)if(!SPK_NO.has(k))SP[k].cd=Math.round(SP[k].cd*SPK);
+// 설명 속 피해 %도 같이 올림 (증가·감속·확률 %는 그대로)
+for(const k in SP){if(SPK_NO.has(k)||!SP[k].x)continue;const t=SP[k].x;SP[k].x=t.replace(/(^|[^\-\d.])(\d+(?:\.\d+)?)%(?!p)(?!\s*(?:확률|감속|빨리|느리|쿨|더))/g,(m0,pre,v,off)=>{if(pre==='+'&&t[off+m0.length]!==')')return m0;if(/(확률|공격력|공격속도|피해)\s*$/.test(t.slice(0,off+pre.length))&&pre!=='+')return m0;return pre+Math.round(v*SPK)+'%'})}
 const TEST_ONLY=null;
 
 // ---------- 임시 캐릭터 (GPT 패키지 도착 전, 코드로 그린 플레이스홀더) ----------
@@ -1178,7 +1183,7 @@ function synOn(i,u){const[x,y]=cellXY(i);for(let j=0;j<NC;j++){const o=G.cells[j
 function special(c,i,u,s,x,y,best){
   if(u.spR)u=Object.assign(Object.create(u),{r:u.spR});
   {const L=lvK(c.u);if(L>1){s=Object.assign({},s);for(const f of LVF)if(typeof s[f]==='number')s[f]*=L}}
-  const d=u.d*(c.pa||1)*c.n*mult(c.u)*tileMult(i)*(c.sh>0?1.3:1)*(c.sy||1)*augA(c)*s.m,col=u.col,P=o=>G.fx.push(o);c.bT=.6;c.b=.6;
+  const d=u.d*(c.pa||1)*c.n*mult(c.u)*tileMult(i)*(c.sh>0?1.3:1)*(c.sy||1)*augA(c)*s.m*(SPK_NO.has(c.u)?1:SPK),col=u.col,P=o=>G.fx.push(o);c.bT=.6;c.b=.6;
   SND.play('special',sndKind(s),u.t);if(!(G.time-(G.cutAt??-99)>=15&&cutin(c.u,u.n+' — '+s.n+'!')&&(G.cutAt=G.time)))toast(u.n+' — '+s.n+'!');if(u.t>=3)G.flash=Math.max(G.flash||0,.15);G.shake=Math.max(G.shake,u.t>=3?.15:.06);
   P({k:'ring',x,y,r:40,t:.4,T:.4,c:col});P({k:'ray',x,y,t:.5,T:.5,c:col});
   const hitAll=(cx,cy,r,f)=>{for(const m of G.mobs){if(m.hp<=0||m.p<28)continue;const[mx,my]=pos(m.p);if(Math.hypot(mx-cx,my-cy)<=r)f(m)}};
@@ -1738,7 +1743,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:254};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:255};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
