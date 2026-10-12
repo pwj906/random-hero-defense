@@ -1705,7 +1705,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:239};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:240};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1928,34 +1928,19 @@ function tutRect(t){const st=$('stage').getBoundingClientRect(),k=st.width/$('st
   const e=typeof t==='string'?document.querySelector(t):null;if(!e||!e.offsetParent&&getComputedStyle(e).position!=='fixed')return null;const r=e.getBoundingClientRect();if(!r.width)return null;return{x:(r.left-st.left)/k-4,y:(r.top-st.top)/k-4,w:r.width/k+8,h:r.height/k+8}}
 function tutCellK(){for(const i of [12,11,13,7,17,6,8,16,18,2,22,10,14]){if(i<NC&&!G.cells[i])return i}return G.cells.findIndex(c=>!c)}
 const TUTS=[
- {t:'👋 환영해!',x:'랜덤 히어로 디펜스의 모든 기능을 차근차근 익혀 보자. 설명 중에는 게임이 멈춰 있어.<br>언제든 <b>건너뛰기</b>를 누르면 바로 게임을 시작해.'},
- {t:'👾 적과 패배 조건',at:'path',x:'적은 바깥 <b>길</b>을 따라 계속 돌아.<br>필드의 적이 <b>200마리</b>가 되면 게임 끝! <b>10웨이브마다 나오는 보스</b>를 제한 시간 안에 못 잡으면 보스가 남아서 적 <b>15마리</b> 몫으로 쌓여.'},
- {t:'⏱️ 웨이브',at:'#hud',x:'위에는 지금 웨이브, 다음 웨이브까지 남은 시간, 필드의 적 수가 보여. 웨이브가 높을수록 랭킹이 올라가.'},
- {t:'🎲 소환',at:'#summon',do:1,x:'<span class="do">소환 버튼을 3번 눌러 봐.</span><br>영웅이 랜덤 등급으로 나와 빈 칸에 자리 잡아. 뽑을수록 비용이 조금씩 올라.<br>운이 나빠도 <b>40번</b> 안에 행성 등급이 한 번은 꼭 나와.',
+ {t:'👋 환영해!',at:'path',x:'적은 바깥 <b>길</b>을 계속 돌아. <b>200마리</b>가 쌓이면 끝!<br>설명 중엔 게임이 멈춰 있어.'},
+ {t:'🎲 소환',at:'#summon',do:1,x:'<span class="do">소환을 3번 눌러 봐.</span> 영웅이 랜덤 등급으로 나와.',
   on:()=>{G.coins=Math.max(G.coins,300);TUT.s0=G.summons;refresh()},ok:()=>G.summons>=TUT.s0+3},
- {t:'🪙 코인과 🍀 행운석',at:'#res',x:'<b>코인</b>은 적을 잡을 때마다 들어와. 소환·강화·조합에 써.<br><b>행운석</b>은 보스·현상금·미션으로 모으고, 행운 도박에 써.'},
- {t:'⭐ 승급',do:1,x:'같은 영웅 <b>3명</b>이 한 칸에 모이면 승급할 수 있어.<br><span class="do">반짝이는 칸을 눌러 봐.</span>',
+ {t:'⭐ 승급',do:1,x:'같은 영웅 <b>3명</b>이 모이면 승급!<br><span class="do">반짝이는 칸을 눌러 봐.</span> (두 번 빠르게 누르면 바로 승급)',
   on:()=>{const i=tutCellK(),k=BY[0][0];G.cells[i]={u:k,n:3,cd:0,b:0,pop:.25,ax:0,ay:0,sc:0};TUT.mi=i;TUT.mk=k;G.sel=null;refresh()},at:()=>TUT.mi,ok:()=>G.sel===TUT.mi},
- {t:'⭐ 승급',at:'#bM',do:1,x:'<span class="do">승급 버튼을 눌러.</span> 한 단계 위 등급 영웅이 랜덤으로 나와.<br>여러 칸이 준비되면 가운데 <b>일괄 승급</b> 버튼으로 한 번에 올릴 수 있어.',
+ {t:'⭐ 승급',at:'#bM',do:1,x:'<span class="do">승급 버튼을 눌러.</span>',
   ok:()=>{const c=G.cells[TUT.mi];return !c||c.u!==TUT.mk||c.n<3},skipIf:()=>!$('bM')},
- {t:'📋 영웅 정보·판매',at:'#sel',x:'칸을 누르면 영웅의 공격력·사거리·특수기가 보여.<br><b>판매</b>하면 코인이나 행운석을 돌려받고, <b>🔒 승급 잠금</b>을 걸면 일괄 승급에서 빠져.<br>칸 왼쪽 위 아이콘은 역할이야(💥범위 ☠️지속 ❄️감속 ⚡연쇄 🎯약화 💫기절 ✨버프 🗡️단일). 아래 막대는 특수기 게이지(★ 꽉 차면 준비), <b>초록 점선·▲</b>은 버프를 받는 중이라는 뜻. 버프 영웅을 누르면 오라가 닿는 칸이 초록으로 보여.',
-  on:()=>{const i=G.cells.findIndex(c=>c);if(i>=0){G.sel=i;refresh()}},off:()=>{G.sel=null;refresh()}},
- {t:'✋ 자리 옮기기',at:'board',do:1,x:'<span class="do">영웅을 꾹 눌러 다른 칸으로 끌어 봐.</span><br>같은 영웅 칸에 놓으면 합쳐지고, 다른 영웅이면 자리가 바뀌어. 강화된 칸(빛나는 판)에 센 영웅을 두면 좋아.',
+ {t:'✋ 자리 옮기기',at:'board',do:1,x:'<span class="do">영웅을 꾹 눌러 다른 칸으로 끌어 봐.</span> 같은 영웅끼리는 합쳐져.',
   on:()=>{TUT.mv=0},ok:()=>TUT.mv,next:1},
- {t:'🪐 행성 시너지',at:'#synS',x:'같은 행성의 <b>서로 다른 영웅</b>을 여러 종 모으면 그 행성 시너지가 켜져(보통 3종·4종). 왼쪽 아래 행성 칩을 누르면 행성마다 효과를 볼 수 있어.'},
- {t:'⬆ 강화',at:'#bUp',do:1,x:'<span class="do">강화를 눌러 봐.</span>',ok:()=>sheet==='up'},
- {t:'⬆ 강화',at:'#sheet',x:'<b>소환 확률 강화</b>: 높은 등급이 더 잘 나와.<br><b>랜덤판 강화</b>: 칸 하나를 영구로 강화해.<br><b>행성 지원</b>: 그 행성 영웅 전체 공격력이 올라.<br><b>특수조합 개별 강화</b>: 특수 조합 영웅을 하나씩 따로 키워.',off:()=>{sheet=null;refresh()}},
- {t:'🌌 우주 조합',at:'#bMyth',do:1,x:'<span class="do">우주 조합을 눌러 봐.</span>',ok:()=>sheet==='myth'},
- {t:'🌌 우주 조합',at:'#sheet',x:'같은 행성 영웅을 <b>등급마다 1명씩</b> 모으면 최강 등급 <b>우주 히어로</b>로 합칠 수 있어. 재료가 모이면 버튼이 반짝이고 화면에 조합 버튼이 떠.<br>아래 <b>✨ 특수 조합</b>은 서로 다른 행성의 우주 히어로끼리 합친 최상위 영웅이야. 재료보다 훨씬 강해.<br>같은 우주 히어로가 2명이면 <b>🔮 농축</b>해서 한 칸으로 합칠 수 있어. 겹칠수록 커지고 더 세져(×2 = 공격력 약 2.2배 + 공격·특수기 속도 +25%). 흩어 두는 것보다 모으는 게 이득이야.',off:()=>{sheet=null;refresh()}},
- {t:'🍀 행운 도박',at:'#bGam',do:1,x:'<span class="do">행운 도박을 눌러 봐.</span>',ok:()=>sheet==='gam'},
- {t:'🍀 행운 도박',at:'#sheet',x:'<b>행운석</b>으로 높은 등급 영웅을 확률로 뽑을 수 있어.<br><b>🎫 복권</b>은 긁어서 코인·행운석·행성 히어로를 노려. 긁는 동안 게임은 멈춰. 10장 일괄 긁기도 있어.',off:()=>{sheet=null;refresh()}},
- {t:'🎯 현상금',at:'#bBty',x:'현상금 몬스터를 불러내 <b>30초 안에</b> 잡으면 코인과 행운석을 크게 줘. 시간이 지나면 다시 부를 수 있어.'},
- {t:'📜 미션',at:'#msn',x:'왼쪽 위 미션을 깨면 코인·행운석 보상이 들어오고 다음 미션이 나와. <b>3웨이브</b> 안에 못 깨면 다른 미션으로 바뀌어.'},
- {t:'💎 증강',x:'<b>5웨이브</b>와 <b>보스를 잡을 때마다</b> 증강 3장 중 하나를 골라. 실버·골드·프리즘 등급이 있고 판 끝까지 유지돼. 마음에 안 들면 한 번 다시 뽑을 수 있어.'},
- {t:'🔮 소환사 스킬',at:()=>skEq().length?'#sk0':null,x:'랜덤박스에서 낮은 확률로 <b>소환사 스킬</b>을 얻어. 내 캐릭터에서 2개까지 장착하면 여기 버튼이 생겨.<br><b>자동</b>을 켜면 쿨타임마다 알아서 써.'},
- {t:'⏩ 배속·일시정지',at:'#speed',x:'배속 버튼으로 게임 속도를 바꿔. 오른쪽 위 ⏸ 로 멈추거나 처음부터 다시 할 수 있어.'},
- {t:'🏆 판이 끝나면',x:'기록이 <b>랭킹</b>에 올라가고 <b>랜덤박스</b>를 받아. 박스에서 영웅 조각·소환사 스킬이 나와.<br>메인 화면 <b>🪐 행성 고르기</b>에서 데려갈 행성 7개를 고르고, <b>내 캐릭터</b>에서 모은 영웅과 스킬을 확인해. 해금되는 새 행성도 있어!'},
- {t:'🚀 준비 끝!',x:'이제 실전이야. 소환하고, 3명 모아 승급하고, 운에 맡겨 봐!<br>튜토리얼은 메인 화면에서 다시 볼 수 있어.'}];
+ {t:'⬆ 강화',at:'#bUp',x:'코인으로 소환 확률·칸·행성 공격력을 올려.'},
+ {t:'🌌 우주 조합',at:'#bMyth',x:'같은 행성 영웅을 등급별로 1명씩 모으면 <b>우주 히어로</b>!<br>같은 우주 히어로는 <b>두 번 눌러 🔮농축</b>하면 훨씬 세져.'},
+ {t:'🍀 도박·🎯 현상금',at:'#bGam',x:'행운석으로 높은 등급을 노리고, 현상금 몬스터로 보상을 챙겨.'},
+ {t:'🚀 시작!',x:'5웨이브·보스마다 <b>증강</b>을 하나 골라. 나머지는 하면서 익히면 돼!<br>튜토리얼은 메인 화면에서 다시 볼 수 있어.'}];
 function tutStart(){if(!G)return;TUT={i:-1};G.pause=true;G.tutOn=1;$('tut').style.display='block';tutGo(0);clearInterval(TUT.tm);TUT.tm=setInterval(tutTick,200)}
 function tutGo(i){const P=TUTS[TUT.i];if(P&&P.off)P.off();TUT.i=i;while(TUT.i<TUTS.length&&TUTS[TUT.i].skipIf&&TUTS[TUT.i].skipIf())TUT.i++;if(TUT.i>=TUTS.length)return tutEnd();const S=TUTS[TUT.i];if(S.on)S.on();tutDraw()}
 function tutNext(){tutGo(TUT.i+1)}
@@ -2022,7 +2007,8 @@ const dragEnd=e=>{
   if(G.over)return;
   if(d.on){const j=cellAt(d.x,d.y);if(j>=0&&j!==d.i)moveCell(d.i,j)}
   else{const now=performance.now(),dbl=tapI===d.i&&now-tapAt<400,c=G.cells[d.i];tapI=d.i;tapAt=now;
-    const sc=G.sel!==null&&G.sel!==d.i?G.cells[G.sel]:null;if(dbl&&c&&!c.lk&&c.n===3&&U[c.u].t<3&&BY[U[c.u].t+1].length){tapI=-1;G.sel=d.i;merge();G.sel=null}else if(sc&&c&&sc.u===c.u&&sc.n+c.n<=3&&U[c.u].t<4){moveCell(G.sel,d.i);G.sel=null}else G.sel=G.sel===d.i?null:d.i}
+    const sc=G.sel!==null&&G.sel!==d.i?G.cells[G.sel]:null;let oj=-1;if(dbl&&c&&U[c.u].t>=4){for(let q=0;q<NC;q++){const o=G.cells[q];if(q!==d.i&&o&&o.u===c.u&&(oj<0||(o.k||1)>(G.cells[oj].k||1)))oj=q}}
+    if(dbl&&c&&!c.lk&&c.n===3&&U[c.u].t<3&&BY[U[c.u].t+1].length){tapI=-1;G.sel=d.i;merge();G.sel=null}else if(oj>=0){tapI=-1;concDo(d.i,oj);G.sel=null}else if(dbl&&c&&U[c.u].t>=4){tapI=-1;toast('🔮 같은 우주 히어로가 하나 더 있어야 농축할 수 있어요')}else if(sc&&c&&sc.u===c.u&&U[c.u].t>=4){concDo(G.sel,d.i);G.sel=null}else if(sc&&c&&sc.u===c.u&&sc.n+c.n<=3&&U[c.u].t<4){moveCell(G.sel,d.i);G.sel=null}else G.sel=G.sel===d.i?null:d.i}
   refresh()
 };
 cv.addEventListener('pointerup',dragEnd);cv.addEventListener('pointercancel',()=>{drag=null});
