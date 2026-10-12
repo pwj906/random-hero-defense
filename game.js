@@ -676,8 +676,10 @@ const TAGC={'단일':'#ff8a8a','범위':'#ffb066','지속':'#7ee08a','연쇄':'#
 const PVT={astraon:['약화','연쇄'],yeongeopsu:['범위','감속'],unhwa:['범위'],clockweaver:['범위','표식'],hwangryong:['범위'],jinmu:['범위','감속'],jeokhwang:['범위'],snowkid:['범위','감속'],icicle_bat:['관통','감속'],snow_yeti:['범위','감속'],ice_golem:['범위','감속'],baekho:['범위','감속'],feather_courier:['범위'],feather_archer:['관통'],storm_owl:['범위','감속'],goldwing_commander:['범위'],jujak:['범위'],hornkid:['범위'],fang_lancer:['관통','범위'],iron_dragonkin:['범위'],hongryeon:['범위'],cheongryong:['연쇄','범위'],hyeonmu:['범위','감속'],lulu:['단일','기절'],miel:['단일','범위'],noctia:['범위','기절'],aurielle:['버프'],selene:['범위'],gamer:['단일'],veteran:['단일'],napoleon:['버프'],jir:['연쇄'],zeus:['단일','범위','기절'],mole:['단일','감속'],alpaca:['단일','약화'],orca:['버프'],mugyeom:['단일'],pico:['단일'],jacko:['단일','범위'],bricks:['단일'],mold:['단일','속박'],lunette:['범위','약화'],cleanbot:['범위'],deliverybot:['단일','코인'],policebot:['관통'],fortressbot:['범위'],archeon:['단일'],orbin:['단일'],nero:['단일','코인'],vargon:['단일','랜덤'],seraphine:['버프'],belkaon:['버프'],floret:['지속'],sporun:['버프'],cacton:['단일','처형'],elderon:['단일'],sylvaion:['지속','감속'],momo:['버프'],pulu:['단일','감속'],bubon:['단일','밀치기'],stella:['연쇄'],chronel:['단일','기절']};
 const SPT={astraon:['범위','기절'],yeongeopsu:['범위','지속','감속'],unhwa:['범위','지원'],clockweaver:['범위','기절'],hwangryong:['범위','기절','지속'],jinmu:['범위','기절','지속'],jeokhwang:['범위','지속'],snowkid:['범위','감속'],icicle_bat:['범위'],snow_yeti:['범위'],ice_golem:['범위','지속','감속'],baekho:['범위','기절'],feather_courier:['범위'],feather_archer:['관통'],storm_owl:['범위','감속'],goldwing_commander:['관통'],jujak:['범위','지속'],hornkid:['범위'],fang_lancer:['범위'],iron_dragonkin:['범위'],hongryeon:['관통','범위'],cheongryong:['범위'],hyeonmu:['범위','지속','감속'],lulu:['단일'],miel:['단일'],noctia:['범위','기절'],aurielle:['범위'],selene:['범위'],gamer:['단일'],veteran:['범위'],napoleon:['단일'],jir:['연쇄'],zeus:['범위','기절'],floret:['지속'],sporun:['버프'],cacton:['처형'],elderon:['범위'],sylvaion:['지속','감속'],cleanbot:['범위','감속'],deliverybot:['단일'],policebot:['관통'],fortressbot:['범위'],archeon:['범위','약화'],momo:['버프'],pulu:['범위','감속'],bubon:['범위','밀치기'],stella:['연쇄'],chronel:['정지'],orbin:['단일'],nero:['단일','코인'],vargon:['랜덤'],seraphine:['버프'],belkaon:['버프','코인'],mole:['범위','감속'],alpaca:['범위','약화'],orca:['버프'],mugyeom:['모으기','기절'],pico:['단일'],jacko:['범위'],bricks:['단일'],mold:['지속','속박'],lunette:['범위','약화']};
 function tagH(a){return (a||[]).map(t=>'<span class="tg" style="--c:'+(TAGC[t]||'#ddd')+'">'+t+'</span>').join('')}
-function rngTag(k){const u=U[k];return u.melee?'근접':(u.r-16)/CS>=4.9?'저격':'원거리'}
+function rngTag(k){const u=U[k];return u.melee?'근접':((u.r0||u.r)-16)/CS>=4.9?'저격':'원거리'}
 for(const k in PV){const u=U[k],v=PV[k];if(!u)continue;for(const f in v){if(f==='r')u.r=Math.round(v.r*CS+16);else if(f==='sm')u.s*=v.sm;else if(f==='sp')u.sp=Math.round(v.sp*CS);else if(f==='kbd')u.kbd=v.kbd*CS;else if(f==='nth')u.nth=Object.assign({},v.nth,v.nth.r?{r:v.nth.r*CS}:{});else if(f!=='x')u[f]=v[f]}}
+// 사거리 축소(v236): 자리 선택이 의미 있게. 원래 사거리는 r0(증강 판정용)
+const RANGE_K=[1,.95,.85,.78,.72],RANGE_MIN=1.5;for(const k in U){const u=U[k];if(typeof u.r!=='number')continue;u.r0=u.r;u.r=Math.round(Math.max(RANGE_MIN,(u.r-16)/CS*RANGE_K[u.t])*CS+16)}
 let drag=null;let H=1581/MAPK,T=220/MAPK,B=1190/MAPK,PH=B-T,PER=2*(PW+PH),GY=CYS[0]-CS/2,FS=1;let MAXU=NC*3;
 // 백수형 사거리 +2칸은 미확정. 기존 200px 유지.
 const UIIMG={"btn_summon_normal": __P(1703), "btn_summon_pressed": __P(1704), "btn_summon_disabled": __P(1705), "btn_combine_normal": __P(1706), "btn_combine_pressed": __P(1707), "btn_combine_disabled": __P(1708), "btn_luck_normal": __P(1709), "btn_luck_pressed": __P(1710), "btn_luck_disabled": __P(1711), "btn_upgrade_normal": __P(1712), "btn_upgrade_pressed": __P(1713), "btn_upgrade_disabled": __P(1714), "wave_panel": __P(1715), "enemy_counter_track": __P(1716), "resource_bar": __P(1717), "speed_pill": __P(1718)};
@@ -728,7 +730,7 @@ function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 function place(id){
   let at=-1;
   if(U[id].t<4)for(let i=0;i<NC;i++){const c=G.cells[i];if(c&&c.u===id&&c.n<3){c.n++;c.pop=.25;at=i;if(c.n===3)hint3(id);break}}
-  if(at<0){const e=[];G.cells.forEach((c,i)=>{if(!c)e.push(i)});if(!e.length)return false;at=e[0];G.cells[at]={u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0}}
+  if(at<0){const e=[];G.cells.forEach((c,i)=>{if(!c)e.push(i)});if(!e.length)return false;const PD=cellPathD();e.sort((a,b)=>PD[a]-PD[b]||a-b);at=e[0];G.cells[at]={u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0}}
   const t=U[id].t,[x,y]=cellXY(at);
   parts(x,y,6+t*5,TC[t],70+t*25,2.5+t*.5);
   if(t>=1)G.fx.push({k:'ring',x,y,r:26+t*16,t:.4,T:.4,c:TC[t]});
@@ -797,6 +799,7 @@ function drawTileUpgradeLabels(){
 function concK(c){const k=(c&&c.k)||1;return k*(1+.08*(k-1))}
 const ROLEI={'버프':'✨','지속':'☠️','범위':'💥','연쇄':'⚡','관통':'➶','약화':'🎯','기절':'💫','정지':'💫','속박':'💫','감속':'❄️','코인':'🪙','처형':'💀','밀치기':'💨','랜덤':'🎲','표식':'🎯','단일':'🗡️'};
 function roleIcons(k){if(U[k]._ri)return U[k]._ri;const t=[...new Set([...(AURA[k]?['버프']:[]),...(PVT[k]||[])])];const ord=Object.keys(ROLEI);t.sort((a,b)=>ord.indexOf(a)-ord.indexOf(b));return U[k]._ri=t.filter(x=>ROLEI[x]).slice(0,2).map(x=>ROLEI[x])}
+let _PD=null;function cellPathD(){if(_PD)return _PD;_PD=[];for(let i=0;i<NC;i++){const[x,y]=cellXY(i);let m=1e9;for(let q=0;q<PER;q+=6){const[a,b]=pos(q);m=Math.min(m,Math.hypot(a-x,b-y))}_PD.push(Math.round(m/4))}return _PD}
 function concSpd(c){const k=(c&&c.k)||1;return Math.min(2,1+.25*(k-1))}
 function concSz(c){const k=Math.min(6,(c&&c.k)||1);return 1+.09*(k-1)}
 function tileMult(i){return (1+((G.tile&&G.tile[i])||0))*concK(G.cells&&G.cells[i])}
@@ -958,7 +961,7 @@ const AUGP={hunter:()=>{if(G.btyCd>25)G.btyCd=25},seed:()=>{G.coins+=300},freeze
 function evolveOne(){let bi=-1,bt=9;G.cells.forEach((c,i)=>{if(!c)return;const t=U[c.u].t;if(!c.lk&&t<2&&BY[t+1].length&&t<bt){bt=t;bi=i}});if(bi<0)return;const c=G.cells[bi];c.n--;if(c.n<=0)G.cells[bi]=null;const id=pickU(bt+1);if(!place(id)){c.n++;G.cells[bi]=c;return}const at=G.cells.findIndex(q=>q&&q.u===id&&q.pop>0),[px,py]=cellXY(at<0?bi:at);burst(px,py,bt+1,false);G.fx.push({k:'t',x:px,y:py-26,t:1.1,T:1.1,s:'🧬 진화!',cr:true,dl:.05})}
 function A(k){return G&&G.aug&&G.aug[k]?1:0}
 function rcp(m){const r=RECIPE[m];return A('short')&&r&&r.length>3?r.slice(0,r.length-1):r}
-function augA(c){if(!G.aug)return 1;let k=1;const u=U[c.u];if(G.aug.eye&&G.cells.indexOf(c)===G.eyeI)k*=1.3;if(G.aug.trio&&c.n>=3)k*=1.4;if(G.aug.grass&&u.t<=1)k*=3;if(G.aug.rainbow&&G.pl&&Object.keys(G.pl).length>=5)k*=1.3;if(G.aug.packed&&!G.cells.some(q=>!q))k*=1.6;if(G.aug.close&&u.r<=CS*2.45)k*=1.5;if(G.aug.far&&u.r>=CS*4)k*=1.35;return k}
+function augA(c){if(!G.aug)return 1;let k=1;const u=U[c.u];if(G.aug.eye&&G.cells.indexOf(c)===G.eyeI)k*=1.3;if(G.aug.trio&&c.n>=3)k*=1.4;if(G.aug.grass&&u.t<=1)k*=3;if(G.aug.rainbow&&G.pl&&Object.keys(G.pl).length>=5)k*=1.3;if(G.aug.packed&&!G.cells.some(q=>!q))k*=1.6;if(G.aug.close&&(u.r0||u.r)<=CS*2.45)k*=1.5;if(G.aug.far&&(u.r0||u.r)>=CS*4)k*=1.35;return k}
 function plNeed(){return A('clan')?[2,3]:[3,4]}
 function synTick(){const P={};for(const c of G.cells)if(c&&!U[c.u].fu)(P[U[c.u].planet]=P[U[c.u].planet]||new Set()).add(c.u);const nd=plNeed();G.pl={};G.plOn={};for(const p in P){G.pl[p]=P[p].size;G.plOn[p]=P[p].size>=nd[1]?2:P[p].size>=nd[0]?1:0}
   const ar=A('wideaura')?2:1,ak=A('ampaura')?2:1;for(const c of G.cells)if(c){c.pa=1;c.pas=1;c.pcd=1;c.prg=0;c.psl=0;c.pcr=0;c.aur=0}
@@ -1340,7 +1343,7 @@ function update(dt){
       fire(c.u,c,x,y,tx,ty,best);c.tg.forEach((m,j)=>{const[ux,uy]=pos(m.p);G.pend.push({m,u,d:dj,t:c.tgT[j],x:ux,y:uy,c,nh:j===0?nh:null})})}
     else{const dl2=fire(c.u,c,x,y,tx,ty,best);best.inc=(best.inc||0)+d;G.pend.push({m:best,u,d,t:dl2,x:tx,y:ty,c,nh});if(u.sp)G.fx.push({k:'c',x:tx,y:ty,r:u.sp,t:.3,T:.3,c:u.col,dl:dl2})}
 
-    c.cd=c.ncd=1/u.s/(c.as>0?c.asv||1:1)/(G.bn?G.bn.spd:1)/(c.pas||1)/(A('brawl')&&u0.r<CS*2+16?1.6:1)/(A('quick')?1.1:1)/(G.odOn?1.5:1)/concSpd(c)
+    c.cd=c.ncd=1/u.s/(c.as>0?c.asv||1:1)/(G.bn?G.bn.spd:1)/(c.pas||1)/(A('brawl')&&(u0.r0||u0.r)<CS*2+16?1.6:1)/(A('quick')?1.1:1)/(G.odOn?1.5:1)/concSpd(c)
   });
   if(G.zones&&G.zones.length){const dpp=(a,b)=>((a-b+PER*1.5)%PER)-PER/2;for(const z of G.zones){z.t-=dt;if(z.dot){z.tk-=dt;if(z.tk<=0){z.tk+=.5;for(const o of G.mobs){if(o.hp<=0||o.p<28||(!z.all&&Math.abs(dpp(o.p,z.p))>z.seg))continue;if(z.sl)o.sl=Math.max(o.sl,z.sl);hit(o,{},z.d,0,z.c)}}continue}for(const o of G.mobs){if(o.hp<=0||o.p<28||z.seen.has(o)||Math.abs(dpp(o.p,z.p))>z.seg)continue;z.seen.add(o);if(o.boss)o.sl=Math.max(o.sl,z.hold);else{o.rt=Math.max(o.rt||0,z.hold);o.rtT=z.hold}hit(o,{},z.d,0,z.c)}}G.zones=G.zones.filter(z=>z.t>0)}
   for(const q of G.sched){q.t-=dt;if(q.t<=0)q.f()}G.sched=G.sched.filter(q=>q.t>0);
@@ -1684,7 +1687,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:235};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:236};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1759,6 +1762,7 @@ const FUSION={astraon:{n:'아스트라온',nick:'천벌 궤도 포격 · 약화'
  clockweaver:{n:'운명의 시계술사',nick:'시간 속박 · 운명 폭발',mat:['chronel','lunette','belkaon']},
  hwangryong:{n:'황룡',nick:'사신 순환 · 최종 영웅',mat:['jinmu','jeokhwang']}};
 const FU_SPAWN={jinmu:{m:6,st:2,bst:.6},jeokhwang:{m:8,st:1,bst:.3,burn:1,burnT:4},astraon:{m:8,st:1.5,bst:.4},yeongeopsu:{m:6,st:1.5,bst:.3},unhwa:{m:5,st:1,bst:.2},clockweaver:{m:8,st:1.5,bst:.3},hwangryong:{m:12,st:3,bst:1}};
+for(const id in FUSION){if(AURA[id])continue;const A0={};for(const m of FUSION[id].mat)if(AURA[m])for(const f in AURA[m])if(f!=='x')A0[f]=Math.max(A0[f]||0,+(AURA[m][f]*1.3).toFixed(3));if(Object.keys(A0).length){A0.x='재료에게 물려받은 오라(1.3배)'+(A0.pa?' — 아군 공격력 +'+Math.round(A0.pa*100)+'%':'')+(A0.pcd?' · 쿨타임 '+Math.round(A0.pcd*100)+'% 빨리':'')+(A0.pas?' · 공격속도 +'+Math.round(A0.pas*100)+'%':'');AURA[id]=A0}}
 function fuStartLv(id){const mats=FUSION[id].mat;if(mats.every(k=>U[k]&&U[k].fu)){let sp=0;for(const k of mats){const l=(G.fuLv&&G.fuLv[k])||0;sp+=80*l+40*l*(l-1)}sp*=.7;let l=0,acc=0;while(acc+80+80*l<=sp){acc+=80+80*l;l++}return l}
   const avg=mats.reduce((a,k)=>a+planetLevel(k),0)/mats.length;return Math.floor(avg*.25/.3)}
 function fuseCost(){return Math.round((500+300*((G&&G.nFuse)||0))*(A('fuslab')?.6:1))}
