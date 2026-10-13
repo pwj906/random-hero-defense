@@ -123,4 +123,5 @@
 - 행성 테마 `PTH`(무늬·문장 `EMP` SVG·문구), 카드 `.pcard`(`cardStyle`, `planetBand`), 성 `drawCastle`(깃발이 버틴 만큼 올라감). 그림이 오면 `RH_ASSETS.planet[행성이름]={emblem,flag,card,castle}`(data URI)로 넣으면 코드 그림 대신 씀. 요청서는 `wip/survivor_design_request.md`.
 - v8: 행성 그림 적용 — GPT zip(planets/<영문id>/{emblem,flag,card,castle}.png, common/supply.png)을 `python3 tools/survivor_planets.py <zip>`로 survivor/assets.js 끝에 붙임(emblem 128·flag 192×128·card 300×420·castle 256·supply 128 WebP). 다시 돌리면 덮어씀. 카드 그림은 테두리 액자라 `100% 100%`로 늘려 씀.
 - v9: 친구 피드백 '조합 줄이 화면을 가려서 이동이 안 됨' → `#combo`는 파티 칸 왼쪽 위 구석에 접힌 상태가 기본('✦ 조합 N · M개 가능 ▴', `CB_OPEN`), 접혀 있어도 재료 다 모인 조합은 작은 금색 '○○ 조합하기' 버튼으로 보임. 컨테이너는 pointer-events:none·버튼만 auto라 나머지 영역 터치는 이동 조이스틱으로 통과.
+- v10: '보급소가 너무 많아' → 보급소 45~65m마다(이전 17~26m), 정예는 캡슐·도시락만. 대신 증강 세게: 피해 +25%/단(최대 8)·공속 +20%(6)·이동 +12%(4)·체력 +40(6). 위원 체력 130·회복 1.5/초, 난이도 시계 `G.T=t·0.42+m·0.075`, 보스 체력 기준 750. 봇 6판 9.5~17분, 1,988~4,497m, 보급소 8~20번.
 - 계정·랭킹: 디펜스와 같은 Supabase·같은 계정(`rhd_auth`, `@player.rhd.app`, 같은 출처라 로그인 공유). 랭킹 표 `public.survivor_runs`(pid, nick, m, k, t, lv) — 누구나 읽기·추가만. 순위 m 내림차순 → k 내림차순 → t 오름차순, 상위 100. 닉네임은 디펜스와 같은 `cleanNick`.

@@ -280,11 +280,11 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
       <div class="rule"><b style="color:var(--ok)">전진 · 행성의 성 · 장벽</b><p>위로 전진하세요. 히어로는 행성 성에서 깃발을 끝까지 올려야 합류하고, 길목 보급소에선 증강·업그레이드를 고릅니다. 500m마다 막아선 장벽은 보스를 잡아야 열립니다.</p></div>
     </div>
     <p id="bestLine" class="best"></p>
-    <div class="ver">서바이버 v9 · 조합 줄 접기 · 이동 막힘 수정</div>
+    <div class="ver">서바이버 v10 · 보급소 줄이고 더 세게</div>
     <div class="controls">이동: WASD · 방향키 · 화면 드래그 &nbsp;|&nbsp; 카드 선택: 1 2 3 · 다시 뽑기 R · 계속 Space · 일시정지 Esc</div>
   </div>
 </div>
-<script src="assets.js?v=9"></script>
+<script src="assets.js?v=10"></script>
 <script>
 (()=>{
 'use strict';
@@ -346,10 +346,10 @@ const ETYPE={
   goblin_captain:{hp:300,spd:68,r:26,dmg:18,xp:25,elite:true},
 };
 const STATS={
-  dmg:{n:'평화협정 지원',d:'모든 히어로 피해 +12%',max:10},
-  as:{n:'응원 방송',d:'모든 히어로 공격 속도 +10%',max:8},
-  spd:{n:'추진 부츠',d:'위원 이동 속도 +8%',max:5},
-  hp:{n:'위원회 방어막',d:'최대 체력 +25, 바로 회복',max:8},
+  dmg:{n:'평화협정 지원',d:'모든 히어로 피해 +25%',max:8},
+  as:{n:'응원 방송',d:'모든 히어로 공격 속도 +20%',max:6},
+  spd:{n:'추진 부츠',d:'위원 이동 속도 +12%',max:4},
+  hp:{n:'위원회 방어막',d:'최대 체력 +40, 바로 회복',max:6},
 };
 
 
@@ -407,7 +407,7 @@ function reelFaces(pool,res){const a=[];for(let i=0;i<26;i++)a.push(i===22?res:p
 function newGame(mode){
   const fast=mode==='fast';
   G={mode,fast,t:0,T:0,ts:fast?1.3:1,bossEvery:fast?60:120,xpMul:fast?1.8:1,
-    p:{x:0,y:0,hp:100,max:100,inv:0,face:1},
+    p:{x:0,y:0,hp:130,max:130,inv:0,face:1},
     lv:1,xp:0,need:needXp(1),slots:[null,null,null,null,null,null],
     en:[],shots:[],eb:[],fx:[],gems:[],items:[],tx:[],hz:[],pods:[],guard:null,
     kills:0,rerolls:3,st:{dmg:0,as:0,spd:0,hp:0,mag:0,xp:0},
@@ -423,7 +423,7 @@ function newGame(mode){
 /* ---------- party logic ---------- */
 function calcSyn(){const c={};heroes().forEach(h=>{if(!h.def.combo)c[h.def.planet]=(c[h.def.planet]||0)+1});G.syn=c}
 function synMul(pl){const n=G.syn[pl]||0;return n>=4?1.8:n===3?1.45:n===2?1.2:1}
-function hDmg(h){const d=h.def;return TD[d.tier]*(d.tier>=5?1:SM[Math.min(h.stack,3)])*(d.combo?1.7:1)*KIND[d.k].mul*(d.far?1.5:1)*synMul(d.planet)*(1+.12*G.st.dmg)*(h.guest?1.4:1)*(1+.3*(h.awk||0))}
+function hDmg(h){const d=h.def;return TD[d.tier]*(d.tier>=5?1:SM[Math.min(h.stack,3)])*(d.combo?1.7:1)*KIND[d.k].mul*(d.far?1.5:1)*synMul(d.planet)*(1+.25*G.st.dmg)*(h.guest?1.4:1)*(1+.3*(h.awk||0))}
 const canStack=h=>h.def.tier<=3||(h.def.tier===4&&h.stack<3);
 const canAwk=h=>!canStack(h);
 function addStack(h,out){
@@ -496,7 +496,7 @@ function applyCard(c,out){
   else if(c.t==='stack')addStack(c.h,out);
   else if(c.t==='awk'){c.h.awk=(c.h.awk||0)+1;c.h.pop=.6}
   else if(c.t==='cap')openCapsule(out);
-  else if(c.t==='stat'){G.st[c.k]++;if(c.k==='hp'){G.p.max+=25;G.p.hp=Math.min(G.p.max,G.p.hp+25)}}
+  else if(c.t==='stat'){G.st[c.k]++;if(c.k==='hp'){G.p.max+=40;G.p.hp=Math.min(G.p.max,G.p.hp+40)}}
   else if(c.t==='combo')doCombo(c.c,out);
   else if(c.t==='heal'){G.p.hp=Math.min(G.p.max,G.p.hp+G.p.max*.4)}
 }
@@ -560,7 +560,7 @@ function spawnEnemy(type,x,y){const b=ETYPE[type],s=hpS();const e={type,x,y,hp:b
 function enemyRoll(){const T=G.T,L=[['slime_goblin',T>300?2:5]];if(T>40)L.push(['red_bat',3]);if(T>90)L.push(['mushroom_bandit',4]);if(T>200)L.push(['armored_beetle',T>400?4:2]);if(T>320)L.push(['crystal_snail',T>500?3:1.5]);let s=0;L.forEach(l=>s+=l[1]);let r=rnd()*s;for(const l of L){r-=l[1];if(r<=0)return l[0]}return L[0][0]}
 function spawnBoss(i,px,py){
   const B=BOSSES[i];let [x,y]=ringPos(-20);if(px!==undefined){x=px;y=py}
-  const cyc=G.wallN+1;const hp=900*hpS()*Math.pow(cyc,1.35)*(i===5?1.3:1);
+  const cyc=G.wallN+1;const hp=750*hpS()*Math.pow(cyc,1.35)*(i===5?1.3:1);
   const e={type:B.img,x,y,hp,max:hp,spd:82,r:44,dmg:16*(1+G.T/420),xp:0,fl:0,sl:0,dead:false,boss:{i,cd:2.5,mode:'chase',tt:0,pat:0,sh:0,ang:0}};
   G.en.push(e);G.boss=e;G.bi++;G.warned=false;
   toast(`${G.wallN+1}번째 장벽 · ${B.name} — ${B.title}`,'warn');
@@ -604,7 +604,7 @@ function updObj(dt){
   if(!G.gate&&!G.boss&&p.y-wy<900){G.gate={x:p.x,y:wy+150};toast(`제륵 장벽! 차원문의 ${BOSSES[G.wallN%6].name}을 쓰러뜨려야 지나갈 수 있어요`,'warn')}
   if(G.gate&&!G.boss&&Math.hypot(p.x-G.gate.x,p.y-G.gate.y)<50){p.inv=1.4;spawnBoss(G.wallN%6,G.gate.x,G.gate.y);G.fx.push({k:'ring',x:G.gate.x,y:G.gate.y,r:160,t:0,life:.6,col:'#ff5a6e',w:10})}
   if(!G.obj&&G.t>=G.nextBeacon)spawnBeacon();
-  if(G.best>=G.nextSup){G.nextSup+=170+rnd()*90;const sy=Math.max(wallY()+180,p.y-(380+rnd()*160));if(sy<p.y-200)G.items.push({x:p.x+(rnd()-.5)*560,y:sy,k:'sup'})}
+  if(G.best>=G.nextSup){G.nextSup+=450+rnd()*200;const sy=Math.max(wallY()+180,p.y-(380+rnd()*160));if(sy<p.y-200)G.items.push({x:p.x+(rnd()-.5)*560,y:sy,k:'sup'})}
   G.items=G.items.filter(it=>!(it.k==='sup'&&it.y-p.y>1000));
   const o=G.obj;if(!o)return;
   if(o.y-p.y>950){G.obj=null;return}
@@ -628,7 +628,7 @@ function hit(e,dm,col,slow,big){
 function kill(e){
   e.dead=true;G.kills++;
   if(e.boss){G.items.push({x:e.x,y:e.y,k:'chest'});burst(e.x,e.y,'#ffd84d',60);G.boss=null;toast(`${BOSSES[e.boss.i].name} 격파! 보물상자를 주우세요`,'good');G.bossKills=(G.bossKills||0)+1;G.wallN++;G.gate=null;G.p.hp=Math.min(G.p.max,G.p.hp+G.p.max*.3);toast(`장벽 돌파! 다음 장벽은 ${(G.wallN+1)*500}m`,'good');return}
-  if(e.elite){const r=rnd();G.items.push({x:e.x,y:e.y,k:r<.35?'cap':r<.65?'food':'sup'})}
+  if(e.elite){const r=rnd();G.items.push({x:e.x,y:e.y,k:r<.45?'cap':'food'})}
 }
 function shot(x,y,a,sp,dm,col,o){G.shots.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,dm,col,r:o.r||6,life:o.life||1,pierce:!!o.pierce,slow:o.slow,hit:o.pierce?new Set():null,big:o.big})}
 function lob(x,y,tx,ty,dm,col,r,slow,big){G.shots.push({x,y,sx:x,sy:y,tx,ty,t:0,dur:.32,lob:true,dm,col,r,slow,big})}
@@ -666,7 +666,7 @@ function updHero(h,hx,hy,dt){
   const d=h.def,K=KIND[d.k];
   if(h.fl>0)h.fl-=dt;if(h.pop>0)h.pop-=dt;
   if(G.freeze>0)return;
-  const asM=1+.1*G.st.as,sil=G.silence>0;
+  const asM=1+.2*G.st.as,sil=G.silence>0;
   h.cd-=dt*asM;
   const home=()=>{const k=Math.min(1,dt*7);h.x+=(hx-h.x)*k;h.y+=(hy-h.y)*k};
   if(K.leash){
@@ -717,12 +717,12 @@ function pickItem(it){
 
 function step(dt){
   if(!G||G.over)return;
-  G.t+=dt;G.T=G.t*.5+G.best/10*.09;
+  G.t+=dt;G.T=G.t*.42+G.best/10*.075;
   if(G.silence>0)G.silence-=dt;if(G.freeze>0)G.freeze-=dt;
   const p=G.p,inp=getInput();
-  const sp=165*(1+.08*G.st.spd)*(G.freeze>0?.5:1);
+  const sp=165*(1+.12*G.st.spd)*(G.freeze>0?.5:1);
   p.x+=inp.x*sp*dt;p.y+=inp.y*sp*dt;if(inp.x)p.face=inp.x<0?-1:1;
-  p.inv-=dt;p.hp=Math.min(p.max,p.hp+1*dt);
+  p.inv-=dt;p.hp=Math.min(p.max,p.hp+1.5*dt);
 
   // spawns & events
   const rate=Math.min(13,1.8+G.T/50+(G.T/300)**2)*(G.boss?.6:1);
