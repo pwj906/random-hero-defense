@@ -118,4 +118,6 @@
 - 신호탑: 그 행성 영웅(장벽 0개 집·동네, 1~2개 나라까지, 3개부터 행성까지 `o.hs`)이 탑 주위를 돌며 보이고, 9초 버티면 그 행성 영웅 카드(`pactCards`, 레벨업 모달 `pact`)에서 직접 고름.
 - 파티 6칸이 차면 새 히어로는 교체 창(`kind:'swap'`, 1~6키) — 빠진 히어로 몫은 남은 히어로 하나에 겹치기 +1(없으면 각성 +1), '안 바꾸기'는 경험치. 캡슐·상자·구출·협정 전부 같은 창.
 - 버전 표시: 시작 화면 `.ver`의 'vN'과 `assets.js?v=N`을 업데이트마다 같이 올린다(Pages 캐시로 옛 버전이 보일 때 확인용).
+- v7: 레벨·경험치 없음. 영웅은 행성 성(깃발 7초)에서만 고르고, 길목 보급소(`it.k='sup'`, 17~26m마다, `supCards`)에서 증강(STATS 4종)·겹치기·각성·캡슐·회복 중 고름. 정예는 캡슐·도시락·보급소를 떨굼. 봇 6판 7~17분, 2,670~5,194m.
+- 행성 테마 `PTH`(무늬·문장 `EMP` SVG·문구), 카드 `.pcard`(`cardStyle`, `planetBand`), 성 `drawCastle`(깃발이 버틴 만큼 올라감). 그림이 오면 `RH_ASSETS.planet[행성이름]={emblem,flag,card,castle}`(data URI)로 넣으면 코드 그림 대신 씀. 요청서는 `wip/survivor_design_request.md`.
 - 계정·랭킹: 디펜스와 같은 Supabase·같은 계정(`rhd_auth`, `@player.rhd.app`, 같은 출처라 로그인 공유). 랭킹 표 `public.survivor_runs`(pid, nick, m, k, t, lv) — 누구나 읽기·추가만. 순위 m 내림차순 → k 내림차순 → t 오름차순, 상위 100. 닉네임은 디펜스와 같은 `cleanNick`.
