@@ -61,7 +61,11 @@ button{font:inherit;color:inherit}
 .chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
 .chip b{color:var(--gold);font-weight:600}
 #party{display:flex;gap:6px}
-#combo{display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:auto}
+#combo{position:absolute;left:12px;bottom:calc(100% + 4px);display:flex;flex-direction:column;align-items:flex-start;gap:5px;pointer-events:none;max-width:calc(100vw - 24px)}
+#combo button{pointer-events:auto}
+.cbt{font:inherit;font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:#121833e6;color:var(--ink);cursor:pointer}
+.cbt b{color:var(--gold);font-weight:600}
+.cbr.mini{padding:3px 10px 3px 4px}.cbr.mini img{width:24px;height:24px}
 .cbr{display:flex;align-items:center;gap:4px;background:#121833e6;border:1px solid var(--line);border-radius:12px;padding:3px 10px 3px 6px;font-size:12px;white-space:nowrap;font-family:inherit;color:var(--ink)}
 .cbr img{width:28px;height:28px;object-fit:contain;border-radius:7px;background:#0d1229}
 .cbr img.miss{filter:grayscale(1) brightness(.45);outline:1px dashed #8a93bb;outline-offset:-1px}
@@ -257,7 +261,7 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
   <div id="objbox"><div class="ot"><span id="stg"></span><b id="objText"></b><span id="objDist"></span></div><div class="ob"><i id="objFill"></i></div></div>
   <div id="bossbar" hidden><div class="bn"><b id="bossName"></b><span id="bossSkill"></span></div><div class="bb"><i id="bossFill"></i></div></div>
   <div id="toasts"></div>
-  <div class="bottom"><div id="combo"></div><div id="syn"></div><div id="party"></div></div>
+  <div class="bottom"><div id="syn"></div><div id="partyWrap" style="position:relative"><div id="combo"></div><div id="party"></div></div></div>
 </div>
 <div id="overlay" hidden></div>
 <div id="side" hidden></div>
@@ -276,11 +280,11 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
       <div class="rule"><b style="color:var(--ok)">전진 · 행성의 성 · 장벽</b><p>위로 전진하세요. 히어로는 행성 성에서 깃발을 끝까지 올려야 합류하고, 길목 보급소에선 증강·업그레이드를 고릅니다. 500m마다 막아선 장벽은 보스를 잡아야 열립니다.</p></div>
     </div>
     <p id="bestLine" class="best"></p>
-    <div class="ver">서바이버 v8 · 행성 그림 적용 · 레벨 없음</div>
+    <div class="ver">서바이버 v9 · 조합 줄 접기 · 이동 막힘 수정</div>
     <div class="controls">이동: WASD · 방향키 · 화면 드래그 &nbsp;|&nbsp; 카드 선택: 1 2 3 · 다시 뽑기 R · 계속 Space · 일시정지 Esc</div>
   </div>
 </div>
-<script src="assets.js?v=8"></script>
+<script src="assets.js?v=9"></script>
 <script>
 (()=>{
 'use strict';
@@ -452,13 +456,19 @@ function placeOrBoost(def,out){
 }
 function comboNear(){const own=owned();return COMBOS.map(c=>({c,n:c.need.filter(id=>own.has(id)).length})).filter(x=>x.n>0).sort((a,b)=>(b.n/b.c.need.length)-(a.n/a.c.need.length))}
 function comboNow(c){if(!G||G.modals.length||G.over||!c.need.every(id=>owned().has(id)))return;const out=[];doCombo(c,out);G.modals.push(...out);G.partySig=''}
+let CB_OPEN=false;
 function comboHUD(){const box=$('#combo');if(!box||!G)return;const L=comboNear().slice(0,3);
-  box.innerHTML=L.map(({c,n},j)=>{const ready=n===c.need.length,o=BY[c.out],own=owned();
-    const parts=c.need.map(id=>`<img class="${own.has(id)?'got':'miss'}" src="${portrait(id)}" alt="${BY[id].name}" title="${BY[id].name}${own.has(id)?' (보유)':' (필요)'}">`).join('<span class="pl">+</span>');
+  if(!L.length){box.innerHTML='';box.__L=L;return}
+  const own=owned(),ready=L.filter(x=>x.n===x.c.need.length);
+  const row=({c,n})=>{const isR=n===c.need.length,o=BY[c.out],j=L.findIndex(x=>x.c===c);
+    if(isR&&!CB_OPEN)return `<button class="cbr ready mini" data-cb="${j}"><img class="got" src="${portrait(o.id)}" alt=""><b>${o.name} 조합하기</b></button>`;
+    const parts=c.need.map(id=>`<img class="${own.has(id)?'got':'miss'}" src="${portrait(id)}" alt="${BY[id].name}">`).join('<span class="pl">+</span>');
     const miss=c.need.filter(id=>!own.has(id)).map(id=>BY[id].name).join('·');
-    return ready?`<button class="cbr ready" data-cb="${j}">${parts}<span class="ar">→</span><img class="got" src="${portrait(o.id)}" alt=""><b>${o.name} 조합하기 (C)</b></button>`
-      :`<div class="cbr">${parts}<span class="ar">→</span><img class="miss" src="${portrait(o.id)}" alt=""><b>${o.name}</b><small>${miss} 필요</small></div>`}).join('');
+    return isR?`<button class="cbr ready" data-cb="${j}">${parts}<span class="ar">→</span><img class="got" src="${portrait(o.id)}" alt=""><b>${o.name} 조합하기</b></button>`
+      :`<div class="cbr">${parts}<span class="ar">→</span><img class="miss" src="${portrait(o.id)}" alt=""><b>${o.name}</b><small>${miss} 필요</small></div>`};
+  box.innerHTML=(CB_OPEN?L.map(row).join(''):ready.map(row).join(''))+`<button class="cbt" data-tg>✦ 조합 ${L.length}${ready.length?` · <b>${ready.length}개 가능</b>`:''} ${CB_OPEN?'▾ 접기':'▴'}</button>`;
   box.querySelectorAll('[data-cb]').forEach(b=>b.onclick=()=>comboNow(L[+b.dataset.cb].c));
+  box.querySelector('[data-tg]').onclick=()=>{CB_OPEN=!CB_OPEN;comboHUD()};
   box.__L=L}
 function findCombo(){const own=owned();return COMBOS.find(c=>c.need.every(id=>own.has(id)))||null}
 function doCombo(c,out){
