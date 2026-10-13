@@ -278,11 +278,11 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
       <div class="rule"><b style="color:var(--ok)">전진 · 구역 · 장벽</b><p>위로 전진하세요. 500m마다 제륵 장벽과 새 구역 — 용암·설원·숲·심해·폐허마다 지형과 날씨가 바뀝니다.</p></div>
     </div>
     <p id="bestLine" class="best"></p>
-    <div class="ver">서바이버 v12 · 구역마다 지형·날씨</div>
+    <div class="ver">서바이버 v13 · 등급 세기 정리</div>
     <div class="controls">이동: WASD · 방향키 · 화면 드래그 &nbsp;|&nbsp; 고르기: 1~6 · 승급 U · 조합 C · 계속 Space · 일시정지 Esc</div>
   </div>
 </div>
-<script src="assets.js?v=12"></script>
+<script src="assets.js?v=13"></script>
 <script>
 (()=>{
 'use strict';
@@ -303,12 +303,12 @@ for(const k in AS.enemy)EIMG[k]=li(AS.enemy[k]);
 
 const KIND={
   shot:{cd:.85,mul:1,range:260,lab:'원거리'},
-  pierce:{cd:1.1,mul:1.15,range:300,lab:'관통'},
-  aoe:{cd:1.25,mul:.85,range:250,r:50,lab:'범위'},
-  chain:{cd:1.2,mul:.8,range:260,n:4,lab:'연쇄'},
-  melee:{cd:.6,mul:1.3,range:30,leash:170,lab:'근접'},
-  slam:{cd:.95,mul:1,range:36,leash:160,r:62,lab:'근접 범위'},
-  arc:{cd:.9,mul:1,range:70,leash:150,r:88,lab:'휩쓸기'},
+  pierce:{cd:1.1,mul:.9,range:300,lab:'관통'},
+  aoe:{cd:1.25,mul:1.1,range:250,r:50,lab:'범위'},
+  chain:{cd:1.2,mul:1.29,range:260,n:4,lab:'연쇄'},
+  melee:{cd:.6,mul:1.03,range:30,leash:170,lab:'근접'},
+  slam:{cd:.95,mul:.94,range:36,leash:160,r:62,lab:'근접 범위'},
+  arc:{cd:.9,mul:.85,range:70,leash:150,r:88,lab:'휩쓸기'},
 };
 function arche(s){
   let k='shot';
@@ -326,6 +326,9 @@ const POOL={1:[],2:[],3:[],4:[],5:[]};
 DEFS.forEach(d=>{if(!d.combo)POOL[d.tier].push(d)});
 const POOL_PLANET={};DEFS.forEach(d=>{(POOL_PLANET[d.planet]=POOL_PLANET[d.planet]||[]).push(d)});
 const COMBOS=DEFS.filter(d=>d.combo).map(d=>({out:d.id,need:d.rel}));
+// 특수 조합 세기: 재료에 들어간 우주 히어로 수(2단계 조합은 재료 조합의 우주 수 합)
+const UNI=id=>{const d=BY[id];return d&&d.combo?(d.rel||[]).reduce((s,r)=>s+UNI(r),0):1};
+const CMUL=d=>d.cm||(d.cm=1.25*UNI(d.id)*(UNI(d.id)>=4?1.3:1));
 const TD=[0,10,34,115,390,1800],SM=[0,1,1.75,2.5];
 const BOSSES=[
   {img:'boss1',name:'카록스',title:'선봉대장',skill:'적색 질주',pat:['dash']},
@@ -420,7 +423,7 @@ function newGame(mode){
 /* ---------- party logic ---------- */
 function calcSyn(){const c={};heroes().forEach(h=>{if(!h.def.combo)c[h.def.planet]=(c[h.def.planet]||0)+1});G.syn=c}
 function synMul(pl){const n=G.syn[pl]||0;return n>=4?1.8:n===3?1.45:n===2?1.2:1}
-function hDmg(h){const d=h.def;return TD[d.tier]*(d.tier>=5?1:SM[Math.min(h.stack,3)])*(d.combo?1.7:1)*KIND[d.k].mul*(d.far?1.5:1)*synMul(d.planet)*(1+.25*G.st.dmg)*(h.guest?1.4:1)*(1+.3*(h.awk||0))}
+function hDmg(h){const d=h.def;return TD[d.tier]*(d.tier>=5?1:SM[Math.min(h.stack,3)])*(d.combo?CMUL(d):1)*KIND[d.k].mul*(d.far?1.13:1)*synMul(d.planet)*(1+.25*G.st.dmg)*(h.guest?1.4:1)*(1+.3*(h.awk||0))}
 const canStack=h=>h.def.tier<=4&&h.stack<3;
 const canAwk=h=>h.def.tier>=5||(h.def.tier===4&&h.stack>=3);
 const canUp=h=>h&&h.def.tier<=3&&h.stack>=3;
@@ -761,7 +764,7 @@ function updHero(h,hx,hy,dt){
     home();
     if(!sil&&h.cd<=0){const t=aim(h.x,h.y,d.far?440:K.range);if(t){h.face=t.x<h.x?-1:1;basic(h,t);h.cd=K.cd*(d.far?1.4:1)}}
   }
-  if(!sil&&(h.stack>=2||d.tier>=4||h.guest)){h.sp-=dt*asM;if(h.sp<=0){const t=aim(h.x,h.y,320);if(t){special(h,t);h.sp=d.tier>=5?6:9}}}
+  if(!sil){h.sp-=dt*asM;if(h.sp<=0){const t=aim(h.x,h.y,320);if(t){special(h,t);h.sp=d.tier>=5?6:9}}}
 }
 function bossAI(e,dt){
   const b=e.boss,p=G.p,dx=p.x-e.x,dy=p.y-e.y;
