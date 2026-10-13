@@ -832,14 +832,15 @@ function upgrade(i){
   else{if(G.coins<c)return;if(i===3){if(G.luck>=LUCK_MAX)return;G.coins-=c;G.luck++}else{G.coins-=c;G.up[i]++}}
   refresh()
 }
-function dmgParts(i){const c=G.cells[i];if(!c)return null;const u=U[c.u],up=u.fu?(1+.3*((G.fuLv&&G.fuLv[c.u])||0))*(A('fuslab')?1.2:1)*(A('ascend')?1.7:1):1+.4*planetLevel(c.u),bf=G.buff>0?1.5:G.hjB>0?1.4:G.unhB>0?1.25:1,L=[['강화',up],['시너지·오라',c.pa||1],['판',1+((G.tile&&G.tile[i])||0)],['농축',concK(c)],['증강',augA(c)],['버프',bf*(G.bn?G.bn.atk:1)*(c.sh>0?1.3:1)*(c.sy||1)]].filter(q=>Math.abs(q[1]-1)>.005);return{L,t:L.reduce((a,q)=>a*q[1],1)}}
+function dmgParts(i){const c=G.cells[i];if(!c)return null;const u=U[c.u],up=u.fu?(1+.45*((G.fuLv&&G.fuLv[c.u])||0))*(A('fuslab')?1.2:1)*(A('ascend')?1.7:1):1+.6*planetLevel(c.u),bf=G.buff>0?1.5:G.hjB>0?1.4:G.unhB>0?1.25:1,L=[['강화',up],['시너지·오라',c.pa||1],['판',1+((G.tile&&G.tile[i])||0)],['농축',concK(c)],['증강',augA(c)],['버프',bf*(G.bn?G.bn.atk:1)*(c.sh>0?1.3:1)*(c.sy||1)]].filter(q=>Math.abs(q[1]-1)>.005);return{L,t:L.reduce((a,q)=>a*q[1],1)}}
 function planetLevel(k){return (G.upPlanet&&G.upPlanet[U[k].planet])||0}
 const LVF=['dur','st','bst','sl','vu','adur','hold','kbd','coinK'];
-function lvK(k){if(U[k]&&U[k].fu){const b=fuBase(k);return b.reduce((a,q)=>a+lvK(q),0)/b.length+.05*(((typeof SAVE!=='undefined'&&SAVE.lv&&SAVE.lv[k])||1)-1)}return 1+.05*(((typeof SAVE!=='undefined'&&SAVE.lv&&SAVE.lv[k])||1)-1)}
+const LV_STEP=.12;
+function lvK(k,st){st=st||LV_STEP;if(U[k]&&U[k].fu){const b=fuBase(k);return b.reduce((a,q)=>a+lvK(q,st),0)/b.length+st*(((typeof SAVE!=='undefined'&&SAVE.lv&&SAVE.lv[k])||1)-1)}return 1+st*(((typeof SAVE!=='undefined'&&SAVE.lv&&SAVE.lv[k])||1)-1)}
 const PL_POW={lumiel:1.28,drakanis:1.2,biikseong:1.2,seolryeong:1.2,haeyeon:1.2}; // 해금 행성 보상: 루미엘 영웅 공격력 +12%
 // 영웅별 세기 보정 (신규 행성: 해금이 늦을수록 강하게 — 드라카니스 < 설령성 < 루미엘 < 비익성)
 const HPW={heukjo:23,yeongwol:12.9,noeha:9,bideung:16.4,pearlpunch:1.16,clawlancer:1.18,coralgiant:1.63,abyssadmiral:1.02,poseidon:1.47,wolroe:9.47,cheora:10.9,nox:17.41,jinmu:3.02,jeokhwang:4.35,astraon:4.59,yeongeopsu:9.41,unhwa:6.08,clockweaver:5.43,hwangryong:7.46,hornkid:1.02,fang_lancer:.83,iron_dragonkin:1.09,hongryeon:1.11,cheongryong:.8,snowkid:.76,icicle_bat:.79,snow_yeti:.8,ice_golem:.73,baekho:1.04,lulu:1.38,miel:1.24,noctia:1.35,aurielle:1.11,selene:1.06,feather_courier:1.1,feather_archer:.86,storm_owl:1.01,goldwing_commander:1.2,jujak:1.12};
-function mult(k){return HERO_POW*TIER_POW[U[k].t]*(PL_POW[U[k].planet]||1)*(HPW[k]||1)*(U[k].fu?(1+.3*((G&&G.fuLv&&G.fuLv[k])||0))*(A('fuslab')?1.2:1)*(A('ascend')?1.7:1):1+.4*planetLevel(k))*(G.buff>0?1.5:G&&G.hjB>0?1.4:G&&G.unhB>0?1.25:1)*lvK(k)*(G.bn?G.bn.atk:1)}
+function mult(k){return HERO_POW*TIER_POW[U[k].t]*(PL_POW[U[k].planet]||1)*(HPW[k]||1)*(U[k].fu?(1+.45*((G&&G.fuLv&&G.fuLv[k])||0))*(A('fuslab')?1.2:1)*(A('ascend')?1.7:1):1+.6*planetLevel(k))*(G.buff>0?1.5:G&&G.hjB>0?1.4:G&&G.unhB>0?1.25:1)*lvK(k)*(G.bn?G.bn.atk:1)}
 const TILEC=['','#b5dc65','#66d9ef','#c89cff','#ffd863','#ff7e87'];
 const TILEIMG={"1": __P(2252), "2": __P(2253), "3": __P(2254), "4": __P(2255), "5": __P(2256)};const TILE_ART={};
 if(typeof Image!=='undefined')for(const lv in TILEIMG){const im=new Image();im.src=TILEIMG[lv];TILE_ART[lv]=im}
@@ -1220,7 +1221,7 @@ function sndBtn(){const b=$('bSnd');if(b)b.textContent=['🔊','🎵','🔇'][SN
 function synOn(i,u){const[x,y]=cellXY(i);for(let j=0;j<NC;j++){const o=G.cells[j];if(!o||j===i||U[o.u].planet!==u.planet)continue;const[ox,oy]=cellXY(j);if(Math.hypot(ox-x,oy-y)<=CS*1.6)return true}return false}
 function special(c,i,u,s,x,y,best){
   if(u.spR)u=Object.assign(Object.create(u),{r:u.spR});
-  {const L=lvK(c.u);if(L>1){s=Object.assign({},s);for(const f of LVF)if(typeof s[f]==='number')s[f]*=L}}
+  {const L=lvK(c.u,.05);if(L>1){s=Object.assign({},s);for(const f of LVF)if(typeof s[f]==='number')s[f]*=L}}
   const d=u.d*(c.pa||1)*c.n*mult(c.u)*tileMult(i)*(c.sh>0?1.3:1)*(c.sy||1)*augA(c)*s.m*(SPK_NO.has(c.u)?1:SPK),col=u.col,P=o=>G.fx.push(o);c.bT=.6;c.b=.6;
   SND.play('special',sndKind(s),u.t);if(!(G.time-(G.cutAt??-99)>=15&&cutin(c.u,u.n+' — '+s.n+'!')&&(G.cutAt=G.time)))toast(u.n+' — '+s.n+'!');if(u.t>=3)G.flash=Math.max(G.flash||0,.15);G.shake=Math.max(G.shake,u.t>=3?.15:.06);
   P({k:'ring',x,y,r:40,t:.4,T:.4,c:col});P({k:'ray',x,y,t:.5,T:.5,c:col});
@@ -1687,10 +1688,10 @@ function refresh(){
   }else{
     const o=odds(),l=G.luck;
     body.innerHTML='<h3><span>강화 <small>'+(NO_HOME?'':'집 '+o[0].toFixed(2)+' / ')+'동네 '+o[1].toFixed(2)+' / 나라 '+o[2].toFixed(2)+' / 행성 '+o[3].toFixed(2)+'%</small></span>'+X+'<div class="row r4" id="upg" style="grid-template-columns:1fr 1fr">'+
-      '<button id="u3">소환 확률 강화<br>Lv.'+(l+1)+(l>=LUCK_MAX?' 최대':' 🪙'+upCost(3))+'</button><button id="u4" style="background:#7a4fc0">랜덤판 강화<br>🪙'+tileCost()+' <small>(판 1칸 +100%, 최대 ×6)</small></button></div><div style="font-size:11px;opacity:.85;margin-top:6px">행성 지원은 같은 출신 히어로 전체에 적용됩니다. 1강당 기본 공격력 +40%, 현재·이후 소환 모두 적용.</div>';
+      '<button id="u3">소환 확률 강화<br>Lv.'+(l+1)+(l>=LUCK_MAX?' 최대':' 🪙'+upCost(3))+'</button><button id="u4" style="background:#7a4fc0">랜덤판 강화<br>🪙'+tileCost()+' <small>(판 1칸 +100%, 최대 ×6)</small></button></div><div style="font-size:11px;opacity:.85;margin-top:6px">행성 지원은 같은 출신 히어로 전체에 적용됩니다. 1강당 기본 공격력 +60%, 현재·이후 소환 모두 적용.</div>';
     body.innerHTML+='<div class="row" id="planetUp" style="display:grid;grid-template-columns:1fr 1fr"></div>';
     for(const p of plIn()){const keys=Object.keys(U).filter(k=>U[k].planet===p),key=keys[0],count=G.cells.reduce((n,c)=>n+(c&&U[c.u].planet===p?c.n:0),0),lv=G.upPlanet[p]||0,b=document.createElement('button');b.innerHTML=pic(p)+PLANETS[p]+' · '+count+'명 · Lv.'+lv+(key?' · 🪙'+upKCost(key):' · 준비 중');b.disabled=!count||!key||G.coins<upKCost(key);b.onclick=()=>upgradeK(key);$('planetUp').appendChild(b)}
-    {const ids=Object.keys(FUSION).filter(id=>U[id]&&fuAvail(id));if(ids.length){body.insertAdjacentHTML('beforeend','<div class="fuhd" style="margin-top:8px">✨ <b>특수조합 개별 강화</b> <small>영웅마다 따로 · 1강당 공격력 +30%</small></div><div class="row" id="fuUp" style="display:grid;grid-template-columns:1fr 1fr"></div>');
+    {const ids=Object.keys(FUSION).filter(id=>U[id]&&fuAvail(id));if(ids.length){body.insertAdjacentHTML('beforeend','<div class="fuhd" style="margin-top:8px">✨ <b>특수조합 개별 강화</b> <small>영웅마다 따로 · 1강당 공격력 +45%</small></div><div class="row" id="fuUp" style="display:grid;grid-template-columns:1fr 1fr"></div>');
       for(const id of ids){const on=G.cells.some(c=>c&&c.u===id),lv=(G.fuLv&&G.fuLv[id])||0,b=document.createElement('button');b.dataset.id=id;b.innerHTML=(U[id].url?'<img src="'+cardUrl(id)+'" style="height:1.6em;vertical-align:middle">':'')+U[id].n+' · Lv.'+lv+(on?' · 🪙'+fuUpCost(id):' · 미보유');b.disabled=!on||G.coins<fuUpCost(id);b.onclick=()=>fuUp(id);$('fuUp').appendChild(b)}}}
     $('u3').onclick=()=>upgrade(3);$('u4').onclick=upgradeTile
   }
@@ -1797,7 +1798,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:279};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:280};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -1891,7 +1892,7 @@ const FUSION={astraon:{n:'아스트라온',nick:'천벌 궤도 포격 · 약화'
 const FU_SPAWN={heukjo:{m:9,st:1.2,bst:.25},yeongwol:{m:10,st:1.5,bst:.3},noeha:{m:7,st:1,bst:.2},bideung:{m:7,st:1,bst:.2},wolroe:{m:7,st:1,bst:.2},cheora:{m:7,st:1,bst:.2},jinmu:{m:6,st:2,bst:.6},jeokhwang:{m:8,st:1,bst:.3,burn:1,burnT:4},astraon:{m:8,st:1.5,bst:.4},yeongeopsu:{m:6,st:1.5,bst:.3},unhwa:{m:5,st:1,bst:.2},clockweaver:{m:8,st:1.5,bst:.3},hwangryong:{m:12,st:3,bst:1},nox:{m:7,st:1,bst:.2}};
 for(const id in FUSION){if(AURA[id])continue;const A0={};for(const m of FUSION[id].mat)if(AURA[m])for(const f in AURA[m])if(f!=='x')A0[f]=Math.max(A0[f]||0,+(AURA[m][f]*1.3).toFixed(3));if(Object.keys(A0).length){A0.x='재료에게 물려받은 오라(1.3배)'+(A0.pa?' — 아군 공격력 +'+Math.round(A0.pa*100)+'%':'')+(A0.pcd?' · 쿨타임 '+Math.round(A0.pcd*100)+'% 빨리':'')+(A0.pas?' · 공격속도 +'+Math.round(A0.pas*100)+'%':'');AURA[id]=A0}}
 function fuStartLv(id){const mats=FUSION[id].mat;if(mats.every(k=>U[k]&&U[k].fu)){let sp=0;for(const k of mats){const l=(G.fuLv&&G.fuLv[k])||0;sp+=80*l+40*l*(l-1)}sp*=.7;let l=0,acc=0;while(acc+80+80*l<=sp){acc+=80+80*l;l++}return l}
-  const avg=mats.reduce((a,k)=>a+planetLevel(k),0)/mats.length;return Math.floor(avg*.4/.3)}
+  const avg=mats.reduce((a,k)=>a+planetLevel(k),0)/mats.length;return Math.floor(avg*.6/.45)}
 function fuseCost(){return Math.round((500+300*((G&&G.nFuse)||0))*(A('fuslab')?.6:1))}
 function fuseReady(id){return !!U[id]&&FUSION[id].mat.every(k=>G.cells.some(c=>c&&c.u===k))&&(G.cells.some(c=>!c)||FUSION[id].mat.some(k=>{const c=G.cells.find(q=>q&&q.u===k);return c&&!(c.k>1)}))}
 function canFuse(id){return fuseReady(id)&&G.coins>=fuseCost()}
@@ -2021,7 +2022,7 @@ function heroDetail(k){const u=U[k];if(!u)return;let D=$('hDet');if(!D){D=docume
   if(s)h+='<div class="hdB sp"><div class="hdH">★ '+s.n+' '+tagH(SPT[k]||[])+'</div><p>'+sx+'</p>'+(!sn&&s.m?'<div class="dl">💥 피해 <b>'+fmt(atk*s.m)+'</b> <small>('+Math.round(s.m*100)+'%)</small></div>':'')+(SPD[k]&&s.x&&SPD[k]!==s.x?'<p class="hm">'+SPD[k]+'</p>':'')+'<p class="hm">쿨타임 '+s.cd+'초'+(u.spR?(u.spR>1e4?' · 사거리 전장 전체':' · 사거리 '+(+((u.spR-16)/CS).toFixed(1))+'칸'):'')+'</p></div>';
   if(AURA[k])h+='<div class="hdB au"><div class="hdH">✨ 상시 오라</div><p>'+AURA[k].x+'</p><p class="hm">주변 칸 아군에게 적용 (게임에서 초록 점선 칸)</p></div>';
   if(u.syn)h+='<div class="hdB"><div class="hdH">🌿 특성</div><p>옆 칸(대각 포함)에 같은 행성 아군이 있으면 피해 '+u.syn+'배</p></div>';
-  if(fu&&FUSION[k])h+='<div class="hdB fu"><div class="hdH">⚗️ 조합식</div><p>'+FUSION[k].mat.map(fuName).join(' + ')+'</p><p class="hm">게임 중 개별 강화 1강마다 공격력 +30% · 조합하면 재료의 오라를 1.3배로 물려받음</p></div>';
+  if(fu&&FUSION[k])h+='<div class="hdB fu"><div class="hdH">⚗️ 조합식</div><p>'+FUSION[k].mat.map(fuName).join(' + ')+'</p><p class="hm">게임 중 개별 강화 1강마다 공격력 +45% · 조합하면 재료의 오라를 1.3배로 물려받음</p></div>';
   else if(!fu&&PSYN[u.planet])h+='<div class="hdB"><div class="hdH">🪐 '+PLANETS[u.planet]+' 시너지</div><p>'+PSYN[u.planet].x+'</p><p class="hm">게임 중 행성 강화 1강마다 이 행성 영웅 공격력 +25%</p></div>';
   h+='<p class="hm" style="text-align:center;margin-top:6px">숫자는 게임 안 강화·증강·버프 적용 전 기준</p></div>';
   D.innerHTML=h;D.style.display='flex'}
