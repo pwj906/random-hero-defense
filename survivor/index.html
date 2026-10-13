@@ -77,6 +77,14 @@ button.cbr.ready b{color:#fff}
 .slot .nx{position:absolute;top:20px;right:-10px;z-index:1;font-family:var(--f-display);font-size:10px;line-height:15px;padding:0 4px;border-radius:6px;background:#fff;color:#10142a}
 .slot .ck{position:absolute;top:20px;right:-10px;z-index:1;font-size:10px;line-height:15px;padding:0 4px;border-radius:6px;background:var(--gold);color:#10142a;font-family:var(--f-display)}
 .card .cmb{color:#ffe08a;font-weight:600}
+.swapgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.swp{position:relative;display:grid;grid-template-columns:48px 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;cursor:pointer;padding:8px 10px;border-radius:12px;border:2px solid var(--tc);background:var(--panel2);color:var(--ink);font:inherit;min-width:0}
+.swp img{grid-row:span 2;width:48px;height:48px;object-fit:contain}
+.swp b{font-family:var(--f-display);font-weight:400;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.swp small{color:var(--mute);font-size:11px}
+.swp .key{position:absolute;top:4px;right:8px;font-size:11px;color:var(--mute)}
+.swp:hover,.swp:focus-visible{outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--tc) 45%,transparent);transform:translateY(-2px)}
+@media (max-width:640px){.swapgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .slot{width:54px;height:64px;border-radius:11px;background:#121831dd;border:2px solid var(--c,#2c3566);position:relative;box-sizing:border-box}
 .slot img{width:46px;height:46px;object-fit:contain;display:block;margin:1px auto 0}
 .slot .st{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:10px;line-height:14px;color:var(--c);letter-spacing:-.5px}
@@ -377,10 +385,7 @@ function place(def,out){
   const oi=G.slots.findIndex(h=>h&&h.def.id===def.id);
   if(oi>=0){addStack(G.slots[oi],out)||0;return 'stack'}
   let i=G.slots.findIndex(s=>!s);
-  if(i<0){
-    let wi=0,ws=1e9;G.slots.forEach((h,k)=>{const s=h.def.tier*10+h.stack+(h.def.combo?50:0);if(s<ws){ws=s;wi=k}});
-    if(G.slots[wi].def.tier<def.tier){toast(`${G.slots[wi].def.name} 자리를 ${def.name}에게 넘깁니다`);i=wi}else return 'full';
-  }
+  if(i<0){out.push({kind:'swap',def});return 'swap'}
   G.slots[i]=mkHero(def,1);calcSyn();
   if(def.tier>=5)out.push({kind:'cut',def});
   return 'new';
@@ -413,7 +418,7 @@ function genCards(){
   const bag=[];
   const early=hs.length<3;
   shuffle(hs.filter(canStack)).slice(0,3).forEach(h=>bag.push({w:early?1.6:3,c:{t:'stack',h}}));
-  if(empty){const seen=new Set();for(let i=0;i<3;i++){const d=rollNewDef();if(!seen.has(d.id)){seen.add(d.id);bag.push({w:early?5:2.4,c:{t:'new',d}})}}}
+  {const seen=new Set();for(let i=0;i<(empty?3:1);i++){const d=rollNewDef();if(!seen.has(d.id)){seen.add(d.id);bag.push({w:!empty?.9:early?5:2.4,c:{t:'new',d}})}}}
   shuffle(hs.filter(canAwk)).slice(0,2).forEach(h=>bag.push({w:2.2,c:{t:'awk',h}}));
   bag.push({w:1.1,c:{t:'cap'}});
   Object.keys(STATS).forEach(k=>{if(G.st[k]<STATS[k].max)bag.push({w:.55,c:{t:'stat',k}})});
@@ -434,7 +439,7 @@ function openCapsule(out){
   const r=rnd(),t=r<.52?1:r<.82?2:r<.95?3:r<.99?4:5,d=pick(POOL[t]);
   const m={kind:'roul',title:'랜덤 소환 캡슐',sub:'집 52% · 동네 30% · 나라 13% · 행성 4% · 우주 1%',tier:t,reel:reelFaces(DEFS.filter(x=>!x.combo),d),result:d,res:''};
   out.push(m);const sub=[];const k=placeOrBoost(d,sub);
-  m.res=k==='stack'?'이미 있는 히어로라 겹치기 +1':k==='new'?'새 히어로 합류':'자리가 없어 다른 히어로를 강화';
+  m.res=k==='stack'?'이미 있는 히어로라 겹치기 +1':k==='new'?'새 히어로 합류':'파티가 꽉 차서 교체할 히어로를 골라요';
   out.push(...sub);
 }
 function rollUju(){
@@ -465,6 +470,14 @@ function resolve(arg){
     if(!m.cards)m.cards=genCards();
     if(arg==='reroll'){if(G.rerolls>0){G.rerolls--;m.cards=m.pact?pactCards(m.pact):genCards();shown=DIRTY}return}
     const c=m.cards[arg];if(!c)return;G.modals.shift();applyCard(c,out);
+  }else if(m.kind==='swap'){
+    G.modals.shift();
+    if(typeof arg==='number'&&G.slots[arg]){const old=G.slots[arg],nh=mkHero(m.def,1);G.slots[arg]=nh;calcSyn();if(m.def.tier>=5)out.push({kind:'cut',def:m.def});
+      const rest=heroes().filter(h=>h!==nh),st=rest.filter(canStack),aw=rest.filter(canAwk);
+      if(st.length){const h=pick(st);addStack(h,out);toast(`${old.def.name} 대신 ${m.def.name} 합류 · ${h.def.name} 겹치기 +1`,'good')}
+      else if(aw.length){const h=pick(aw);h.awk=(h.awk||0)+1;toast(`${old.def.name} 대신 ${m.def.name} 합류 · ${h.def.name} 각성 +1`,'good')}
+      else toast(`${old.def.name} 대신 ${m.def.name} 합류`,'good')}
+    else{gainXp(G.need*.4);toast(`${m.def.name}은(는) 다음 기회에 · 경험치를 받았어요`)}
   }else G.modals.shift();
   G.modals.unshift(...out);shown=DIRTY;
 }
@@ -495,7 +508,7 @@ function spawnBeacon(first){
   const pl=(own.length&&rnd()<.5)?pick(own):pick(PLANETS),p=G.p;
   let y=p.y-(first?230:360+rnd()*220);const lim=wallY()+260;if(y<lim)y=lim;
   if(y>p.y-140){G.obj=null;G.nextBeacon=G.t+3;return}
-  G.obj={k:'beacon',x:p.x+(rnd()-.5)*(first?160:640),y,pl,prog:0,need:9,r:120,wv:0};
+  const cap=G.wallN<1?2:G.wallN<3?3:4;G.obj={k:'beacon',x:p.x+(rnd()-.5)*(first?160:640),y,pl,prog:0,need:9,r:120,wv:0,hs:POOL_PLANET[pl].filter(d=>d.tier<=cap)};
   if(!first)toast(`${pl} 협정 신호탑 신호 · 앞쪽으로`);
 }
 function pactCards(pl){
@@ -504,7 +517,7 @@ function pactCards(pl){
     if(cards.length>=3)break;
     const h=G.slots.find(x=>x&&x.def.id===d.id);
     if(h){if(canStack(h))cards.push({t:'stack',h})}
-    else if(G.slots.some(x=>!x)||heroes().some(x=>x.def.tier<d.tier))cards.push({t:'new',d});
+    else cards.push({t:'new',d});
   }
   if(cards.length<3)cards.push({t:'cap'});
   while(cards.length<3)cards.push({t:'heal'});
@@ -524,10 +537,7 @@ function updObj(dt){
   if(inside&&G.t>40){o.wv-=dt;if(o.wv<=0){o.wv=1.6;for(let i=0;i<2+Math.min(6,G.wallN);i++){const a=rnd()*TAU;spawnEnemy(enemyRoll(),o.x+Math.cos(a)*(o.r+230),o.y+Math.sin(a)*(o.r+230))}}}
   if(o.prog>=o.need){
     burst(o.x,o.y,PC[o.pl],50);G.fx.push({k:'ring',x:o.x,y:o.y,r:o.r*1.6,t:0,life:.6,col:PC[o.pl],w:10});
-    const opts=pactCards(o.pl).filter(c=>c.t==='new'||c.t==='stack'),out=[];
-    if(opts.length){const c=pick(opts),dd=c.t==='new'?c.d:c.h.def;applyCard(c,out);toast(`${o.pl} 협정 체결 · ${dd.name} ${c.t==='new'?'합류':'겹치기 +1'}`,'good')}
-    else{const hs=heroes().filter(canAwk);if(hs.length){const h=pick(hs);h.awk=(h.awk||0)+1;h.pop=.6;toast(`${o.pl} 협정 체결 · ${h.def.name} 각성 +1`,'good')}}
-    G.modals.push(...out);G.obj=null;G.nextBeacon=G.t+2;G.pacts=(G.pacts||0)+1;
+    G.modals.push({kind:'level',pact:o.pl,eyebrow:`신호탑 복구 완료 · ${o.pl}와 평화협정`,title:`${o.pl} 영웅 중 한 명을 데려가세요`,cards:pactCards(o.pl)});G.obj=null;G.nextBeacon=G.t+2;G.pacts=(G.pacts||0)+1;
   }
 }
 function text(x,y,s,col,big){if(G.tx.length>90)G.tx.shift();G.tx.push({x,y,s,col,t:0,life:big?1.3:.75,big})}
@@ -617,6 +627,7 @@ function spawnPod(){const p=G.p,a=rnd()*TAU,R=360+rnd()*160,r=rnd(),t=r<.5?1:r<.
 function joinGuard(){
   const g=G.guard;G.guard=null;const out=[];const r=place(g.def,out);
   if(r==='full'){gainXp(G.need*.6);toast(`${g.def.name}: 자리가 없어 경험치를 남기고 떠납니다`)}
+  else if(r==='swap')toast(`${g.def.name}: 파티가 꽉 차서 교체할 히어로를 골라요`);
   else toast(`${g.def.name} 위원회 합류!`,'good');
   G.modals.push(...out);
 }
@@ -722,6 +733,7 @@ addEventListener('keydown',e=>{
   const m=G.modals[0];
   if(m&&!paused){
     if(m.kind==='level'){if(k>='1'&&k<='3')resolve(+k-1);if(k==='r')resolve('reroll')}
+    else if(m.kind==='swap'){if(k>='1'&&k<='6')resolve(+k-1)}
     else if(k===' '||k==='enter')advanceReveal();
   }
 });
@@ -746,7 +758,7 @@ function cardHTML(c,i){
     let extra='';
     if(c.t==='new'){const n=G.syn[d.planet]||0;extra=n?`<p class="promo">같은 행성 ${n+1}명 → 시너지 피해 +${[0,0,20,45,80][Math.min(4,n+1)]}%</p>`:'';const own=owned(),cc=COMBOS.find(x=>x.need.includes(d.id)&&x.need.some(id=>id!==d.id&&own.has(id)));if(cc)extra+=`<p class="cmb">조합 재료! ${cc.need.map(id=>BY[id].name).join(' + ')} → ${BY[cc.out].name}</p>`}
     else{const s=c.h.stack;extra=`<p class="stars">${stars(s,3)} → ${stars(s+1,3)}</p>`+(d.tier<=3&&s+1>=3?`<p class="promo">3겹 완성 → 랜덤 ${TN[d.tier+1]} 히어로로 승급!</p>`:d.tier===4?`<p>행성 단계는 승급 없이 강해집니다</p>`:`<p>피해 ×${(SM[s+1]/SM[s]).toFixed(2)}</p>`)}
-    return `<button class="card" style="--tc:${tc}" data-pick="${i}">${key}<span class="tag">${c.t==='new'?'새 히어로':'겹치기'}</span><img class="pt" src="${portrait(d.id)}" alt=""><div class="bd"><div class="nm">${d.name}</div><div class="sub">${d.sub}</div><div class="chips"><span class="tierchip" style="--tc:${tc}">${TN[d.tier]}</span>${plChip(d.planet)}</div><p><b>${d.an}</b> · ${KIND[d.k].lab}${d.slow?' · 감속':''}</p>${extra}</div></button>`;
+    return `<button class="card" style="--tc:${tc}" data-pick="${i}">${key}<span class="tag">${c.t==='new'?(G.slots.some(x=>!x)?'새 히어로':'교체'):'겹치기'}</span><img class="pt" src="${portrait(d.id)}" alt=""><div class="bd"><div class="nm">${d.name}</div><div class="sub">${d.sub}</div><div class="chips"><span class="tierchip" style="--tc:${tc}">${TN[d.tier]}</span>${plChip(d.planet)}</div><p><b>${d.an}</b> · ${KIND[d.k].lab}${d.slow?' · 감속':''}</p>${extra}</div></button>`;
   }
   if(c.t==='awk'){const d=c.h.def,tc=TC[d.tier],a=c.h.awk||0;return `<button class="card" style="--tc:${tc}" data-pick="${i}">${key}<span class="tag">각성</span><img class="pt" src="${portrait(d.id)}" alt=""><div class="bd"><div class="nm">${d.name} +${a+1}</div><div class="sub">최대치에서 계속 강해집니다</div><div class="chips"><span class="tierchip" style="--tc:${tc}">${TN[d.tier]}</span>${plChip(d.planet)}</div><p>피해 +30% (각성 ${a} → ${a+1})</p></div></button>`}
   if(c.t==='cap')return `<button class="card" style="--tc:#b685ff" data-pick="${i}">${key}<span class="tag">복권</span><div class="capart">?</div><div class="bd"><div class="nm">랜덤 소환 캡슐</div><div class="sub">누가 나올지 모릅니다</div><div class="odds"><span style="color:${TC[1]}">집</span><span>52%</span><span style="color:${TC[2]}">동네</span><span>30%</span><span style="color:${TC[3]}">나라</span><span>13%</span><span style="color:${TC[4]}">행성</span><span>4%</span><span style="color:${TC[5]}">우주</span><span>1%</span></div></div></button>`;
@@ -781,6 +793,12 @@ function showModal(m){
     strip.addEventListener('transitionend',reveal,{once:true});
     setTimeout(reveal,2100);
     reel.onclick=reveal;btn.onclick=()=>resolve();
+  }else if(m.kind==='swap'){
+    const d=m.def,tc=TC[d.tier];
+    ov.innerHTML=`<div class="mbox"><span class="eyebrow">파티가 꽉 찼어요</span><h2>${d.name}와 바꿀 히어로를 고르세요</h2><div class="reveal" style="--tc:${tc}"><img src="${portrait(d.id)}" alt=""><div><span class="tierchip" style="--tc:${tc}">${TN[d.tier]}</span> ${plChip(d.planet)}<h3>${d.name}</h3><p>${d.sub}</p><p><b>${d.an}</b> — ${d.ad}</p></div></div>
+      <div class="swapgrid">${G.slots.map((h,i)=>h?`<button class="swp" data-sw="${i}" style="--tc:${TC[h.def.tier]}"><span class="key">${i+1}</span><img src="${portrait(h.def.id)}" alt=""><b>${h.def.name}</b><small>${TN[h.def.tier]}${h.def.tier<=4?' '+'★'.repeat(h.stack):''}${h.awk?' +'+h.awk:''} · ${h.def.planet}</small></button>`:'').join('')}</div>
+      <p class="hint">빠지는 히어로 몫은 남은 히어로 하나에게 겹치기 +1로 돌아가요</p><div class="mf"><button class="btn" data-act="skip">안 바꾸기 · 경험치 받기</button><span class="hint">1~6으로 고르기</span></div></div>`;
+    ov.querySelectorAll('[data-sw]').forEach(b=>b.onclick=()=>resolve(+b.dataset.sw));ov.querySelector('[data-act=skip]').onclick=()=>resolve('skip');
   }else if(m.kind==='cut'){
     const d=m.def,cut=AS.img[d.id].cut;
     const rec=recipesFor(d.id),own=owned();
@@ -833,7 +851,7 @@ function hud(){
     const gt=G.gate;
     if(gt){setT('#objText','차원문에 들어가 보스를 쓰러뜨리세요');setT('#objDist',`${Math.round(Math.hypot(G.p.x-gt.x,G.p.y-gt.y)/10)}m`);$('#objFill').style.width='100%';$('#objFill').style.background='#ff5a6e';ob.classList.remove('inside')}
     else if(!o){setT('#objText','위로 전진하세요');setT('#objDist','');$('#objFill').style.width='0%';ob.classList.remove('inside')}
-    else{const dist=Math.round(Math.hypot(G.p.x-o.x,G.p.y-o.y)/10);setT('#objText',o.inside?`원 안에서 버티기 ${Math.floor(o.prog/o.need*100)}%`:`${o.pl} 신호탑 지키기`);setT('#objDist',o.inside?'':`${dist}m`);$('#objFill').style.width=(o.prog/o.need*100)+'%';$('#objFill').style.background=PC[o.pl];ob.classList.toggle('inside',!!o.inside)}
+    else{const dist=Math.round(Math.hypot(G.p.x-o.x,G.p.y-o.y)/10);setT('#objText',o.inside?`원 안에서 버티기 ${Math.floor(o.prog/o.need*100)}%`:`${o.pl} 신호탑 · 영웅 ${(o.hs||[]).length}명 대기`);setT('#objDist',o.inside?'':`${dist}m`);$('#objFill').style.width=(o.prog/o.need*100)+'%';$('#objFill').style.background=PC[o.pl];ob.classList.toggle('inside',!!o.inside)}
   }
   if(G.boss){bb.hidden=false;const B=BOSSES[G.boss.boss.i];setT('#bossName',`${G.wallN+1}번째 장벽 · ${B.name}`);setT('#bossSkill',G.boss.boss.sh>0?'철벽 전개 중':B.skill);$('#bossFill').style.width=Math.max(0,G.boss.hp/G.boss.max*100)+'%'}else bb.hidden=true;
   const sig=G.slots.map(h=>h?h.def.id+h.stack+'a'+(h.awk||0):'-').join('|');
@@ -917,7 +935,8 @@ function draw(){
     c.lineWidth=7;c.strokeStyle=col;c.beginPath();c.arc(o.x,o.y,o.r+8,-Math.PI/2,-Math.PI/2+TAU*o.prog/o.need);c.stroke();
     c.fillStyle='#2a3366';c.fillRect(o.x-9,o.y-46,18,50);c.fillStyle=col;c.fillRect(o.x-14,o.y+2,28,8);
     c.globalAlpha=.55+Math.sin(tnow*6)*.35;c.beginPath();c.arc(o.x,o.y-50,9,0,TAU);c.fill();c.globalAlpha=.2;c.beginPath();c.arc(o.x,o.y-50,22+Math.sin(tnow*6)*4,0,TAU);c.fill();c.globalAlpha=1;
-    c.font='15px Jua, sans-serif';c.textAlign='center';c.fillStyle=col;c.fillText(`${o.pl} 협정 신호탑`,o.x,o.y+30);
+    (o.hs||[]).forEach((d,i,a)=>{const an=-Math.PI/2+i/a.length*TAU+tnow*.35,hx=o.x+Math.cos(an)*86,hy=o.y-10+Math.sin(an)*70,im=IMG[d.id].idle;c.fillStyle='#0a0e1fdd';c.beginPath();c.arc(hx,hy,26,0,TAU);c.fill();c.strokeStyle=TC[d.tier];c.lineWidth=3;c.stroke();if(im.complete)c.drawImage(im,hx-25,hy-28,50,50);c.font='11px Jua, sans-serif';c.textAlign='center';c.fillStyle=TC[d.tier];c.fillText(d.name,hx,hy+38)});
+    c.font='15px Jua, sans-serif';c.textAlign='center';c.fillStyle=col;c.fillText(`${o.pl} 협정 신호탑 · 영웅 ${(o.hs||[]).length}명 대기`,o.x,o.y+o.r+24);
   }
   {const wy=wallY();if(wy>y0-40&&wy<y0+H/z+40){c.fillStyle='#ff3b5522';c.fillRect(x0,wy-60,W/z,60);c.fillStyle='#ff3b55';c.globalAlpha=.6+Math.sin(tnow*5)*.3;c.fillRect(x0,wy-6,W/z,6);c.globalAlpha=1;c.strokeStyle='#8a5cff';c.lineWidth=2;c.beginPath();for(let x=Math.floor(x0/40)*40;x<x0+W/z;x+=40){c.moveTo(x,wy-6);c.lineTo(x+20,wy-40-Math.sin(tnow*4+x)*6);c.lineTo(x+40,wy-6)}c.stroke();c.font='16px Jua, sans-serif';c.textAlign='center';c.fillStyle='#ffb0bc';c.fillText(`제륵 장벽 · ${(G.wallN+1)*500}m`,p.x,wy-70)}
    c.font='13px Jua, sans-serif';c.textAlign='left';for(let yy=Math.floor((y0+H/z)/1000)*1000;yy>y0-10;yy-=1000){if(yy>=0||yy<=wy)continue;c.strokeStyle='#ffffff14';c.setLineDash([6,10]);c.beginPath();c.moveTo(x0,yy);c.lineTo(x0+W/z,yy);c.stroke();c.setLineDash([]);c.fillStyle='#ffffff55';c.fillText(`${-yy/10}m`,x0+12,yy-6)}}
