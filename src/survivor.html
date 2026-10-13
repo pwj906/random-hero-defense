@@ -70,7 +70,7 @@ button.cbr.ready b{color:#fff}
 .pcard>*{position:relative;z-index:1}
 .pcard .pband{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:6px;padding:5px 10px;font-family:var(--f-display);font-size:13px;color:#fff;background:linear-gradient(90deg,color-mix(in srgb,var(--pc) 70%,#000),transparent);text-shadow:0 1px 0 #0008;z-index:1}
 .pcard .pband img{width:18px;height:18px}
-.pcard .pwm{position:absolute;right:-18px;bottom:-18px;width:120px;height:120px;background:center/contain no-repeat;opacity:.1;z-index:0}
+.pcard .pwm{position:absolute;right:-14px;bottom:-14px;width:110px;height:110px;background:center/contain no-repeat;opacity:.13;z-index:0}
 .pcard .key{left:auto;right:12px;top:auto;bottom:8px}
 .pcard .tag{top:34px}
 .pcard .pt{filter:drop-shadow(0 6px 10px #000a) drop-shadow(0 0 14px color-mix(in srgb,var(--pc) 50%,transparent))}
@@ -264,11 +264,11 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
       <div class="rule"><b style="color:var(--ok)">전진 · 행성의 성 · 장벽</b><p>위로 전진하세요. 히어로는 행성 성에서 깃발을 끝까지 올려야 합류하고, 길목 보급소에선 증강·업그레이드를 고릅니다. 500m마다 막아선 장벽은 보스를 잡아야 열립니다.</p></div>
     </div>
     <p id="bestLine" class="best"></p>
-    <div class="ver">서바이버 v7 · 레벨 없음 · 성에서 영웅, 보급소에서 증강</div>
+    <div class="ver">서바이버 v8 · 행성 그림 적용 · 레벨 없음</div>
     <div class="controls">이동: WASD · 방향키 · 화면 드래그 &nbsp;|&nbsp; 카드 선택: 1 2 3 · 다시 뽑기 R · 계속 Space · 일시정지 Esc</div>
   </div>
 </div>
-<script src="assets.js?v=7"></script>
+<script src="assets.js?v=8"></script>
 <script>
 (()=>{
 'use strict';
@@ -372,9 +372,10 @@ const embSVG=(pl,col)=>`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 
 const embURL=(pl,col)=>{const A=AS.planet&&AS.planet[pl];if(A&&A.emblem)return A.emblem;return 'data:image/svg+xml,'+encodeURIComponent(embSVG(pl,col||PC[pl]||'#fff'))};
 const EMBI={};const embImg=(pl,col)=>{const k=pl+(col||'');if(!EMBI[k])EMBI[k]=li(embURL(pl,col));return EMBI[k]};
 const CASI={};const castleImg=pl=>{const A=AS.planet&&AS.planet[pl];if(!(A&&A.castle))return null;if(!CASI[pl])CASI[pl]=li(A.castle);return CASI[pl]};
+const SUPI=AS.supply?li(AS.supply):null;
 const FLAGI={};const flagImg=pl=>{const A=AS.planet&&AS.planet[pl];if(!(A&&A.flag))return null;if(!FLAGI[pl])FLAGI[pl]=li(A.flag);return FLAGI[pl]};
 function cardStyle(pl){const t=PTH[pl]||PTH['특수조합'],A=AS.planet&&AS.planet[pl];
-  const bg=A&&A.card?`url(${A.card}) center/cover`:`${t.pat},linear-gradient(165deg,color-mix(in srgb,${PC[pl]} 34%,${t.c2}),${t.c2} 55%,#0e1330)`;
+  const bg=A&&A.card?`url(${A.card}) center/100% 100% no-repeat,#0e1330`:`${t.pat},linear-gradient(165deg,color-mix(in srgb,${PC[pl]} 34%,${t.c2}),${t.c2} 55%,#0e1330)`;
   return `--pc:${PC[pl]};background:${bg}`}
 function planetBand(pl){return `<span class="pband" style="--pc:${PC[pl]}"><img src="${embURL(pl)}" alt="">${pl}</span><span class="pwm" style="background-image:url('${embURL(pl,'#ffffff')}')"></span>`}
 /* ---------- state ---------- */
@@ -933,7 +934,7 @@ function drawCastle(c,o,col,tn){
   const x=o.x,y=o.y,k=Math.min(1,o.prog/o.need),stone='#2b3463',dark='#1a2046';
   c.fillStyle='#0007';c.beginPath();c.ellipse(x,y+6,62,14,0,0,TAU);c.fill();
   const ci=castleImg(o.pl),em=embImg(o.pl,'#ffffff');
-  if(ci&&ci.complete){c.drawImage(ci,x-80,y-150,160,160)}else{
+  if(ci&&ci.complete){c.drawImage(ci,x-95,y-172,190,190)}else{
   // 성벽 + 톱니
   c.fillStyle=stone;c.fillRect(x-56,y-30,112,36);for(let i=0;i<7;i++)c.fillRect(x-56+i*17,y-40,10,10);
   c.fillStyle=col;c.fillRect(x-56,y-2,112,5);
@@ -944,9 +945,9 @@ function drawCastle(c,o,col,tn){
   // 문장 방패
   c.fillStyle=col;c.beginPath();c.moveTo(x-13,y-46);c.lineTo(x+13,y-46);c.lineTo(x+13,y-34);c.quadraticCurveTo(x,y-22,x-13,y-34);c.closePath();c.fill();if(em.complete)c.drawImage(em,x-8,y-46,16,16);}
   // 깃대 + 깃발(버틴 만큼 올라감)
-  const pb=ci&&ci.complete?y-140:y-88,top=pb-62,bot=pb-8;c.strokeStyle='#c9d1ee';c.lineWidth=3;c.beginPath();c.moveTo(x,pb);c.lineTo(x,top);c.stroke();c.fillStyle='#ffd84d';c.beginPath();c.arc(x,top-3,4,0,TAU);c.fill();
-  const fy=bot-(bot-top-4)*k,fw=46,fh=30,fi=flagImg(o.pl);
-  if(fi&&fi.complete){c.drawImage(fi,x+2,fy,fw,fh)}else{
+  const pb=ci&&ci.complete?y-150:y-88,top=pb-62,bot=pb-8;c.strokeStyle='#c9d1ee';c.lineWidth=3;c.beginPath();c.moveTo(x,pb);c.lineTo(x,top);c.stroke();c.fillStyle='#ffd84d';c.beginPath();c.arc(x,top-3,4,0,TAU);c.fill();
+  const fi=flagImg(o.pl),fw=fi?60:46,fh=fi?40:30,fy=bot-(bot-top-4)*k;
+  if(fi&&fi.complete){c.save();c.translate(x+2,fy);c.transform(1,Math.sin(tn*5)*.04,0,1,0,0);c.globalAlpha=o.inside||k>0?1:.7;c.drawImage(fi,-3,-4,fw,fh);c.restore()}else{
     c.fillStyle=col;c.globalAlpha=o.inside||k>0?1:.6;c.beginPath();c.moveTo(x+2,fy);
     for(let i=0;i<=8;i++){const t=i/8;c.lineTo(x+2+fw*t,fy+Math.sin(tn*6+t*5)*3*t)}
     for(let i=8;i>=0;i--){const t=i/8;c.lineTo(x+2+fw*t,fy+fh+Math.sin(tn*6+t*5)*3*t)}c.closePath();c.fill();
@@ -1030,6 +1031,7 @@ function draw(){
     if(it.k==='chest'){c.fillStyle='#ffd84d33';c.beginPath();c.arc(it.x,it.y,34+Math.sin(tnow*5)*4,0,TAU);c.fill();c.fillStyle='#b8741f';c.fillRect(it.x-18,it.y-12+bob,36,26);c.fillStyle='#ffd84d';c.fillRect(it.x-18,it.y-12+bob,36,8);c.fillRect(it.x-4,it.y-6+bob,8,10)}
     else if(it.k==='cap'){c.save();c.translate(it.x,it.y+bob);c.rotate(.5);c.fillStyle='#b685ff';c.beginPath();c.arc(-6,0,9,Math.PI/2,Math.PI*1.5);c.lineTo(6,-9);c.arc(6,0,9,-Math.PI/2,Math.PI/2);c.closePath();c.fill();c.fillStyle='#ffd84d';c.fillRect(0,-9,15,18);c.restore()}
     else if(it.k==='food'){c.fillStyle='#ff7e7e';c.fillRect(it.x-11,it.y-8+bob,22,16);c.fillStyle='#fff';c.fillRect(it.x-11,it.y-2+bob,22,3)}
+    else if(SUPI&&SUPI.complete){c.fillStyle='#5fe0a022';c.beginPath();c.arc(it.x,it.y,40+Math.sin(tnow*4)*3,0,TAU);c.fill();c.drawImage(SUPI,it.x-34,it.y-44+bob,68,68)}
     else{c.fillStyle='#5fe0a022';c.beginPath();c.arc(it.x,it.y,38+Math.sin(tnow*4)*3,0,TAU);c.fill();c.fillStyle='#2c4a40';c.fillRect(it.x-24,it.y-14,48,26);c.fillStyle='#5fe0a0';c.fillRect(it.x-24,it.y-14,48,6);c.fillRect(it.x-3,it.y-8,6,16);c.fillRect(it.x-8,it.y-3,16,6);c.strokeStyle='#c9d1ee';c.lineWidth=2;c.beginPath();c.moveTo(it.x+18,it.y-14);c.lineTo(it.x+18,it.y-34);c.stroke();c.fillStyle='#5fe0a0';c.globalAlpha=.5+Math.sin(tnow*8)*.5;c.beginPath();c.arc(it.x+18,it.y-36,4,0,TAU);c.fill();c.globalAlpha=1}
     c.font='12px Jua, sans-serif';c.fillStyle='#eef1ff';c.fillText({chest:'보물상자',cap:'캡슐',food:'도시락',sup:'보급소'}[it.k],it.x,it.y+28);
   }
