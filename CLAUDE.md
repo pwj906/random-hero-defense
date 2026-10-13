@@ -108,3 +108,10 @@
 - v278: 영웅(행성) 강화 1강당 +25%→+40%(`mult`·`dmgParts`·설명, `fuStartLv`도 .4/.3). 소환 확률 강화 최대 10→30강(`LUCK_MAX`), 비용 100 고정→120+15·Lv(30강까지 총 약 10,000), odds()는 10강까지 예전과 같고 그 뒤로 오름폭 절반(30강: 영웅 등급 약 15%, 행성 약 3%).
 - v279: 조합 버튼(`#bCraft`)을 화면 왼쪽 아래 구석(왼쪽 1.5%, 3/3 칸 바로 위)으로 옮기고 작게 — 접힌 상태는 '✦ 조합 N ▴'만(이름 나열 삭제), 펼치면 작은 버튼이 위로 쌓이고 왼쪽 정렬, ✕는 맨 위 줄 오른쪽 옆, 깜빡임은 요약 버튼만.
 - v280: 강화 버프 — 행성 강화 1강당 +40%→+60%, 특수조합 개별 강화 +30%→+45%(`fuStartLv`는 .6/.45로 같은 비율). 박스 조각 레벨(`lvK`) 공격력 레벨당 +5%→+12%(`LV_STEP`), 지속시간 등 `LVF` 수치는 예전대로 레벨당 5%(`lvK(k,.05)`).
+
+## 랜덤 히어로 서바이버 (survivor/)
+- 같은 IP의 뱀서류. 원본 `src/survivor.html`(아티팩트 본문 형식) → `python3 tools/build_survivor.py` → `survivor/index.html`. 그림은 `survivor/assets.js`(`window.RH_ASSETS`).
+- 공개 주소 https://pwj906.github.io/random-hero-defense/survivor/ · claude.ai 아티팩트 https://claude.ai/artifact/3Rf4T5HQAASSb4r3nHLhCY (같은 원본 + files {assets.js}).
+- 구조: 위(-y)로 전진, 전진 거리(m)=최고 -y/10. 500m(5000px)마다 제륵 장벽 — 900px 안에 오면 차원문, 보스(6종 순환, 체력 ×(장벽 번호)^1.35) 잡으면 열림. 가는 길 앞쪽 신호탑 9초 버티면 그 행성 영웅 랜덤 합류.
+- 난이도 시계 `G.T = t·0.55 + 거리m·0.1`(시간과 거리 둘 다). 봇 6판 4.5~15분, 1,750~3,350m.
+- 계정·랭킹: 디펜스와 같은 Supabase·같은 계정(`rhd_auth`, `@player.rhd.app`, 같은 출처라 로그인 공유). 랭킹 표 `public.survivor_runs`(pid, nick, m, k, t, lv) — 누구나 읽기·추가만. 순위 m 내림차순 → k 내림차순 → t 오름차순, 상위 100. 닉네임은 디펜스와 같은 `cleanNick`.
