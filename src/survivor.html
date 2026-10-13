@@ -181,6 +181,7 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
 .rkin{display:flex;gap:8px}.rkin input{flex:1}
 .rkend #rkL .rkl{max-height:30vh}
 .acctbtn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);left:16px;font-size:14px;padding:8px 14px;border-radius:999px}
+.ver{font-size:11px;color:var(--mute);opacity:.7}
 .best{margin:0;color:var(--gold);font-family:var(--f-display);font-size:18px;min-height:1.2em}
 #start{position:fixed;inset:0;z-index:6;display:grid;place-items:center;padding:16px;box-sizing:border-box;overflow:auto;background:radial-gradient(1200px 600px at 50% 0%,#1b2160,transparent 70%),var(--void)}
 .st-wrap{width:min(760px,100%);display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
@@ -250,10 +251,11 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
       <div class="rule"><b style="color:var(--ok)">전진 · 신호탑 · 장벽</b><p>위로 전진하세요. 가는 길의 신호탑을 지켜 내면 그 행성 영웅이 합류하고, 500m마다 막아선 장벽은 보스를 잡아야 열립니다.</p></div>
     </div>
     <p id="bestLine" class="best"></p>
+    <div class="ver">서바이버 v6 · 신호탑에서 영웅 고르기 · 꽉 차면 교체</div>
     <div class="controls">이동: WASD · 방향키 · 화면 드래그 &nbsp;|&nbsp; 카드 선택: 1 2 3 · 다시 뽑기 R · 계속 Space · 일시정지 Esc</div>
   </div>
 </div>
-<script src="assets.js"></script>
+<script src="assets.js?v=6"></script>
 <script>
 (()=>{
 'use strict';
