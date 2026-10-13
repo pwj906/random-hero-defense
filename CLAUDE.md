@@ -114,4 +114,5 @@
 - 공개 주소 https://pwj906.github.io/random-hero-defense/survivor/ · claude.ai 아티팩트 https://claude.ai/artifact/3Rf4T5HQAASSb4r3nHLhCY (같은 원본 + files {assets.js}).
 - 구조: 위(-y)로 전진, 전진 거리(m)=최고 -y/10. 500m(5000px)마다 제륵 장벽 — 900px 안에 오면 차원문, 보스(6종 순환, 체력 ×(장벽 번호)^1.35) 잡으면 열림. 가는 길 앞쪽 신호탑 9초 버티면 그 행성 영웅 랜덤 합류.
 - 난이도 시계 `G.T = t·0.55 + 거리m·0.1`(시간과 거리 둘 다). 봇 6판 4.5~15분, 1,750~3,350m.
+- 조합 표시: 파티 칸 위 `#combo` 줄(`comboHUD`, 재료 하나라도 있는 조합식 최대 3개 — 보유 초록 테두리·없는 재료 흑백, 다 모이면 금색 '조합하기' 버튼·C키 `comboNow`). 칸 옆 딱지: 2겹이면 '승급↑'(빛남), 조합 재료면 '조합'. 새 히어로 카드에 '조합 재료!' 안내.
 - 계정·랭킹: 디펜스와 같은 Supabase·같은 계정(`rhd_auth`, `@player.rhd.app`, 같은 출처라 로그인 공유). 랭킹 표 `public.survivor_runs`(pid, nick, m, k, t, lv) — 누구나 읽기·추가만. 순위 m 내림차순 → k 내림차순 → t 오름차순, 상위 100. 닉네임은 디펜스와 같은 `cleanNick`.

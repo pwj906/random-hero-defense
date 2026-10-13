@@ -61,6 +61,22 @@ button{font:inherit;color:inherit}
 .chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
 .chip b{color:var(--gold);font-weight:600}
 #party{display:flex;gap:6px}
+#combo{display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:auto}
+.cbr{display:flex;align-items:center;gap:4px;background:#121833e6;border:1px solid var(--line);border-radius:12px;padding:3px 10px 3px 6px;font-size:12px;white-space:nowrap;font-family:inherit;color:var(--ink)}
+.cbr img{width:28px;height:28px;object-fit:contain;border-radius:7px;background:#0d1229}
+.cbr img.miss{filter:grayscale(1) brightness(.45);outline:1px dashed #8a93bb;outline-offset:-1px}
+.cbr img.got{outline:2px solid var(--ok);outline-offset:-2px}
+.cbr .pl{color:var(--mute)}.cbr .ar{color:var(--gold);font-family:var(--f-display)}
+.cbr b{font-family:var(--f-display);font-weight:400;font-size:14px;color:var(--gold)}
+.cbr small{color:var(--mute)}
+button.cbr.ready{cursor:pointer;border-color:var(--gold);background:linear-gradient(90deg,#3a2e0a,#1b2246);animation:glow 1s ease-in-out infinite}
+button.cbr.ready b{color:#fff}
+@keyframes glow{50%{box-shadow:0 0 0 3px #ffd84d66,0 0 22px #ffd84d88}}
+.slot.near{animation:glowS 1.1s ease-in-out infinite}
+@keyframes glowS{50%{box-shadow:0 0 0 2px var(--c),0 0 16px var(--c)}}
+.slot .nx{position:absolute;top:20px;right:-10px;z-index:1;font-family:var(--f-display);font-size:10px;line-height:15px;padding:0 4px;border-radius:6px;background:#fff;color:#10142a}
+.slot .ck{position:absolute;top:20px;right:-10px;z-index:1;font-size:10px;line-height:15px;padding:0 4px;border-radius:6px;background:var(--gold);color:#10142a;font-family:var(--f-display)}
+.card .cmb{color:#ffe08a;font-weight:600}
 .slot{width:54px;height:64px;border-radius:11px;background:#121831dd;border:2px solid var(--c,#2c3566);position:relative;box-sizing:border-box}
 .slot img{width:46px;height:46px;object-fit:contain;display:block;margin:1px auto 0}
 .slot .st{position:absolute;left:0;right:0;bottom:1px;text-align:center;font-size:10px;line-height:14px;color:var(--c);letter-spacing:-.5px}
@@ -219,7 +235,7 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
   <div id="objbox"><div class="ot"><span id="stg"></span><b id="objText"></b><span id="objDist"></span></div><div class="ob"><i id="objFill"></i></div></div>
   <div id="bossbar" hidden><div class="bn"><b id="bossName"></b><span id="bossSkill"></span></div><div class="bb"><i id="bossFill"></i></div></div>
   <div id="toasts"></div>
-  <div class="bottom"><div id="syn"></div><div id="party"></div></div>
+  <div class="bottom"><div id="combo"></div><div id="syn"></div><div id="party"></div></div>
 </div>
 <div id="overlay" hidden></div>
 <div id="side" hidden></div>
@@ -374,6 +390,16 @@ function placeOrBoost(def,out){
   if(r==='full'){const s=heroes().filter(canStack);if(s.length){const h=pick(s);toast(`자리가 꽉 차서 ${h.def.name}에게 겹치기 +1`);addStack(h,out)}else gainXp(G.need*.5)}
   return r;
 }
+function comboNear(){const own=owned();return COMBOS.map(c=>({c,n:c.need.filter(id=>own.has(id)).length})).filter(x=>x.n>0).sort((a,b)=>(b.n/b.c.need.length)-(a.n/a.c.need.length))}
+function comboNow(c){if(!G||G.modals.length||G.over||!c.need.every(id=>owned().has(id)))return;const out=[];doCombo(c,out);G.modals.push(...out);G.partySig=''}
+function comboHUD(){const box=$('#combo');if(!box||!G)return;const L=comboNear().slice(0,3);
+  box.innerHTML=L.map(({c,n},j)=>{const ready=n===c.need.length,o=BY[c.out],own=owned();
+    const parts=c.need.map(id=>`<img class="${own.has(id)?'got':'miss'}" src="${portrait(id)}" alt="${BY[id].name}" title="${BY[id].name}${own.has(id)?' (보유)':' (필요)'}">`).join('<span class="pl">+</span>');
+    const miss=c.need.filter(id=>!own.has(id)).map(id=>BY[id].name).join('·');
+    return ready?`<button class="cbr ready" data-cb="${j}">${parts}<span class="ar">→</span><img class="got" src="${portrait(o.id)}" alt=""><b>${o.name} 조합하기 (C)</b></button>`
+      :`<div class="cbr">${parts}<span class="ar">→</span><img class="miss" src="${portrait(o.id)}" alt=""><b>${o.name}</b><small>${miss} 필요</small></div>`}).join('');
+  box.querySelectorAll('[data-cb]').forEach(b=>b.onclick=()=>comboNow(L[+b.dataset.cb].c));
+  box.__L=L}
 function findCombo(){const own=owned();return COMBOS.find(c=>c.need.every(id=>own.has(id)))||null}
 function doCombo(c,out){
   const idx=[];c.need.forEach(id=>{const i=G.slots.findIndex(h=>h&&h.def.id===id);if(i>=0){idx.push(i);G.slots[i]=null}});
@@ -692,6 +718,7 @@ addEventListener('keydown',e=>{
   if(!started||!G)return;
   if(G.over)return;
   if(k==='escape'||k==='p'){togglePause();return}
+  if(k==='c'&&!G.modals.length&&!paused){const x=($('#combo').__L||[]).find(x=>x.n===x.c.need.length);if(x)comboNow(x.c);return}
   const m=G.modals[0];
   if(m&&!paused){
     if(m.kind==='level'){if(k>='1'&&k<='3')resolve(+k-1);if(k==='r')resolve('reroll')}
@@ -717,7 +744,7 @@ function cardHTML(c,i){
   if(c.t==='new'||c.t==='stack'){
     const d=c.t==='new'?c.d:c.h.def,tc=TC[d.tier];
     let extra='';
-    if(c.t==='new'){const n=G.syn[d.planet]||0;extra=n?`<p class="promo">같은 행성 ${n+1}명 → 시너지 피해 +${[0,0,20,45,80][Math.min(4,n+1)]}%</p>`:''}
+    if(c.t==='new'){const n=G.syn[d.planet]||0;extra=n?`<p class="promo">같은 행성 ${n+1}명 → 시너지 피해 +${[0,0,20,45,80][Math.min(4,n+1)]}%</p>`:'';const own=owned(),cc=COMBOS.find(x=>x.need.includes(d.id)&&x.need.some(id=>id!==d.id&&own.has(id)));if(cc)extra+=`<p class="cmb">조합 재료! ${cc.need.map(id=>BY[id].name).join(' + ')} → ${BY[cc.out].name}</p>`}
     else{const s=c.h.stack;extra=`<p class="stars">${stars(s,3)} → ${stars(s+1,3)}</p>`+(d.tier<=3&&s+1>=3?`<p class="promo">3겹 완성 → 랜덤 ${TN[d.tier+1]} 히어로로 승급!</p>`:d.tier===4?`<p>행성 단계는 승급 없이 강해집니다</p>`:`<p>피해 ×${(SM[s+1]/SM[s]).toFixed(2)}</p>`)}
     return `<button class="card" style="--tc:${tc}" data-pick="${i}">${key}<span class="tag">${c.t==='new'?'새 히어로':'겹치기'}</span><img class="pt" src="${portrait(d.id)}" alt=""><div class="bd"><div class="nm">${d.name}</div><div class="sub">${d.sub}</div><div class="chips"><span class="tierchip" style="--tc:${tc}">${TN[d.tier]}</span>${plChip(d.planet)}</div><p><b>${d.an}</b> · ${KIND[d.k].lab}${d.slow?' · 감속':''}</p>${extra}</div></button>`;
   }
@@ -812,7 +839,8 @@ function hud(){
   const sig=G.slots.map(h=>h?h.def.id+h.stack+'a'+(h.awk||0):'-').join('|');
   if(sig!==G.partySig){
     const prev=G.partySig.split('|');G.partySig=sig;const cur=sig.split('|');
-    $('#party').innerHTML=G.slots.map((h,i)=>{if(!h)return `<div class="slot empty"></div>`;const d=h.def;const st=(h.awk?`+${h.awk} `:'')+(d.tier>=5?(d.combo?'조합':'우주'):'★'.repeat(h.stack)+'<span style="opacity:.3">'+'★'.repeat(3-h.stack)+'</span>');return `<div class="slot ${prev[i]!==cur[i]&&prev.length>1?'pop':''}" style="--c:${TC[d.tier]}" title="${d.name}"><span class="tl">${TN[d.tier]}</span><img src="${portrait(d.id)}" alt="${d.name}"><span class="st">${st}</span></div>`}).join('');
+    $('#party').innerHTML=G.slots.map((h,i)=>{if(!h)return `<div class="slot empty"></div>`;const d=h.def;const st=(h.awk?`+${h.awk} `:'')+(d.tier>=5?(d.combo?'조합':'우주'):'★'.repeat(h.stack)+'<span style="opacity:.3">'+'★'.repeat(3-h.stack)+'</span>');const near=d.tier<=3&&h.stack===2,isIng=COMBOS.some(c=>c.need.includes(d.id));return `<div class="slot ${prev[i]!==cur[i]&&prev.length>1?'pop':''} ${near?'near':''}" style="--c:${TC[d.tier]}" title="${d.name}${near?' · 한 번 더 겹치면 승급':''}"><span class="tl">${TN[d.tier]}</span>${near?'<span class="nx">승급↑</span>':isIng?'<span class="ck">조합</span>':''}<img src="${portrait(d.id)}" alt="${d.name}"><span class="st">${st}</span></div>`}).join('');
+    comboHUD();
     $('#syn').innerHTML=Object.entries(G.syn).filter(([,n])=>n>=2).map(([pl,n])=>`<span class="chip"><i style="background:${PC[pl]}"></i>${pl} ${n}명 <b>+${n>=4?80:n===3?45:20}%</b></span>`).join('');
   }
 }
