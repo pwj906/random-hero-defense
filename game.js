@@ -1798,7 +1798,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:282};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:283};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -2087,19 +2087,12 @@ function tutRect(t){const st=$('stage').getBoundingClientRect(),k=st.width/$('st
   const e=typeof t==='string'?document.querySelector(t):null;if(!e||!e.offsetParent&&getComputedStyle(e).position!=='fixed')return null;const r=e.getBoundingClientRect();if(!r.width)return null;return{x:(r.left-st.left)/k-4,y:(r.top-st.top)/k-4,w:r.width/k+8,h:r.height/k+8}}
 function tutCellK(){for(const i of [12,11,13,7,17,6,8,16,18,2,22,10,14]){if(i<NC&&!G.cells[i])return i}return G.cells.findIndex(c=>!c)}
 const TUTS=[
- {t:'👋 환영해!',at:'path',x:'적은 바깥 <b>길</b>을 계속 돌아. <b>200마리</b>가 쌓이면 끝!<br>설명 중엔 게임이 멈춰 있어.'},
- {t:'🎲 소환',at:'#summon',do:1,x:'<span class="do">소환을 3번 눌러 봐.</span> 영웅이 랜덤 등급으로 나와.',
-  on:()=>{G.coins=Math.max(G.coins,300);TUT.s0=G.summons;refresh()},ok:()=>G.summons>=TUT.s0+3},
- {t:'⭐ 승급',do:1,x:'같은 영웅 <b>3명</b>이 모이면 승급!<br><span class="do">반짝이는 칸을 눌러 봐.</span> (두 번 빠르게 누르면 바로 승급)',
-  on:()=>{const i=tutCellK(),k=BY[0][0];G.cells[i]={u:k,n:3,cd:0,b:0,pop:.25,ax:0,ay:0,sc:0};TUT.mi=i;TUT.mk=k;G.sel=null;refresh()},at:()=>TUT.mi,ok:()=>G.sel===TUT.mi},
- {t:'⭐ 승급',at:'#bM',do:1,x:'<span class="do">승급 버튼을 눌러.</span>',
-  ok:()=>{const c=G.cells[TUT.mi];return !c||c.u!==TUT.mk||c.n<3},skipIf:()=>!$('bM')},
- {t:'✋ 자리 옮기기',at:'board',do:1,x:'<span class="do">영웅을 꾹 눌러 다른 칸으로 끌어 봐.</span> 같은 영웅끼리는 합쳐져.',
-  on:()=>{TUT.mv=0},ok:()=>TUT.mv,next:1},
- {t:'⬆ 강화',at:'#bUp',x:'코인으로 소환 확률·칸·행성 공격력을 올려.'},
- {t:'🌌 우주 조합',at:'#bMyth',x:'같은 행성 영웅을 등급별로 1명씩 모으면 <b>우주 히어로</b>!<br>같은 우주 히어로는 <b>두 번 눌러 🔮농축</b>하면 훨씬 세져.'},
- {t:'🍀 도박·🎯 현상금',at:'#bGam',x:'행운석으로 높은 등급을 노리고, 현상금 몬스터로 보상을 챙겨.'},
- {t:'🚀 시작!',x:'5웨이브·보스마다 <b>증강</b>을 하나 골라. 나머지는 하면서 익히면 돼!<br>튜토리얼은 메인 화면에서 다시 볼 수 있어.'}];
+ {t:'🎲 소환',at:'#summon',do:1,x:'적이 <b>200마리</b> 쌓이기 전에 막아!<br><span class="do">소환을 3번 눌러 봐.</span> (지금은 무료)',
+  on:()=>{G.freeN=Math.max(G.freeN||0,3);TUT.s0=G.summons;refresh()},ok:()=>G.summons>=TUT.s0+3},
+ {t:'⭐ 승급',do:1,x:()=>'같은 영웅 <b>3명</b>이 모이면 승급!<br><span class="do">'+(G.sel===TUT.mi&&$('bM')?'<b>▲ 승급</b> 버튼을 눌러!':'반짝이는 칸을 눌러 봐.')+'</span>',
+  on:()=>{const i=tutCellK(),k=(BY.find((b,t)=>t<3&&b.length&&BY[t+1]&&BY[t+1].length)||BY[1])[0];G.cells[i]={u:k,n:3,cd:0,b:0,pop:.25,ax:0,ay:0,sc:0};TUT.mi=i;TUT.mk=k;G.sel=null;refresh()},
+  at:()=>G.sel===TUT.mi&&$('bM')?'#bM':TUT.mi,ok:()=>{const c=G.cells[TUT.mi];return !c||c.u!==TUT.mk||c.n<3}},
+ {t:'🚀 끝!',x:'영웅은 끌어서 옮기고, 남는 코인은 <b>⬆ 강화</b>에!<br>나머지는 하면서 익히면 돼.'}];
 function tutStart(){if(!G)return;TUT={i:-1};G.pause=true;G.tutOn=1;$('tut').style.display='block';tutGo(0);clearInterval(TUT.tm);TUT.tm=setInterval(tutTick,200)}
 function tutGo(i){const P=TUTS[TUT.i];if(P&&P.off)P.off();TUT.i=i;while(TUT.i<TUTS.length&&TUTS[TUT.i].skipIf&&TUTS[TUT.i].skipIf())TUT.i++;if(TUT.i>=TUTS.length)return tutEnd();const S=TUTS[TUT.i];if(S.on)S.on();tutDraw()}
 function tutNext(){tutGo(TUT.i+1)}
@@ -2107,7 +2100,7 @@ function tutEnd(){if(!TUT)return;const P=TUTS[TUT.i];if(P&&P.off)P.off();clearIn
 function tutDraw(){if(!TUT)return;const S=TUTS[TUT.i],B=$('tutB'),Hh=$('tutH'),C=$('tutC');let at=typeof S.at==='function'?S.at():S.at;const R=at!=null?tutRect(at):null;
   if(R){Object.assign(Hh.style,{left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'});Hh.className='th'+(S.do?' pulse':'')}else{Object.assign(Hh.style,{left:'50%',top:'50%',width:'0px',height:'0px'});Hh.className='th no'}
   C.style.display=S.do?'none':'block';
-  B.innerHTML='<div class="tt">'+S.t+'</div>'+S.x+'<div class="tf"><button class="sk" id="tutSk">건너뛰기</button><small>'+(TUT.i+1)+' / '+TUTS.length+'</small>'+(S.do&&!S.next?'<span style="width:60px"></span>':'<button id="tutNx">'+(TUT.i===TUTS.length-1?'시작! ▶':S.do?'넘어가기 ▶':'다음 ▶')+'</button>')+'</div>';
+  B.innerHTML='<div class="tt">'+S.t+'</div>'+(typeof S.x==='function'?S.x():S.x)+'<div class="tf"><button class="sk" id="tutSk">건너뛰기</button><small>'+(TUT.i+1)+' / '+TUTS.length+'</small>'+(S.do&&!S.next?'<span style="width:60px"></span>':'<button id="tutNx">'+(TUT.i===TUTS.length-1?'시작! ▶':S.do?'넘어가기 ▶':'다음 ▶')+'</button>')+'</div>';
   const sh=$('stage').offsetHeight,bh=B.offsetHeight;B.style.bottom='';let top;if(!R)top=sh*.32;else{const below=R.y+R.h+10,above=R.y-10-bh;if(R.y+R.h/2>sh*.5)top=above>=6?above:(below+bh<=sh-6?below:sh-bh-6);else top=below+bh<=sh-6?below:(above>=6?above:sh-bh-6)}B.style.top=Math.max(6,Math.min(sh-bh-6,top))+'px';
   $('tutSk').onclick=e=>{e.stopPropagation();tutEnd()};if($('tutNx'))$('tutNx').onclick=e=>{e.stopPropagation();tutNext()};TUT.key=JSON.stringify(R)}
 function tutTick(){if(!TUT)return;if(!G||G.over||$('main').style.display==='flex'){tutEnd();return}const S=TUTS[TUT.i];G.pause=true;
@@ -2146,7 +2139,7 @@ function pgEnd(){pgState='end';const n=Object.keys(U).length;$('pgSub').innerHTM
   $('pgStage').innerHTML='<div id="pgAll">'+pgOrder.map((p,j)=>'<span style="animation-delay:'+j*.07+'s"><img src="'+PICON[p]+'" alt="">'+PLANETS[p]+'</span>').join('')+[0,1,2,3,4].map(j=>'<span class="lk" style="animation-delay:'+(.5+j*.07)+'s"><img src="'+PICON[pgOrder[(j*3+1)%pgOrder.length]]+'" alt="">???</span>').join('')+'</div>';$('pgHint').textContent='화면을 눌러 시작'}
 function pgClose(){clearTimeout(pgTm);$('pg').style.display='none';SAVE.pg=1;saveAll()}
 $('pg').onclick=()=>{if(pgState==='box')pgRoll();else if(pgState==='roll'){clearTimeout(pgTm);pgWin()}else if(pgState==='win'){if(pgI<pgOrder.length)pgBox();else pgEnd()}else if(pgState==='end')pgClose()};
-$('mStory').onclick=introOpen;$('mPg').onclick=pgOpen;if(!SAVE.intro||!SAVE.pg)setTimeout(introOpen,300);
+$('mStory').onclick=introOpen;$('mPg').onclick=pgOpen;if(!SAVE.intro||!SAVE.pg){SAVE.intro=1;SAVE.pg=1;saveAll()} // 첫 방문 스토리·행성 상자 자동 생략(메인에서 다시 보기 가능)
 drag=null;
 function evPos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]}
 function cellAt(x,y){for(let i=0;i<NC;i++){const[cx,cy]=cellXY(i);if(Math.abs(x-cx)<=CS/2&&Math.abs(y-cy)<=CS/2)return i}return-1}
