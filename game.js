@@ -786,10 +786,21 @@ function terrFits(i){const bl=new Set(terrDef(TERR[i].k).blk);let need=0,free=0;
 function setTerrain(i,anim){const d=terrDef(TERR[i].k),P=d.pts.slice();if(d.loop)P.push(P[0]);const C=[0];for(let j=1;j<P.length;j++)C.push(C[j-1]+Math.hypot(P[j][0]-P[j-1][0],P[j][1]-P[j-1][1]));
   const oldPER=PER;PATHS=P;PCUM=C;PLOOP=d.loop;PER=C[C.length-1];BLK=new Set(d.blk);_PD=null;MAXU=(NC-BLK.size)*3;
   if(!G)return;G.terr=i;for(const m of G.mobs){m.p=((m.p%oldPER)+oldPER)%oldPER/oldPER*PER}
-  for(const b of BLK){let c=G.cells[b];if(!c)continue;const RO=ringOrd(),e=[];G.cells.forEach((q,j)=>{if(!q&&!BLK.has(j))e.push(j)});e.sort((x,y)=>RO[x]-RO[y]);
-    if(e.length){G.cells[e[0]]=c;G.cells[b]=null;c.pop=.3;continue}
-    const t=G.cells.findIndex((q,j)=>q&&j!==b&&!BLK.has(j)&&q.u===c.u&&U[q.u].t<4&&q.n+c.n<=3);if(t>=0){G.cells[t].n+=c.n;G.cells[b]=null;continue}
-    BLK.delete(b)} // 영웅은 절대 팔지 않음: 옮길 곳이 없으면 그 칸은 막지 않고 그대로 둠
+  if(!G.tile)G.tile=[];const TL=G.tile,mv=[],sold=[];
+  const val=q=>Math.pow(4,U[q.u].t)*q.n*(q.k||1)*(q.lk?50:1)*(U[q.u].t>=4?100:1);
+  const freeCells=()=>{const RO=ringOrd(),e=[];G.cells.forEach((q,j)=>{if(!q&&!BLK.has(j))e.push(j)});e.sort((x,y)=>RO[x]-RO[y]);return e};
+  const moveTo=(b,j)=>{G.cells[j]=G.cells[b];G.cells[b]=null;G.cells[j].pop=.3;const t=TL[j]||0;TL[j]=TL[b]||0;TL[b]=t};
+  for(const b of [...BLK]){let c=G.cells[b];if(!c)continue;
+    let e=freeCells();if(e.length){moveTo(b,e[0]);mv.push(U[c.u].n);continue}
+    const t=G.cells.findIndex((q,j)=>q&&j!==b&&!BLK.has(j)&&q.u===c.u&&U[q.u].t<4&&!q.k&&q.n+c.n<=3);if(t>=0){G.cells[t].n+=c.n;G.cells[b]=null;mv.push(U[c.u].n);continue}
+    // 자리가 정말 없으면: 필드에서 가장 싼 칸(낮은 등급·적은 수, 잠금·우주는 마지막)을 통째로 팔고 그 자리로
+    let ch=-1,bv=1e99;G.cells.forEach((q,j)=>{if(q&&(!BLK.has(j)||j===b)){const v=val(q);if(v<bv){bv=v;ch=j}}});
+    if(ch>=0){const nm=U[G.cells[ch].u].n,s0=G.sel;for(let g=0;g<30&&G.cells[ch];g++){G.sel=ch;sell()}G.sel=s0===ch?null:s0;sold.push(nm);
+      if(ch!==b&&!G.cells[ch]&&G.cells[b]){moveTo(b,ch);mv.push(U[c.u].n)}if(!G.cells[b])continue}
+    BLK.delete(b)} // 그래도 안 되면 칸을 막지 않음
+  // 막힌 칸에 남은 판 강화는 빈 일반 칸(강화 낮은 곳)으로 옮김
+  for(const b of BLK){const lv=TL[b]||0;if(!lv)continue;let best=-1,bl=99;for(let j=0;j<NC;j++){if(BLK.has(j))continue;const l=(TL[j]||0)+(G.cells[j]?.5:0);if(l<bl){bl=l;best=j}}if(best>=0&&(TL[best]||0)<lv){const t=TL[best]||0;TL[best]=lv;TL[b]=t}}
+  if(sold.length)setTimeout(()=>toast('💸 자리가 모자라 가장 싼 영웅 판매: '+sold.join(', ')),900);else if(mv.length)setTimeout(()=>toast('↪ 길이 된 칸의 영웅 '+mv.length+'명을 빈 칸으로 옮겼어요'),900);
   MAXU=(NC-BLK.size)*3;_PD=null;
   if(G.sel!==null&&BLK.has(G.sel))G.sel=null;
   if(anim){G.flash=Math.max(G.flash||0,.5);G.shake=Math.max(G.shake,.6);G.terrBan=2.6;toast('🗺️ 지형 변화! '+TERR[i].n+' — '+TERR[i].d);const tc=$('terrCut');if(tc){tc.innerHTML='<img src="'+TCUT+'" alt=""><b>지형 변화!</b><small>'+TERR[i].n+'</small>';tc.classList.remove('on');void tc.offsetWidth;tc.classList.add('on')}}refresh()}
@@ -876,13 +887,13 @@ const TILEIMG={"1": __P(2257), "2": __P(2258), "3": __P(2259), "4": __P(2260), "
 if(typeof Image!=='undefined')for(const lv in TILEIMG){const im=new Image();im.src=TILEIMG[lv];TILE_ART[lv]=im}
 function drawTileUpgradeFloors(){
  {const bf=V5I&&V5I['common/buff_floor'];if(bf)for(let i=0;i<NC;i++){const c=G.cells[i];if(!c||!c.aur)continue;const im=bf[Math.floor((G.time||0)*6+i)%bf.length];if(im&&im.complete&&im.naturalWidth){const[x,y]=cellXY(i);cx.save();cx.globalAlpha=.55;cx.drawImage(im,x-CS/2,y-CS/2,CS,CS);cx.restore()}}}
- for(let i=0;i<NC;i++){const lv=G.tile[i]||0;if(!lv)continue;const[x,y]=cellXY(i),im=TILE_ART[lv];cx.save();
+ for(let i=0;i<NC;i++){const lv=G.tile[i]||0;if(!lv||BLK.has(i))continue;const[x,y]=cellXY(i),im=TILE_ART[lv];cx.save();
   cx.beginPath();cx.rect(x-CS/2+1.5,y-CS/2+1.5,CS-3,CS-3);cx.clip();
   if(G.cells[i])cx.globalAlpha=.3;if(im&&im.complete&&im.naturalWidth)cx.drawImage(im,x-CS/2,y-CS/2,CS,CS);
   else{cx.strokeStyle=TILEC[lv];cx.lineWidth=1+lv*.35;rrect(cx,x-CS/2+2,y-CS/2+2,CS-4,CS-4,5);cx.stroke()}
   cx.restore()}}
 function drawTileUpgradeLabels(){
- for(let i=0;i<NC;i++){const lv=G.tile[i]||0,c=G.cells[i];if(drag&&drag.on&&drag.i===i)continue;const[x,y]=cellXY(i);
+ for(let i=0;i<NC;i++){if(BLK.has(i))continue;const lv=G.tile[i]||0,c=G.cells[i];if(drag&&drag.on&&drag.i===i)continue;const[x,y]=cellXY(i);
   if(c&&c.lk){cx.save();cx.strokeStyle='#9fc3ff';cx.lineWidth=2;cx.setLineDash([5,3]);rrect(cx,x-CS/2+2.5,y-CS/2+2.5,CS-5,CS-5,6);cx.stroke();cx.setLineDash([]);const bw=CS*.36;cx.drawImage(roleBadge('🔒'),x-CS/2+1,y-bw/2-CS*.08,bw,bw);cx.restore()}
   
   if(!lv)continue;cx.save();cx.globalAlpha=1;
@@ -1852,7 +1863,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:294};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:295};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
