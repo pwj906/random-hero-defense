@@ -1738,7 +1738,7 @@ function loop(ts){
   requestAnimationFrame(loop)
 }
 const TEST_START=false; // 테스트 기간: 시작 시 모든 캐릭터 1명씩 배치
-function start(){buildBY();$('bSnd').style.display='';$('bMenu').style.display='block';$('gmenu').style.display='none';SND.bg(false,0);$('over').style.display='none';$('boon').style.display='none';$('augL').style.display='none';$('synL').style.display='none';reset();augUI();G.synK='';synTick();['sk0','sk1'].forEach(id=>$(id).dataset.k='');if(TEST_START){Object.keys(U).sort((a,b)=>U[b].t-U[a].t).forEach((k,i)=>{G.cells[[12,7,17,11,13,6,8,16,18][i]??i]={u:k,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[k]?SP[k].cd:0}});refresh()}running=true;last=performance.now();requestAnimationFrame(loop);if(!SAVE.tut&&!window.NO_TUT)setTimeout(()=>{if(G&&!G.over&&!SAVE.tut&&!TUT)tutStart()},700)}
+function start(){buildBY();$('bSnd').style.display='';$('bMenu').style.display='block';$('gmenu').style.display='none';SND.bg(false,0);$('over').style.display='none';$('boon').style.display='none';$('augL').style.display='none';$('synL').style.display='none';reset();augUI();G.synK='';synTick();['sk0','sk1'].forEach(id=>$(id).dataset.k='');if(TEST_START){Object.keys(U).sort((a,b)=>U[b].t-U[a].t).forEach((k,i)=>{G.cells[[12,7,17,11,13,6,8,16,18][i]??i]={u:k,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[k]?SP[k].cd:0}});refresh()}running=true;last=performance.now();requestAnimationFrame(loop);TIP.last=performance.now()-4000;TIP.cur=null;tipHide()}
 
 tempArt();bake();
 $('bAll').onclick=mergeAll;$('bBty').onclick=bounty;$('bSnd').onclick=e=>{SND.cycle();sndBtn();toast(['🔊 소리 켜짐','🎵 배경음악 끔 (효과음만)','🔇 소리 끔'][SND.mode()])};sndBtn();$('rcp').onclick=()=>openSheet('myth');$('bCraft').onclick=e=>{const B=$('bCraft'),ac=e.target.closest('[data-a]');if(ac){const a=ac.dataset.a;if(a==='open')B.__open=1;else if(a==='close')B.__open=0;else if(a==='hide'){B.__hid=1;B.__open=0}B.dataset.k='';refresh();return}const bt=e.target.closest('.cOpt');if(!bt)return;const o=($('bCraft').__L||[])[+bt.dataset.j];if(!o)return;if(o.t==='m'){if(canCraft(o.id))craft(o.id)}else if(o.t==='f'){if(canFuse(o.id))fuse(o.id)}else{const A=G.cells[o.a],B=G.cells[o.b];if(A&&B&&A.u===o.id&&B.u===o.id)concDo(o.a,o.b)}$('bCraft').dataset.k='';refresh()};lotInit();$('bMyth').onclick=()=>openSheet('myth');$('bGam').onclick=()=>openSheet('gam');$('bUp').onclick=()=>openSheet('up');
@@ -1824,7 +1824,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:287};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:288};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
@@ -2104,6 +2104,33 @@ function introShow(i){introI=i;const sc=INTRO[i],I=$('intro');I.classList.toggle
   introTm=setInterval(()=>{n+=1;let out='',c=0,tag=false;for(const ch of full){if(ch==='<')tag=true;if(tag){out+=ch;if(ch==='>')tag=false;continue}if(c>=n)break;out+=ch;c++}T.innerHTML=out;if(n>=plain.length){clearInterval(introTm);T.innerHTML=full;T.dataset.done='1'}},38)}
 function introOpen(){$('intro').style.display='flex';introShow(0)}
 
+
+// ---------- 상황별 도움말: 필요할 때 한 번씩 (게임은 안 멈춤) ----------
+const TIP={cur:null,last:0,t0:0};
+function tipSeen(id){if(!SAVE.tips&&SAVE.tut)SAVE.tips={summon:1,merge:1,move:1,up:1};return SAVE.tips&&SAVE.tips[id]}
+const TIPS=[
+ {id:'summon',when:()=>G.summons===0&&G.time>1.2,at:'#summon',x:'🎲 <b>소환</b>을 눌러 영웅을 뽑아! 적이 <b>200마리</b> 쌓이면 끝이야.',done:()=>G.summons>0},
+ {id:'merge',when:()=>readyCells().length>0,at:()=>readyCells()[0],x:()=>G.sel!==null&&$('bM')?'⭐ <b>▲ 승급</b> 버튼을 눌러!':'⭐ 같은 영웅 <b>3명</b>이 모였어! 반짝이는 칸을 눌러 <b>승급</b>해.',done:()=>!readyCells().length},
+ {id:'move',when:()=>total()>=6&&tipSeen('merge'),at:'board',x:'✋ 영웅을 <b>꾹 눌러 끌면</b> 자리를 옮겨. 같은 영웅끼리는 한 칸에 합쳐져.',done:()=>G.mv},
+ {id:'up',when:()=>G.wave>=4&&G.coins>=250,at:'#bUp',x:'⬆ 남는 코인은 <b>강화</b>에! 행성 공격력·소환 확률을 올려.',done:()=>sheet==='up'},
+ {id:'craft',when:()=>{const b=$('bCraft');return b&&b.style.display!=='none'&&b.innerHTML},at:'#bCraft',x:'🌌 <b>조합</b> 가능! 눌러서 우주 히어로를 만들어 — 엄청 세.',done:()=>G.cells.some(c=>c&&U[c.u].t>=4)},
+ {id:'gam',when:()=>G.stones>=1,at:'#bGam',x:'🍀 <b>행운석</b>이 생겼어! <b>행운 도박</b>에서 높은 등급이나 복권을 노려 봐.',done:()=>sheet==='gam'},
+ {id:'bty',when:()=>{const b=$('bBty');return b&&b.offsetParent&&b.style.display!=='none'},at:'#bBty',x:'🎯 <b>현상금</b> — 눌러서 강한 적을 불러 잡으면 큰 보상!'},
+ {id:'boss',when:()=>G.wave%10===9,at:null,x:'👹 다음 웨이브는 <b>보스</b>! 60초 안에 못 잡으면 적 15마리 몫으로 쌓여.'},
+ {id:'conc',when:()=>{const L=G.cells.filter(c=>c&&U[c.u].t>=4).map(c=>c.u);return L.length!==new Set(L).size},at:()=>G.cells.findIndex(c=>c&&U[c.u].t>=4&&G.cells.filter(q=>q&&q.u===c.u).length>1),x:'🔮 같은 우주 히어로가 2명! 칸을 <b>두 번 빠르게</b> 누르면 <b>농축</b> — 한 칸에 겹쳐 훨씬 세져.'},
+ {id:'lock',when:()=>G.cells.some(c=>c&&U[c.u].t===3),at:()=>G.cells.findIndex(c=>c&&U[c.u].t===3),x:'🔒 행성 등급! 칸을 눌러 <b>재료 잠금</b>하면 조합 재료로 안 쓰여서 시너지용으로 남길 수 있어.'},
+ {id:'many',when:()=>G.mobs.length>=100,at:'#mbar',x:'💀 적이 <b>100마리</b>를 넘었어! 200마리면 끝 — 소환·승급·강화를 서둘러.'},
+];
+function tipHide(){const T=$('tip');if(T)T.style.display='none';TIP.cur=null}
+function tipShow(S){const T=$('tip');SAVE.tips=SAVE.tips||{};SAVE.tips[S.id]=1;saveAll();TIP.cur=S;TIP.t0=performance.now();T.style.display='block';tipDraw()}
+function tipDraw(){const S=TIP.cur;if(!S)return;const T=$('tip'),H2=T.querySelector('.th2'),B=T.querySelector('.tb2');let at=typeof S.at==='function'?S.at():S.at;if(typeof at==='number'&&at<0)at=null;const R=at!=null?tutRect(at):null;
+  if(R){Object.assign(H2.style,{display:'block',left:R.x+'px',top:R.y+'px',width:R.w+'px',height:R.h+'px'})}else H2.style.display='none';
+  const x=typeof S.x==='function'?S.x():S.x;if(B.dataset.x!==x){B.dataset.x=x;B.innerHTML='<span>'+x+'</span><button>알겠어</button>';B.querySelector('button').onclick=e=>{e.stopPropagation();TIP.last=performance.now();tipHide()}}
+  const sh=$('stage').offsetHeight,bh=B.offsetHeight;let top;if(!R)top=sh*.3;else{const below=R.y+R.h+10,above=R.y-10-bh;top=R.y+R.h/2>sh*.5?(above>=6?above:below):(below+bh<=sh-6?below:above)}B.style.top=Math.max(6,Math.min(sh-bh-6,top))+'px'}
+function tipTick(){if(!G||G.over||G.pause||TUT||!running||$('main').style.display==='flex'){if(TIP.cur)tipHide();return}
+  const now=performance.now();if(TIP.cur){const S=TIP.cur;if((S.done&&S.done())||now-TIP.t0>9000){TIP.last=now;tipHide()}else tipDraw();return}
+  if(now-TIP.last<5000)return;for(const S of TIPS){if(tipSeen(S.id))continue;let ok=false;try{ok=S.when()}catch(e){}if(ok){tipShow(S);return}}}
+setInterval(tipTick,300);
 // ---------- 튜토리얼 (첫 판 / 메인에서 다시 하기) ----------
 let TUT=null;
 function tutRect(t){const st=$('stage').getBoundingClientRect(),k=st.width/$('stage').offsetWidth;
@@ -2132,7 +2159,7 @@ function tutDraw(){if(!TUT)return;const S=TUTS[TUT.i],B=$('tutB'),Hh=$('tutH'),C
 function tutTick(){if(!TUT)return;if(!G||G.over||$('main').style.display==='flex'){tutEnd();return}const S=TUTS[TUT.i];G.pause=true;
   if(S.do&&S.ok&&S.ok()){tutNext();return}const at=typeof S.at==='function'?S.at():S.at,R=at!=null?tutRect(at):null;if(JSON.stringify(R)!==TUT.key)tutDraw()}
 $('tutC').onclick=()=>{if(TUT&&!TUTS[TUT.i].do)tutNext()};
-$('mTut').onclick=()=>{SAVE.tut=0;saveAll();mainStart()};
+$('mTut').onclick=()=>{SAVE.tips={};saveAll();toast('📘 도움말을 처음부터 다시 보여 줄게요');mainStart()};
 function introClose(){clearInterval(introTm);$('intro').style.display='none';SAVE.intro=1;saveAll();if(!SAVE.pg)pgOpen()}
 $('intro').onclick=e=>{if(e.target.id==='iSkip'){introClose();return}const T=$('iTxt');if(!T.dataset.done){clearInterval(introTm);T.innerHTML=INTRO[introI].t;T.dataset.done='1';return}if(introI<INTRO.length-1)introShow(introI+1);else introClose()};
 
@@ -2169,7 +2196,7 @@ $('mStory').onclick=introOpen;$('mPg').onclick=pgOpen;if(!SAVE.intro||!SAVE.pg)s
 drag=null;
 function evPos(e){const r=cv.getBoundingClientRect();return[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]}
 function cellAt(x,y){for(let i=0;i<NC;i++){if(BLK.has(i))continue;const[cx,cy]=cellXY(i);if(Math.abs(x-cx)<=CS/2&&Math.abs(y-cy)<=CS/2)return i}return-1}
-function moveCell(a,b){const A=G.cells[a],C=G.cells[b];if(!A)return;if(TUT)TUT.mv=1;
+function moveCell(a,b){const A=G.cells[a],C=G.cells[b];if(!A)return;if(TUT)TUT.mv=1;G.mv=1;
   if(C&&C.u===A.u&&U[C.u].t>=4){concDo(a,b);return}
   if(C&&C.u===A.u&&C.n+A.n<=3&&U[C.u].t<4){C.n+=A.n;if(A.lk)C.lk=1;C.sc=Math.max(C.sc||0,A.sc||0);C.cd=Math.max(C.cd||0,A.cd||0);C.kills=(C.kills||0)+(A.kills||0);C.pop=.2;G.cells[a]=null;if(C.n===3)hint3(C.u)}else{G.cells[b]=A;G.cells[a]=C;A.pop=.2;if(C&&C.u!==A.u)toast(U[A.u].n+' ↔ '+U[C.u].n+' 자리 교체 (같은 캐릭터만 묶여요)');else if(C&&C.u===A.u&&C.n+A.n>3)toast('한 칸에는 3명까지! 3명 모인 칸을 눌러 승급하세요')}}
 cv.addEventListener('pointerdown',e=>{
