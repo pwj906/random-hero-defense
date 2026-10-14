@@ -947,7 +947,7 @@ let tapI=-1,tapAt=0;
 function nextWave(){
   if(G.wave>=1000){end(true);return}
   G.wave++;if(TERR_ON&&G.wave>1&&(G.wave-1)%50===0){const o=G.terr||0,L2=TERR.map((_,j)=>j).filter(j=>j!==o);setTerrain(L2[Math.floor(Math.random()*L2.length)],1)}const b=isBoss(G.wave);
-  G.waveT=b?60:20;G.free=1;if(A('seed'))G.coins+=15;if(A('supply'))G.coins+=25;if(A('midas')&&G.wave>1)G.stones++;if(SO('gold')&&G.wave>1)G.stones++;if(A('dice')){const L=G.cells.filter(c=>c).sort(()=>Math.random()-.5).slice(0,5);G.diceS=L;for(const c of L){const j=G.cells.indexOf(c),[dx,dy]=cellXY(j);G.fx.push({k:'t',x:dx,y:dy-30,t:1.3,T:1.3,s:'🎲×2.5',cr:true,dl:.2})}}if(A('evolve')&&G.wave>1)evolveOne();if(A('interest')&&G.wave>1){const g=Math.min(60,Math.floor(G.coins*.05));G.coins+=g}if(G.wave===5)G.sched.push({t:1.2,f:boonOpen});G.spawnLeft=b?1:30;G.spawnT=0;G.spawnFast=false;
+  G.waveT=b?60:20;G.free=1;if(A('seed'))G.coins+=20+2*G.wave;if(A('supply'))G.coins+=5*G.wave;if(A('midas')&&G.wave>1)G.stones++;if(SO('gold')&&G.wave>1)G.stones++;if(A('dice')){const L=G.cells.filter(c=>c).sort(()=>Math.random()-.5).slice(0,5);G.diceS=L;for(const c of L){const j=G.cells.indexOf(c),[dx,dy]=cellXY(j);G.fx.push({k:'t',x:dx,y:dy-30,t:1.3,T:1.3,s:'🎲×2.5',cr:true,dl:.2})}}if(A('evolve')&&G.wave>1)evolveOne();if(A('interest')&&G.wave>1){const g=Math.min(200+25*G.wave,Math.floor(G.coins*.1));if(g>0){G.coins+=g;if(g>=50)toast('🏦 이자 +'+g)}}if(G.wave===5)G.sched.push({t:1.2,f:boonOpen});G.spawnLeft=b?1:30;G.spawnT=0;G.spawnFast=false;
   // 행운석은 보스 보상과 희귀 이상 판매에서만 획득.
   SND.play(b?'bossIn':'wave');SND.bg(false,b?1:0);if(!b)toast('웨이브 '+G.wave)
 }
@@ -958,11 +958,11 @@ function spawn(){
   if(b){const J=JB[bk];if(!CUTIN['jb'+bk]&&V5['cutins/boss'+bk]){CUTIN['jb'+bk]=V5['cutins/boss'+bk][0];CUTCOL['jb'+bk]='#ff5a4a'}if(!cutin('jb'+bk,J.n+' — '+J.nick+' 등장!'))toast('👹 '+J.n+' 등장!')}
 }
 function hit(m,u,d,dl,src){if(!m||m.hp<=0)return;if(src)m.last=src;if(m.shd>0)d*=.2;if(u.bossK&&m.boss)d*=u.bossK;if(u.exec&&m.hp<m.max*.3)d*=u.exec;if(u.hi&&m.hp>m.max*.5)d*=u.hi;if(u.slx&&(m.sl>0||m.sl2>0))d*=u.slx;if(u.rng)d*=u.rng[0]+Math.random()*(u.rng[1]-u.rng[0]);if(m.k===2&&!m.boss&&!(m.vu>0))d*=.75;if(G.aug){if(G.aug.cc&&(m.st>0||m.rt>0))d*=2;if(G.aug.chill&&(m.sl>0||m.sl2>0))d*=1.4;if(G.aset){if(G.aset.ctrl&&(m.st>0||m.rt>0))d*=1.5;if(G.aset.ice&&(m.sl>0||m.sl2>0||m.st>0))d*=1.5;if(G.aset.poison&&m.dotT>0)d*=1.25;if(G.aset.hunt&&m.boss)d*=1.5}}
-  if(m.boss&&A('bossbane'))d*=1.35;if(m.boss&&A('hunt'))d*=2;if(m.boss&&A('execute')&&m.hp<m.max*.3)d*=2;let cr=false;const ec=u.planet==='earth'&&G.plOn&&G.plOn.earth>0,crc=(u.cr||0)+(ec?.15:0)+(u.bm&&A('crit')?.08:0);if(crc&&Math.random()<crc){d*=u.cm||(ec?2.5:2);cr=true;if(G.fx.length<220){const[x,y]=pos(m.p);fxs('common/critical',x,y-10,40,{fps:16})}}if(u.exec&&m.hp<m.max*.3&&G.fx.length<230){const[x,y]=pos(m.p);fxs('cacton/execute',x,y-10,48,{fps:14})}if(u.hi&&m.hp>m.max*.5&&Math.random()<.4&&G.fx.length<200){const[x,y]=pos(m.p);fxs('orbin/lifedrain',x,y-10,40,{fps:12})}
-  if(m.vu>0)d*=1.3;if(m.vu2>0)d*=1.12;if(m.boss&&src&&src.u&&FUB[src.u])d*=FUB[src.u];m.hp-=d;m.fl=.12;
+  if(m.boss&&A('bossbane'))d*=1.6;if(m.boss&&A('hunt'))d*=2;if(m.boss&&A('execute')&&m.hp<m.max*.3)d*=2;let cr=false;const ec=u.planet==='earth'&&G.plOn&&G.plOn.earth>0,crc=(u.cr||0)+(ec?.15:0)+(u.bm&&A('crit')?.15:0);if(crc&&Math.random()<crc){d*=u.cm||(ec?2.5:2);cr=true;if(G.fx.length<220){const[x,y]=pos(m.p);fxs('common/critical',x,y-10,40,{fps:16})}}if(u.exec&&m.hp<m.max*.3&&G.fx.length<230){const[x,y]=pos(m.p);fxs('cacton/execute',x,y-10,48,{fps:14})}if(u.hi&&m.hp>m.max*.5&&Math.random()<.4&&G.fx.length<200){const[x,y]=pos(m.p);fxs('orbin/lifedrain',x,y-10,40,{fps:12})}
+  if(m.vu>0)d*=1.3;if(m.vu2>0)d*=A('weak')?1.2:1.12;if(m.boss&&src&&src.u&&FUB[src.u])d*=FUB[src.u];m.hp-=d;m.fl=.12;
   if(G.fx.length<220&&(G.nT=(G.nT||0)+1)&&(cr||m.boss||G.tN<40)){const[x,y]=pos(m.p);G.tN=(G.tN||0)+1;G.fx.push({k:'t',x:x+(Math.random()-.5)*12,y:y-10,t:cr?.8:.55,T:cr?.8:.55,s:fmt(d),cr,dl})}
   if(cr)G.shake=Math.max(G.shake,.12);
-  if(u.sl)m.sl=Math.max(m.sl,u.sl);if(u.sl2)m.sl2=Math.max(m.sl2||0,u.sl2);if(u.vuc&&Math.random()<u.vuc)m.vu=Math.max(m.vu||0,u.vut);if(u.rtc&&!m.boss&&Math.random()<u.rtc){m.rt=Math.max(m.rt||0,u.rtd);m.rtT=u.rtd}if(u.kbc&&!m.boss&&Math.random()<u.kbc){m.kb=.25;m.kbv=u.kbd/.25}if(u.bm&&A('shock')&&!m.boss&&Math.random()<.05)m.st=Math.max(m.st||0,.6);if(A('reaper')&&!m.boss&&m.hp>0&&m.hp<m.max*.12)m.hp=0;if(A('execute')&&!m.boss&&m.hp>0&&m.hp<m.max*.25)m.hp=0;if(u.dot){m.dot=Math.max(m.dotT>0?m.dot:0,d*u.dot*(A('venom')?2:1));m.dotT=u.dott;m.dsrc=src}else if(A('venom')&&d>0&&!dl){m.dot=Math.max(m.dotT>0?m.dot:0,d*(SO('poison')?.3:.1));m.dotT=Math.max(m.dotT||0,3);m.dsrc=src}
+  if(u.sl)m.sl=Math.max(m.sl,u.sl);if(u.sl2)m.sl2=Math.max(m.sl2||0,u.sl2);if(u.vuc&&Math.random()<u.vuc)m.vu=Math.max(m.vu||0,u.vut);if(u.rtc&&!m.boss&&Math.random()<u.rtc){m.rt=Math.max(m.rt||0,u.rtd);m.rtT=u.rtd}if(u.kbc&&!m.boss&&Math.random()<u.kbc){m.kb=.25;m.kbv=u.kbd/.25}if(u.bm&&A('shock')&&!m.boss&&Math.random()<.1)m.st=Math.max(m.st||0,.6);if(A('reaper')&&!m.boss&&m.hp>0&&m.hp<m.max*.12)m.hp=0;if(A('execute')&&!m.boss&&m.hp>0&&m.hp<m.max*.25)m.hp=0;if(u.dot){m.dot=Math.max(m.dotT>0?m.dot:0,d*u.dot*(A('venom')?2:1));m.dotT=u.dott;m.dsrc=src}else if(A('venom')&&d>0&&!dl){m.dot=Math.max(m.dotT>0?m.dot:0,d*(SO('poison')?.3:.1));m.dotT=Math.max(m.dotT||0,3);m.dsrc=src}
   if(u.rt&&!m.boss){m.rt=Math.max(m.rt||0,u.rt);m.rtT=u.rt}if(u.vu2)m.vu2=Math.max(m.vu2||0,u.vu2);else if(u.bm&&A('weak'))m.vu2=Math.max(m.vu2||0,3);if(u.fmk&&src)markSet(m,src,u.fmk);
   if(u.st&&!m.boss&&Math.random()<u.st)m.st=1
 }
@@ -1006,11 +1006,11 @@ const AUGT=['실버','골드','프리즘'],AUGC=['#d9e2f0','#ffd24a','#d7b8ff'];
 const AUG={
  trio:{t:0,e:'⚔️',n:'삼총사',x:'3명 꽉 찬 칸 공격력 +40%'},
  close:{t:0,e:'🥊',n:'근접 본능',x:'근접 영웅(사거리 짧은 영웅·근접 특수조합 포함) 공격력 +50%'},
- far:{t:0,e:'🔭',n:'저격 본능',x:'사거리 긴 영웅(2.1칸 이상 — 단일·관통·저격) 공격력 +35%'},
- frost:{t:0,e:'❄️',n:'서리 길',x:'모든 적 이동속도 -12%'},
+ far:{t:0,e:'🔭',n:'저격 본능',x:'사거리 긴 영웅(2.1칸 이상 — 단일·관통·저격) 공격력 +50%'},
+ frost:{t:0,e:'❄️',n:'서리 길',x:'모든 적 이동속도 -20%'},
  freebie:{t:0,e:'🎟️',n:'첫 소환 무료',x:'매 웨이브 첫 소환이 공짜'},
- interest:{t:0,e:'🏦',n:'이자',x:'웨이브마다 보유 코인의 5% (최대 60)'},
- jackpot:{t:0,e:'🎰',n:'잭팟 사냥',x:'처치 시 3% 확률로 코인 10배'},
+ interest:{t:0,e:'🏦',n:'이자',x:'웨이브마다 보유 코인의 10% (최대 200+웨이브×25 — 50웨이브면 1450)'},
+ jackpot:{t:0,e:'🎰',n:'잭팟 사냥',x:'처치 시 5% 확률로 코인 12배'},
  refund:{t:0,e:'💱',n:'환불 전문가',x:'판매 보상 1.5배'},
  cc:{t:1,e:'🔨',n:'제압 사냥',x:'기절·속박·정지된 적이 받는 피해 2배'},
  chill:{t:1,e:'🧊',n:'동상',x:'감속된 적이 받는 피해 +40%'},
@@ -1024,10 +1024,10 @@ const AUG={
  hunt:{t:2,e:'🗡️',n:'보스 사냥꾼',x:'보스가 받는 피해 2배, 보스 이동 -30%'},
  greed:{t:2,e:'💰',n:'탐욕',x:'코인 획득 2배, 대신 적 체력 +15%'},
  echo:{t:2,e:'🔁',n:'메아리',x:'특수기가 50% 확률로 1초 뒤 한 번 더'},
- crit:{t:0,e:'🦅',n:'날카로운 눈',x:'모든 영웅 치명타 확률 +8%p'},
+ crit:{t:0,e:'🦅',n:'날카로운 눈',x:'모든 영웅 치명타 확률 +15%p'},
  venom:{t:0,e:'🧪',n:'맹독',x:'모든 기본공격이 3초간 독(초당 그 피해의 10%) — 독 특성 영웅은 지속 피해 2배'},
  shard:{t:0,e:'🪨',n:'파편',x:'범위 공격이 튀는 범위 +35%'},
- seed:{t:0,e:'💵',n:'종잣돈',x:'즉시 코인 300, 매 웨이브 +15'},
+ seed:{t:0,e:'💵',n:'종잣돈',x:'즉시 코인 300+웨이브×20, 매 웨이브 20+웨이브×2'},
  clover:{t:0,e:'☘️',n:'네잎클로버',x:'보스 처치 시 행운석 +3'},
  hunter:{t:0,e:'🤠',n:'현상금 사냥꾼',x:'현상금 보상 2배, 대기시간 45→25초'},
  lotto:{t:1,e:'🎫',n:'복권 중독',x:'복권 당첨금 1.5배'},
@@ -1040,33 +1040,33 @@ const AUG={
  wideaura:{t:1,e:'📶',n:'확장 오라',x:'버프 영웅 오라 범위 2칸 (주변 24칸)'},
  ampaura:{t:1,e:'🔊',n:'오라 증폭',x:'버프 영웅 오라 효과 2배'},
  brawl:{t:1,e:'👊',n:'백병전',x:'근접 영웅(사거리 짧은 영웅·근접 특수조합 포함) 공격속도 +60%'},
- shock:{t:1,e:'💫',n:'충격탄',x:'기본공격 5% 확률로 0.6초 기절'},
+ shock:{t:1,e:'💫',n:'충격탄',x:'기본공격 10% 확률로 0.6초 기절'},
  rainbow:{t:1,e:'🌈',n:'무지개 연합',x:'필드에 행성 5곳 이상이면 전체 공격력 +30%'},
  grass:{t:1,e:'🌱',n:'풀뿌리',x:'동네 등급 영웅 공격력 3배'},
- bossbane:{t:1,e:'🐲',n:'용 사냥',x:'보스가 받는 피해 +35%'},
+ bossbane:{t:1,e:'🐲',n:'용 사냥',x:'보스가 받는 피해 +60%'},
  cosmicplus:{t:2,e:'🌠',n:'우주의 축복',x:'우주 조합 시 40% 확률로 같은 우주 히어로 하나 더'},
  packed:{t:2,e:'🏟️',n:'만석',x:'빈 칸이 없으면 전체 공격력 +90%'},
  evolve:{t:2,e:'🧬',n:'진화',x:'웨이브마다 가장 낮은 등급 영웅 1명 승급 (나라 등급까지)'},
  warp:{t:2,e:'🌀',n:'시간 왜곡',x:'18초마다 모든 적 3초 정지 (보스 1초)'},
  freeze:{t:1,e:'🏷️',n:'가격 동결',x:'고른 뒤 소환 15번은 비용이 오르지 않음'},
  crossroad:{t:2,e:'🔀',n:'선택의 기로',x:'즉시 실버 증강 2개를 더 고름'},
- quick:{t:0,e:'🏃',n:'재빠른 손',x:'모든 영웅 공격속도 +10%'},
+ quick:{t:0,e:'🏃',n:'재빠른 손',x:'모든 영웅 공격속도 +20%'},
  skcd:{t:0,e:'🔮',n:'소환사 숙련',x:'소환사 스킬 쿨타임 -40%, 피해·처치 수 +50%'},
- bossgold:{t:0,e:'👑',n:'보스 현상금',x:'보스 처치 코인 2배'},
+ bossgold:{t:0,e:'👑',n:'보스 현상금',x:'보스 처치 코인 3배 + 행운석 +2'},
  fuslab:{t:1,e:'⚗️',n:'융합 연구',x:'특수 조합 비용 -40%, 특수 조합 영웅 공격력 +20%'},
  cforge:{t:1,e:'🔨',n:'우주 단련',x:'우주 조합 비용 -30%'},
- mana:{t:1,e:'💠',n:'마나 순환',x:'모든 영웅 특수기 쿨타임 -15%'},
- weak:{t:1,e:'🎯',n:'약점 포착',x:'기본공격에 맞은 적은 3초간 받는 피해 +12%'},
+ mana:{t:1,e:'💠',n:'마나 순환',x:'모든 영웅 특수기 쿨타임 -20%'},
+ weak:{t:1,e:'🎯',n:'약점 포착',x:'기본공격에 맞은 적은 3초간 받는 피해 +20%'},
  ascend:{t:2,e:'🌟',n:'초월',x:'특수 조합 영웅 공격력 +70%, 특수기 쿨타임 -25%'},
  overdrive:{t:2,e:'⚡',n:'과부하',x:'15초마다 6초간 모든 영웅 공격속도 +70%'},
  guard:{t:0,e:'🛡️',n:'명당 자리',x:'판 강화한 칸의 공격력 보너스 1.5배'},
  solo:{t:0,e:'🐺',n:'외로운 늑대',x:'필드에 한 칸뿐인 영웅(같은 영웅이 다른 칸에 없음) 공격력 +40%'},
  bounty:{t:0,e:'🪙',n:'사냥 수당',x:'적 처치 코인 +30%'},
- supply:{t:0,e:'📦',n:'보급품',x:'웨이브마다 코인 +25'},
+ supply:{t:0,e:'📦',n:'보급품',x:'웨이브마다 코인 웨이브×5 (50웨이브면 250)'},
  resonate:{t:1,e:'🔗',n:'시너지 공명',x:'행성 시너지가 켜진 영웅 공격력 +25%'},
  grit:{t:1,e:'🔥',n:'역전의 투지',x:'필드의 적이 100마리를 넘으면 전체 공격력 +40%'},
  builder:{t:1,e:'🏗️',n:'두 배 공사',x:'판 강화할 때 30% 확률로 한 단계 더'},
- tailwind:{t:1,e:'💨',n:'순풍',x:'모든 영웅 사거리 +0.3칸'},
+ tailwind:{t:1,e:'💨',n:'순풍',x:'모든 영웅 사거리 +0.45칸'},
  majesty:{t:2,e:'👑',n:'우주의 위엄',x:'우주·특수 조합 영웅 공격력 +80%'},
  titan:{t:2,e:'🗿',n:'거인의 힘',x:'모든 영웅 공격력 +60%, 대신 소환 비용 +30%'},
  chainall:{t:2,e:'🌩️',n:'번개 군단',x:'모든 기본공격이 근처 적 2명에게 50%씩 튐'},
@@ -1075,7 +1075,7 @@ const AUG={
  execute:{t:2,e:'⚰️',n:'처형인',x:'체력 25% 이하 일반 적 즉사, 체력 30% 이하 보스는 받는 피해 2배'},
  swarm:{t:2,e:'🐝',n:'대군',x:'필드 영웅 1명당 전체 공격력 +3% (최대 +90%)'},
  dice:{t:2,e:'🎲',n:'행운의 주사위',x:'웨이브마다 무작위 영웅 5명 공격력 2.5배 (그 웨이브 동안)'}};
-const AUGP={hunter:()=>{if(G.btyCd>25)G.btyCd=25},seed:()=>{G.coins+=300},freeze:()=>{G.frzS=G.summons},crossroad:()=>{G.forceT=[0,0]}};
+const AUGP={hunter:()=>{if(G.btyCd>25)G.btyCd=25},seed:()=>{G.coins+=300+20*G.wave},freeze:()=>{G.frzS=G.summons},crossroad:()=>{G.forceT=[0,0]}};
 function evolveOne(){let bi=-1,bt=9;G.cells.forEach((c,i)=>{if(!c)return;const t=U[c.u].t;if(!c.lk&&t<2&&BY[t+1].length&&t<bt){bt=t;bi=i}});if(bi<0)return;const c=G.cells[bi];c.n--;if(c.n<=0)G.cells[bi]=null;const id=pickU(bt+1);if(!place(id)){c.n++;G.cells[bi]=c;return}const at=G.cells.findIndex(q=>q&&q.u===id&&q.pop>0),[px,py]=cellXY(at<0?bi:at);burst(px,py,bt+1,false);G.fx.push({k:'t',x:px,y:py-26,t:1.1,T:1.1,s:'🧬 진화!',cr:true,dl:.05})}
 function A(k){return G&&G.aug&&G.aug[k]?1:0}
 function rcp(m){let r=RECIPE[m];if(NO_HOME&&r)r=r.filter(k=>!U[k]||U[k].t!==0);return A('short')&&r&&r.length>3?r.slice(0,r.length-1):r}
@@ -1101,10 +1101,10 @@ const ASET=[
 function SO(id){return !!(G&&G.aset&&G.aset[id])}
 function asetCheck(){if(!G||!G.aug)return;G.aset=G.aset||{};for(const S of ASET){if(G.aset[S.id])continue;if(S.ks.every(k=>G.aug[k])){G.aset[S.id]=1;G.flash=Math.max(G.flash||0,.4);G.shake=Math.max(G.shake,.4);toast('🔗 세트 완성! '+S.e+' '+S.n+' — '+S.x);if(typeof SND!=='undefined')SND.play('jackpot')}}}
 function asetHint(k){const L=ASET.filter(S=>S.ks.includes(k));if(!L.length)return'';return L.map(S=>{const h=S.ks.filter(q=>G.aug&&G.aug[q]).length;return '<i class="aset'+(h+1===S.ks.length?' done':'')+'">🔗 '+S.e+S.n+' '+(h+1)+'/'+S.ks.length+'</i>'}).join('')}
-function augA(c){if(!G.aug)return 1;let k=1;const u=U[c.u];if(G.aug.eye&&G.cells.indexOf(c)===G.eyeI)k*=2;if(G.aug.trio&&c.n>=3)k*=1.4;if(G.aug.grass&&u.t<=1)k*=3;if(G.aug.rainbow&&G.pl&&Object.keys(G.pl).length>=5)k*=1.3;if(G.aug.packed&&!G.cells.some(q=>!q))k*=1.9;if(G.aug.close&&isMel(c.u))k*=1.5;if(G.aug.far&&rCells(c.u)>=2.05)k*=1.35;if(G.aug.solo&&G.cells.filter(q=>q&&q.u===c.u).length===1)k*=1.4;if(G.aug.resonate&&G.plOn&&G.plOn[u.planet]>0)k*=1.25;if(G.aug.grit&&G.mobN>100)k*=1.4;if(G.aug.majesty&&u.t>=4)k*=1.8;if(G.aug.dice&&G.diceS&&G.diceS.includes(c))k*=2.5;if(G.aug.titan)k*=1.6;if(G.aset){if(G.aset.fusion&&u.fu)k*=1.5;if(G.aset.melee&&isMel(c.u))k*=1.3;if(G.aset.snipe&&rCells(c.u)>=2.05)k*=1.4;if(G.aset.aura)k*=1.2;if(G.aset.army)k*=1.25}if(G.aug.swarm)k*=1+Math.min(.9,.03*(G.unitN||0));return k}
+function augA(c){if(!G.aug)return 1;let k=1;const u=U[c.u];if(G.aug.eye&&G.cells.indexOf(c)===G.eyeI)k*=2;if(G.aug.trio&&c.n>=3)k*=1.4;if(G.aug.grass&&u.t<=1)k*=3;if(G.aug.rainbow&&G.pl&&Object.keys(G.pl).length>=5)k*=1.3;if(G.aug.packed&&!G.cells.some(q=>!q))k*=1.9;if(G.aug.close&&isMel(c.u))k*=1.5;if(G.aug.far&&rCells(c.u)>=2.05)k*=1.5;if(G.aug.solo&&G.cells.filter(q=>q&&q.u===c.u).length===1)k*=1.4;if(G.aug.resonate&&G.plOn&&G.plOn[u.planet]>0)k*=1.25;if(G.aug.grit&&G.mobN>100)k*=1.4;if(G.aug.majesty&&u.t>=4)k*=1.8;if(G.aug.dice&&G.diceS&&G.diceS.includes(c))k*=2.5;if(G.aug.titan)k*=1.6;if(G.aset){if(G.aset.fusion&&u.fu)k*=1.5;if(G.aset.melee&&isMel(c.u))k*=1.3;if(G.aset.snipe&&rCells(c.u)>=2.05)k*=1.4;if(G.aset.aura)k*=1.2;if(G.aset.army)k*=1.25}if(G.aug.swarm)k*=1+Math.min(.9,.03*(G.unitN||0));return k}
 function plNeed(){return A('clan')?[2,3]:[3,4]}
 function synTick(){const P={};for(const c of G.cells)if(c&&!U[c.u].fu)(P[U[c.u].planet]=P[U[c.u].planet]||new Set()).add(c.u);const nd=plNeed();G.pl={};G.plOn={};for(const p in P){G.pl[p]=P[p].size;G.plOn[p]=P[p].size>=nd[1]?2:P[p].size>=nd[0]?1:0}
-  const ar=A('wideaura')?2:1,ak=A('ampaura')?2:1;for(const c of G.cells)if(c){c.pa=1;c.pas=1;c.pcd=1;c.prg=A('tailwind')?.3*CS:0;c.psl=0;c.pcr=0;c.aur=0;c.aurL=[]}
+  const ar=A('wideaura')?2:1,ak=A('ampaura')?2:1;for(const c of G.cells)if(c){c.pa=1;c.pas=1;c.pcd=1;c.prg=A('tailwind')?.45*CS:0;c.psl=0;c.pcr=0;c.aur=0;c.aurL=[]}
   G.cells.forEach((c,i)=>{const A0=c&&AURA[c.u];if(!A0)return;const x0=i%COLS,y0=Math.floor(i/COLS);
     G.cells.forEach((d,j)=>{if(!d||j===i||d.u===c.u||Math.max(Math.abs(j%COLS-x0),Math.abs(Math.floor(j/COLS)-y0))>ar)return;
       d.aur=1;d.aurK=c.u;(d.aurL=d.aurL||[]).includes(c.u)||d.aurL.push(c.u);if(A0.pa)d.pa=Math.max(d.pa,1+A0.pa*ak);if(A0.pas)d.pas=Math.max(d.pas,1+A0.pas*ak);if(A0.pcd)d.pcd=Math.max(d.pcd,1+A0.pcd*ak);if(A0.prg)d.prg=Math.max(d.prg,A0.prg*ak*CS);if(A0.psl)d.psl=Math.max(d.psl,A0.psl*ak);if(A0.pcr)d.pcr=Math.max(d.pcr,A0.pcr*ak)})});
@@ -1462,7 +1462,7 @@ function update(dt){
     if(m.vu>0)m.vu=Math.max(0,m.vu-dt);if(m.vu2>0)m.vu2-=dt;
     if(m.dotT>0){m.dotT-=dt;m.hp-=m.dot*dt;if(m.dsrc)m.last=m.dsrc;m.dtk=(m.dtk||0)-dt;if(m.dtk<=0){m.dtk=.5;if(G.fx.length<200){const[x,y]=pos(m.p);G.fx.push({k:'t',x:x+(Math.random()-.5)*10,y:y-14,t:.5,T:.5,s:fmt(m.dot*.5),cr:false,dl:0});parts(x,y,2,'#8be04a',40,2)}}}
     if(m.st>0){if(m.boss&&m.cast>0)bossFoil(m);m.st=Math.max(0,m.st-dt);if(m.sl>0)m.sl=Math.max(0,m.sl-dt);if(m.sl2>0)m.sl2=Math.max(0,m.sl2-dt);if(m.rt>0)m.rt=Math.max(0,m.rt-dt);continue}
-    let v=m.v*(G.aug?(G.aug.frost?.88:1)*(m.boss&&G.aug.hunt?.7:1)*(G.aset&&G.aset.ice?.9:1):1);if(m.sl>0){m.sl-=dt;v*=m.boss?.8:.6}else if(m.sl2>0){v*=.8}
+    let v=m.v*(G.aug?(G.aug.frost?.8:1)*(m.boss&&G.aug.hunt?.7:1)*(G.aset&&G.aset.ice?.9:1):1);if(m.sl>0){m.sl-=dt;v*=m.boss?.8:.6}else if(m.sl2>0){v*=.8}
     if(m.sl2>0)m.sl2-=dt;
     if(m.kb>0){m.kb-=dt;m.p=Math.max(28,m.p-m.kbv*dt)}
     if(m.rt>0){m.rt-=dt;v=0}
@@ -1472,7 +1472,7 @@ function update(dt){
   const DL=.1;
   if(G.buff>0)G.buff-=dt;
   G.cells.forEach((c,i)=>{
-    if(!c)return;if(c.seal>0){c.seal-=dt;return}if(c.b>0)c.b-=dt;if(c.pop>0)c.pop-=dt;if(c.sc>0)c.sc-=c.u==='hwangryong'?dt*(G.cdLock>0?0:1):dt*(c.hst>0?c.hsv||1:1)*(G.bn?G.bn.cd:1)*(G.aug&&G.aug.cosmo&&U[c.u].t===4?1.33:1)*(A('mana')?1.18:1)*(A('timelord')?1.67:1)*(SO('time')?1.25:1)*(A('ascend')&&U[c.u].fu?1.33:1)*concSpd(c)*(c.pcd||1)*(G.cdLock>0?0:1);if(c.hst>0)c.hst-=dt;if(c.drop>0)c.drop-=dt;if(c.sh>0)c.sh-=dt;if(c.as>0)c.as-=dt;if(c.sb>0)c.sb-=dt;
+    if(!c)return;if(c.seal>0){c.seal-=dt;return}if(c.b>0)c.b-=dt;if(c.pop>0)c.pop-=dt;if(c.sc>0)c.sc-=c.u==='hwangryong'?dt*(G.cdLock>0?0:1):dt*(c.hst>0?c.hsv||1:1)*(G.bn?G.bn.cd:1)*(G.aug&&G.aug.cosmo&&U[c.u].t===4?1.33:1)*(A('mana')?1.25:1)*(A('timelord')?1.67:1)*(SO('time')?1.25:1)*(A('ascend')&&U[c.u].fu?1.33:1)*concSpd(c)*(c.pcd||1)*(G.cdLock>0?0:1);if(c.hst>0)c.hst-=dt;if(c.drop>0)c.drop-=dt;if(c.sh>0)c.sh-=dt;if(c.as>0)c.as-=dt;if(c.sb>0)c.sb-=dt;
     if(c.rg>0)c.rg-=dt;if(c.slb>0)c.slb-=dt;const u0=U[c.u];c.sy=u0.syn&&synOn(i,u0)?u0.syn:0;const eye=i===G.eyeI&&A('eye'),u=(c.rg>0||c.slb>0||eye||c.prg>0||c.psl>0||c.pcr>0)?Object.assign(Object.create(u0),{r:eye?u0.r+CS*3:u0.r+(c.rg>0?CS:0)+(c.prg||0)},c.pcr>0?{cr:(u0.cr||0)+c.pcr,cm:u0.cm||2.5}:{},(c.slb>0||c.psl>0)?{sl:Math.max(u0.sl||0,c.slb>0?.8:0,c.psl||0)}:{}):u0,s=u.sp2;if(c.sb>0)return;
     if(s&&c.sc<=0){const[x,y]=cellXY(i);let best=null,bp=-1;
       for(const m of G.mobs){if(m.hp<=0||m.p<28)continue;const[mx,my]=pos(m.p);if(Math.hypot(mx-x,my-y)<=(u.spR||u.r)&&(m.boss?1e9:m.p)>bp){bp=m.boss?1e9:m.p;best=m}}
@@ -1486,7 +1486,7 @@ function update(dt){
       fire(c.u,c,x,y,tx,ty,best);c.tg.forEach((m,j)=>{const[ux,uy]=pos(m.p);G.pend.push({m,u,d:dj,t:c.tgT[j],x:ux,y:uy,c,nh:j===0?nh:null})})}
     else{const dl2=fire(c.u,c,x,y,tx,ty,best);best.inc=(best.inc||0)+d;G.pend.push({m:best,u,d,t:dl2,x:tx,y:ty,c,nh});if(u.sp)G.fx.push({k:'c',x:tx,y:ty,r:u.sp,t:.3,T:.3,c:u.col,dl:dl2})}
 
-    c.cd=c.ncd=1/u.s/(c.as>0?c.asv||1:1)/(G.bn?G.bn.spd:1)/(c.pas||1)/(A('brawl')&&isMel(c.u)?1.6:1)/(A('rhythm')?1.15:1)/(SO('storm')?1.2:1)/(SO('cosmic')&&U[c.u].t>=4?1.3:1)/(A('quick')?1.1:1)/(G.odOn?1.7:1)/concSpd(c)
+    c.cd=c.ncd=1/u.s/(c.as>0?c.asv||1:1)/(G.bn?G.bn.spd:1)/(c.pas||1)/(A('brawl')&&isMel(c.u)?1.6:1)/(A('rhythm')?1.15:1)/(SO('storm')?1.2:1)/(SO('cosmic')&&U[c.u].t>=4?1.3:1)/(A('quick')?1.2:1)/(G.odOn?1.7:1)/concSpd(c)
   });
   if(G.zones&&G.zones.length){const dpp=(a,b)=>((a-b+PER*1.5)%PER)-PER/2;for(const z of G.zones){z.t-=dt;if(z.dot){z.tk-=dt;if(z.tk<=0){z.tk+=.5;for(const o of G.mobs){if(o.hp<=0||o.p<28||(!z.all&&Math.abs(dpp(o.p,z.p))>z.seg))continue;if(z.sl)o.sl=Math.max(o.sl,z.sl);hit(o,{},z.d,0,z.c)}}continue}for(const o of G.mobs){if(o.hp<=0||o.p<28||z.seen.has(o)||Math.abs(dpp(o.p,z.p))>z.seg)continue;z.seen.add(o);if(o.boss)o.sl=Math.max(o.sl,z.hold);else{o.rt=Math.max(o.rt||0,z.hold);o.rtT=z.hold}hit(o,{},z.d,0,z.c)}}G.zones=G.zones.filter(z=>z.t>0)}
   for(const q of G.sched){q.t-=dt;if(q.t<=0)q.f()}G.sched=G.sched.filter(q=>q.t>0);
@@ -1497,8 +1497,8 @@ function update(dt){
   const SQ=[];G.mobs=G.mobs.filter(m=>{
     if(m.hp>0)return true;if(m.sk==='split'){for(const dp of [-5,5]){const hp=Math.round(m.max*.3);SQ.push({p:Math.max(0,m.p+dp),hp,max:hp,sl:0,st:0,boss:false,sk:'small',v:ENV[0]*1.25,k:0,sd:Math.random()*4})}}
     G.kills++;SND.play('die');if(m.last){m.last.kills=(m.last.kills||0)+1;G.runKills[m.last.u]=(G.runKills[m.last.u]||0)+1;}const[x,y]=pos(m.p);
-    if(m.boss){const fast=!m.esc&&G.waveT>30;G.coins+=(100+10*G.wave)*(A('greed')?2:1)*(A('bossgold')?2:1);G.stones+=(fast?3:2)+(A('clover')?3:0);if(!m.esc)G.waveT=Math.min(G.waveT,3);toast(m.esc?'놓친 보스 처치! 🍀+2':fast?'빠른 처치! 🍀+3':'보스 처치! 🍀+2');parts(x,y,34,'#ffd23e',190,5);G.fx.push({k:'ring',x,y,r:90,t:.5,T:.5,c:'#fff'});G.shake=.5;G.flash=.35;SND.play('reveal');G.sched.push({t:.9,f:boonOpen})}
-    else{if(m.el){if(m.bty>0){const hk=A('hunter')?2:1,b=killCoin(G.wave)*6*hk;G.coins+=b;G.stones+=2*hk;G.nBounty=(G.nBounty||0)+1;SND.play('bountyKill');toast('🎯 현상금 획득! 🍀+'+2*hk+' 🪙+'+b);parts(x,y,26,'#ffd23e',200,3.6);G.fx.push({k:'ring',x,y,r:60,t:.45,T:.45,c:'#ffd23e'});G.shake=Math.max(G.shake,.35)}}G.coins+=Math.round(killCoin(G.wave)*(A('bounty')?1.3:1)*(A('midas')?1.6:1)*(SO('gold')?1.5:1));{const ku=m.last&&U[m.last.u];const cr0=U.belkaon&&U.belkaon.pk&&U.belkaon.pk.coin_reward,cpop=()=>{if(cr0&&G.fx.length<300)G.fx.push({k:'seq',imgs:cr0,fps:8,w:26,x,y:y-12,t:.25,T:.25,dl:0})};if(ku&&ku.coinP){G.coins+=Math.round(killCoin(G.wave)*ku.coinP);cpop()}if(ku&&ku.coinJ&&Math.random()<ku.coinJ){const b=killCoin(G.wave)*5;G.coins+=b;cpop();if(G.fx.length<300)G.fx.push({k:'t',x,y:y-18,t:1,T:1,s:'+'+b+'🪙',cr:true,dl:0});SND.play('coin',2)}}parts(x,y,5,'#ffffff',80,3,0);if(G.aug){if(G.aug.jackpot&&Math.random()<.03){const b=killCoin(G.wave)*10;G.coins+=b;SND.play('jackpot');G.fx.push({k:'t',x,y:y-18,t:1.1,T:1.1,s:'🎰 +'+b+'🪙',cr:true,dl:0})}if(G.aug.boom&&!m.byB)augBoom(m,x,y)}if(m.cb&&G.time<=m.cb){const r=Math.random(),k=r<.1?10:r<.7?3:0;if(k){const b=killCoin(G.wave)*k;G.coins+=b;SND.play(k>=10?'jackpot':'coin',3);G.fx.push({k:'t',x,y:y-18,t:1.1,T:1.1,s:(k>=10?'잭팟! ':'')+'+'+b+'🪙',cr:true,dl:0});parts(x,y,k>=10?26:12,'#ffd23e',k>=10?200:130,3.4);if(k>=10){G.fx.push({k:'ring',x,y,r:46,t:.45,T:.45,c:'#ffd23e'});G.shake=Math.max(G.shake,.25)}}}}
+    if(m.boss){const fast=!m.esc&&G.waveT>30;G.coins+=(100+10*G.wave)*(A('greed')?2:1)*(A('bossgold')?3:1);G.stones+=(fast?3:2)+(A('clover')?3:0)+(A('bossgold')?2:0);if(!m.esc)G.waveT=Math.min(G.waveT,3);toast(m.esc?'놓친 보스 처치! 🍀+2':fast?'빠른 처치! 🍀+3':'보스 처치! 🍀+2');parts(x,y,34,'#ffd23e',190,5);G.fx.push({k:'ring',x,y,r:90,t:.5,T:.5,c:'#fff'});G.shake=.5;G.flash=.35;SND.play('reveal');G.sched.push({t:.9,f:boonOpen})}
+    else{if(m.el){if(m.bty>0){const hk=A('hunter')?2:1,b=killCoin(G.wave)*6*hk;G.coins+=b;G.stones+=2*hk;G.nBounty=(G.nBounty||0)+1;SND.play('bountyKill');toast('🎯 현상금 획득! 🍀+'+2*hk+' 🪙+'+b);parts(x,y,26,'#ffd23e',200,3.6);G.fx.push({k:'ring',x,y,r:60,t:.45,T:.45,c:'#ffd23e'});G.shake=Math.max(G.shake,.35)}}G.coins+=Math.round(killCoin(G.wave)*(A('bounty')?1.3:1)*(A('midas')?1.6:1)*(SO('gold')?1.5:1));{const ku=m.last&&U[m.last.u];const cr0=U.belkaon&&U.belkaon.pk&&U.belkaon.pk.coin_reward,cpop=()=>{if(cr0&&G.fx.length<300)G.fx.push({k:'seq',imgs:cr0,fps:8,w:26,x,y:y-12,t:.25,T:.25,dl:0})};if(ku&&ku.coinP){G.coins+=Math.round(killCoin(G.wave)*ku.coinP);cpop()}if(ku&&ku.coinJ&&Math.random()<ku.coinJ){const b=killCoin(G.wave)*5;G.coins+=b;cpop();if(G.fx.length<300)G.fx.push({k:'t',x,y:y-18,t:1,T:1,s:'+'+b+'🪙',cr:true,dl:0});SND.play('coin',2)}}parts(x,y,5,'#ffffff',80,3,0);if(G.aug){if(G.aug.jackpot&&Math.random()<.05){const b=killCoin(G.wave)*12;G.coins+=b;SND.play('jackpot');G.fx.push({k:'t',x,y:y-18,t:1.1,T:1.1,s:'🎰 +'+b+'🪙',cr:true,dl:0})}if(G.aug.boom&&!m.byB)augBoom(m,x,y)}if(m.cb&&G.time<=m.cb){const r=Math.random(),k=r<.1?10:r<.7?3:0;if(k){const b=killCoin(G.wave)*k;G.coins+=b;SND.play(k>=10?'jackpot':'coin',3);G.fx.push({k:'t',x,y:y-18,t:1.1,T:1.1,s:(k>=10?'잭팟! ':'')+'+'+b+'🪙',cr:true,dl:0});parts(x,y,k>=10?26:12,'#ffd23e',k>=10?200:130,3.4);if(k>=10){G.fx.push({k:'ring',x,y,r:46,t:.45,T:.45,c:'#ffd23e'});G.shake=Math.max(G.shake,.25)}}}}
     return false
   });if(SQ.length)G.mobs.push(...SQ);
   for(const f of G.fx){if(f.dl>0){f.dl-=dt;continue}f.t-=dt;if(f.k==='shk')G.shake=Math.max(G.shake,f.v);if(f.k==='pf'){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=.9;f.vy*=.9}}
@@ -1849,7 +1849,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:291};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:292};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
