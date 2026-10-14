@@ -782,13 +782,15 @@ function terrDef(k){const xm=CXS[2],ym=CYS[2];
   if(k==='mid')return{pts:[[L,T],[R,T],[R,ym],[L,ym],[L,B],[R,B]],loop:0,blk:[10,11,12,13,14]};
   if(k==='u')return{pts:[[L,T],[L,B],[xm,B],[xm,T],[R,T],[R,B]],loop:0,blk:[2,7,12,17,22,27]};
   return{pts:[[L,T],[R,T],[R,B],[L,B]],loop:1,blk:[]}}
+function terrFits(i){const bl=new Set(terrDef(TERR[i].k).blk);let need=0,free=0;G.cells.forEach((q,j)=>{if(bl.has(j)){if(q)need++}else if(!q)free++});return need<=free}
 function setTerrain(i,anim){const d=terrDef(TERR[i].k),P=d.pts.slice();if(d.loop)P.push(P[0]);const C=[0];for(let j=1;j<P.length;j++)C.push(C[j-1]+Math.hypot(P[j][0]-P[j-1][0],P[j][1]-P[j-1][1]));
   const oldPER=PER;PATHS=P;PCUM=C;PLOOP=d.loop;PER=C[C.length-1];BLK=new Set(d.blk);_PD=null;MAXU=(NC-BLK.size)*3;
   if(!G)return;G.terr=i;for(const m of G.mobs){m.p=((m.p%oldPER)+oldPER)%oldPER/oldPER*PER}
   for(const b of BLK){let c=G.cells[b];if(!c)continue;const RO=ringOrd(),e=[];G.cells.forEach((q,j)=>{if(!q&&!BLK.has(j))e.push(j)});e.sort((x,y)=>RO[x]-RO[y]);
     if(e.length){G.cells[e[0]]=c;G.cells[b]=null;c.pop=.3;continue}
     const t=G.cells.findIndex((q,j)=>q&&j!==b&&!BLK.has(j)&&q.u===c.u&&U[q.u].t<4&&q.n+c.n<=3);if(t>=0){G.cells[t].n+=c.n;G.cells[b]=null;continue}
-    const s0=G.sel;for(let g=0;g<12&&G.cells[b];g++){G.sel=b;sell()}G.sel=s0===b?null:s0}
+    BLK.delete(b)} // 영웅은 절대 팔지 않음: 옮길 곳이 없으면 그 칸은 막지 않고 그대로 둠
+  MAXU=(NC-BLK.size)*3;_PD=null;
   if(G.sel!==null&&BLK.has(G.sel))G.sel=null;
   if(anim){G.flash=Math.max(G.flash||0,.5);G.shake=Math.max(G.shake,.6);G.terrBan=2.6;toast('🗺️ 지형 변화! '+TERR[i].n+' — '+TERR[i].d);const tc=$('terrCut');if(tc){tc.innerHTML='<img src="'+TCUT+'" alt=""><b>지형 변화!</b><small>'+TERR[i].n+'</small>';tc.classList.remove('on');void tc.offsetWidth;tc.classList.add('on')}}refresh()}
 function pos(p){p=((p%PER)+PER)%PER;const C=PCUM,P=PATHS;let j=1;while(j<C.length-1&&C[j]<p)j++;const a=P[j-1],b=P[j],sl=C[j]-C[j-1]||1,f=(p-C[j-1])/sl;return[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f]}
@@ -946,8 +948,8 @@ let tapI=-1,tapAt=0;
 
 function nextWave(){
   if(G.wave>=1000){end(true);return}
-  G.wave++;if(TERR_ON&&G.wave>1&&(G.wave-1)%50===0){const o=G.terr||0,L2=TERR.map((_,j)=>j).filter(j=>j!==o);setTerrain(L2[Math.floor(Math.random()*L2.length)],1)}const b=isBoss(G.wave);
-  G.waveT=b?60:20;G.free=1;if(A('seed'))G.coins+=20+2*G.wave;if(A('supply'))G.coins+=5*G.wave;if(A('midas')&&G.wave>1)G.stones++;if(SO('gold')&&G.wave>1)G.stones++;if(A('dice')){const L=G.cells.filter(c=>c).sort(()=>Math.random()-.5).slice(0,5);G.diceS=L;for(const c of L){const j=G.cells.indexOf(c),[dx,dy]=cellXY(j);G.fx.push({k:'t',x:dx,y:dy-30,t:1.3,T:1.3,s:'🎲×2.5',cr:true,dl:.2})}}if(A('evolve')&&G.wave>1)evolveOne();if(A('interest')&&G.wave>1){const g=Math.min(200+25*G.wave,Math.floor(G.coins*.1));if(g>0){G.coins+=g;if(g>=50)toast('🏦 이자 +'+g)}}if(G.wave===5)G.sched.push({t:1.2,f:boonOpen});G.spawnLeft=b?1:30;G.spawnT=0;G.spawnFast=false;
+  G.wave++;if(TERR_ON&&G.wave>1&&(G.wave-1)%50===0){const o=G.terr||0;let L2=TERR.map((_,j)=>j).filter(j=>j!==o);const fit=L2.filter(terrFits);if(fit.length)L2=fit;setTerrain(L2[Math.floor(Math.random()*L2.length)],1)}const b=isBoss(G.wave);
+  G.waveT=b?60:20;G.free=1;if(A('seed'))G.coins+=20+2*G.wave;if(A('supply'))G.coins+=5*G.wave;if(A('midas')&&G.wave>1)G.stones++;if(SO('gold')&&G.wave>1)G.stones++;if(A('dice')){const L=G.cells.filter(c=>c).sort(()=>Math.random()-.5).slice(0,5);G.diceS=L;for(const c of L){const j=G.cells.indexOf(c),[dx,dy]=cellXY(j);G.fx.push({k:'t',x:dx,y:dy-30,t:1.3,T:1.3,s:'🎲×2.5',cr:true,dl:.2})}}if(A('evolve')&&G.wave>1)evolveOne();if(A('interest')&&G.wave>1){const g=Math.floor(G.coins*.1);if(g>0){G.coins+=g;if(g>=50)toast('🏦 이자 +'+g)}}if(G.wave===5)G.sched.push({t:1.2,f:boonOpen});G.spawnLeft=b?1:30;G.spawnT=0;G.spawnFast=false;
   // 행운석은 보스 보상과 희귀 이상 판매에서만 획득.
   SND.play(b?'bossIn':'wave');SND.bg(false,b?1:0);if(!b)toast('웨이브 '+G.wave)
 }
@@ -1009,7 +1011,7 @@ const AUG={
  far:{t:0,e:'🔭',n:'저격 본능',x:'사거리 긴 영웅(2.1칸 이상 — 단일·관통·저격) 공격력 +50%'},
  frost:{t:0,e:'❄️',n:'서리 길',x:'모든 적 이동속도 -20%'},
  freebie:{t:0,e:'🎟️',n:'첫 소환 무료',x:'매 웨이브 첫 소환이 공짜'},
- interest:{t:0,e:'🏦',n:'이자',x:'웨이브마다 보유 코인의 10% (최대 200+웨이브×25 — 50웨이브면 1450)'},
+ interest:{t:0,e:'🏦',n:'이자',x:'웨이브마다 보유 코인의 10% (최대 없음)'},
  jackpot:{t:0,e:'🎰',n:'잭팟 사냥',x:'처치 시 5% 확률로 코인 12배'},
  refund:{t:0,e:'💱',n:'환불 전문가',x:'판매 보상 1.5배'},
  cc:{t:1,e:'🔨',n:'제압 사냥',x:'기절·속박·정지된 적이 받는 피해 2배'},
@@ -1651,7 +1653,7 @@ function hud(){
   $('hW').textContent='WAVE '+G.wave+(isBoss(G.wave)?' 보스':'');
   const t=Math.max(0,Math.ceil(G.waveT)),ss=t%60;$('hT').textContent='0'+Math.floor(t/60)+':'+(ss<10?'0':'')+ss;
   {const mc=mobCount(),ne=G.mobs.filter(m=>m.esc).length;$('hM').textContent='💀 '+mc+' / 200'+(ne?' (😱보스 '+ne+')':'')}{const dz=mobCount()>=140;if(dz&&!G.dz){toast('⚠️ 위기! 적이 너무 많아요');SND.play('alarm')}if(dz!==!!G.dz)SND.bg(false,dz||isBoss(G.wave)?1:0);G.dz=dz;$('mbar').classList.toggle('dz',dz)}$('mfill').style.width=Math.min(100,mobCount()/2)+'%';
-  $('hC').textContent=G.coins;$('hS').textContent=G.stones;$('hN').textContent=total()+'/'+MAXU;
+  $('hC').textContent=Math.floor(G.coins).toLocaleString();$('hS').textContent=G.stones;$('hN').textContent=total()+'/'+MAXU;
   $('summon').disabled=G.coins<cost();{G.crK2=(G.crK2||0)+1;if(G.crK2%10===0){const sig=Object.keys(RECIPE).map(k=>canCraft(k)?1:0).join('')+'|'+craftCost();if(sig!==G.crSig){G.crSig=sig;refresh()}}}{const cs=cost(),tx=cs?'🪙'+cs:'무료';if($('cost').textContent!==tx)$('cost').textContent=tx}skHud();
   if(sheet==='gam'){GAM.forEach((g,i)=>$('g'+i).disabled=G.stones<g.c||!BY[g.t].length);if($('gLot'))$('gLot').disabled=G.stones<lotCost();if($('gLot10'))$('gLot10').disabled=G.stones<lotCost()*10}
   if(sheet==='up'&&$('u3'))$('u3').disabled=G.coins<upCost(3)||G.luck>=LUCK_MAX;
@@ -1849,7 +1851,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:292};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:293};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
