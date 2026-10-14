@@ -213,6 +213,9 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
 .acf input,.rkin input{font:inherit;font-size:16px;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:#0d1229;color:var(--ink);min-width:0}
 .acf input:focus,.rkin input:focus{outline:2px solid var(--gold);outline-offset:1px}
 .msub.bad{color:#ff9aa8}
+.rtabs{display:flex;gap:6px;margin:8px 0}.rtabs button{flex:1;padding:8px;border-radius:10px;border:1px solid #39407a;background:#141a3a;color:#c9d1ee;font-family:var(--f-display);font-size:15px;cursor:pointer}.rtabs button.on{background:#ffd84d;color:#2a1a00;border-color:#ffd84d}
+.frbox{background:#141a3a;border-radius:12px;padding:10px;margin:6px 0}.frbox .code{color:#ffd84d;font-size:16px;letter-spacing:1px;user-select:all}.frbox .rkin{margin-top:6px;display:flex;gap:6px}.frbox input{flex:1;min-width:0}
+.frx{border:0;background:none;color:#ff8a9a;cursor:pointer;font-size:12px;padding:0 4px}
 .rkl{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;max-height:52vh;overflow:auto}
 .rkl li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:10px;align-items:center;background:#0d1229;border:1px solid var(--line);border-radius:10px;padding:6px 12px;text-align:left}
 .rkl .no{grid-row:span 2;font-family:var(--f-display);font-size:18px;color:var(--mute);text-align:center}
@@ -297,11 +300,11 @@ h4{font-family:var(--f-display);font-weight:400;font-size:18px;margin:0 0 8px;co
       <div class="rule"><b style="color:var(--ok)">전진 · 구역 · 장벽</b><p>위로 전진하세요. 500m마다 제륵 장벽과 새 구역 — 용암·설원·숲·심해·폐허마다 지형과 날씨가 바뀝니다. 길가의 보급소(하·중·상)·무기상점·병원은 직접 찾아야 해요. 금화로 업그레이드·회복·🎰 복권!</p></div>
     </div>
     <p id="bestLine" class="best"></p>
-    <div class="ver">서바이버 v17 · 역할·조합 보너스·빙빙 도는 히어로</div>
+    <div class="ver">서바이버 v18 · 친구 랭킹</div>
     <div class="controls">이동: WASD · 방향키 · 화면 드래그 &nbsp;|&nbsp; 고르기: 1~6 · 승급 U · 조합 C · 🎰 복권 L · 계속 Space · 일시정지 Esc</div>
   </div>
 </div>
-<script src="assets.js?v=17"></script>
+<script src="assets.js?v=18"></script>
 <script>
 (()=>{
 'use strict';
@@ -1487,18 +1490,42 @@ const esc=t=>String(t==null?'':t).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','
 const tStr=x=>{x=Math.round(x||0);return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')};
 async function rkFetch(){const r=await fetch(`${SB_URL}/rest/v1/${RK_T}?select=id,pid,nick,m,k,t,lv&order=m.desc,k.desc,t.asc&limit=100`,{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json(),me=myPid();return a.map(x=>({id:x.id,mine:x.pid===me,nick:cleanNick(x.nick)||'이름없음',m:x.m,k:x.k,t:x.t,lv:x.lv}))}
 async function rkSend(run,nick){const r=await fetch(`${SB_URL}/rest/v1/${RK_T}?select=id`,{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:myPid(),nick,m:run.m,k:run.k,t:run.t,lv:run.lv})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
+/* ---------- 친구: 친구 코드(내 기록 pid 앞 9자)로 서로의 기록을 모아 봄. 목록은 이 기기 + 로그인하면 계정(user_metadata)에 저장 ---------- */
+const myCode=()=>myPid().slice(0,9);
+const FR={L:[]};try{FR.L=JSON.parse(LS.get('rhs_friends')||'[]')}catch(e){FR.L=[]}
+const frSave=()=>{LS.set('rhs_friends',JSON.stringify(FR.L));frPush()};
+async function acToken(){if(!AC.s)return null;if(Date.now()<AC.s.exp)return AC.s.at;try{const j=await acAuth('token?grant_type=refresh_token',{refresh_token:AC.s.rt});AC.s.at=j.access_token;AC.s.rt=j.refresh_token;AC.s.exp=Date.now()+((j.expires_in||3600)-120)*1000;acStore();return AC.s.at}catch(e){return null}}
+async function frPush(){const t=await acToken();if(!t)return;try{await fetch(SB_URL+'/auth/v1/user',{method:'PUT',headers:{apikey:SB_KEY,Authorization:'Bearer '+t,'Content-Type':'application/json'},body:JSON.stringify({data:{rhs_friends:FR.L}})})}catch(e){}}
+async function frPull(){const t=await acToken();if(!t)return;try{const r=await fetch(SB_URL+'/auth/v1/user',{headers:{apikey:SB_KEY,Authorization:'Bearer '+t}});const j=await r.json();const L=(j.user_metadata||{}).rhs_friends;if(Array.isArray(L)){const m=new Map(FR.L.map(f=>[f.c,f]));L.forEach(f=>{if(f&&f.c&&!m.has(f.c))m.set(f.c,f)});FR.L=[...m.values()];LS.set('rhs_friends',JSON.stringify(FR.L));if(FR.L.length!==L.length)frPush()}}catch(e){}}
+function frAdd(code,name){code=String(code||'').trim().toLowerCase();if(!/^[up][0-9a-z]{8}$/.test(code))return '친구 코드는 u 또는 p로 시작하는 9자예요';if(code===myCode())return '내 코드예요';const f=FR.L.find(x=>x.c===code);if(f){if(name)f.n=name;frSave();return ''}FR.L.push({c:code,n:String(name||'친구').slice(0,16)});frSave();return ''}
+const inviteURL=()=>location.origin+location.pathname+'?f='+myCode()+'&n='+encodeURIComponent(AC.s?AC.s.id:(LS.get('rhs_nick')||'친구'));
+async function frFetch(){const codes=[myCode(),...FR.L.map(f=>f.c)];const q=codes.map(c=>`pid.like.${c}*`).join(',');
+  const r=await fetch(`${SB_URL}/rest/v1/${RK_T}?select=id,pid,nick,m,k,t&or=(${q})&order=m.desc,k.desc,t.asc&limit=300`,{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json(),best=new Map();
+  for(const x of a){const c=x.pid.slice(0,9);if(!best.has(c))best.set(c,x)}
+  return codes.map(c=>{const x=best.get(c),f=FR.L.find(o=>o.c===c),me=c===myCode();return {c,me,id:x&&x.id,mine:me,nick:me?'나'+(AC.s?' ('+AC.s.id+')':''):cleanNick((f&&f.n)||(x&&x.nick)||'친구'),m:x?x.m:0,k:x?x.k:0,t:x?x.t:0,none:!x}}).sort((a,b)=>b.m-a.m||b.k-a.k)}
+const frRows=L=>`<ol class="rkl">${L.map((x,i)=>`<li class="${x.me?'me':''}"><span class="no">${i+1}</span><span class="nk">${esc(x.nick)}</span><b>${x.none?'기록 없음':(x.m||0).toLocaleString()+'m'}</b><small>${x.none?'':fmt(x.k||0)+' 처치 · '+tStr(x.t)}${x.me?'':` <button class="frx" data-rm="${x.c}" title="친구 삭제">✕</button>`}</small></li>`).join('')}</ol>`;
+async function copyInvite(btn){const u=inviteURL();try{if(navigator.share){await navigator.share({title:'랜덤 히어로 서바이버',text:'나랑 전진 거리 겨뤄 보자! 링크로 들어오면 친구로 추가돼',url:u});return}}catch(e){}
+  try{await navigator.clipboard.writeText(u);btn.textContent='✓ 복사했어요'}catch(e){prompt('이 링크를 친구에게 보내세요',u)}}
 const rkErrMsg=e=>e&&e.status===404?'랭킹 표가 아직 없어요. 게임 주인이 Supabase에 표를 만들면 열려요.':'랭킹 서버에 연결하지 못했어요. claude.ai 미리보기에선 안 되고, 공개 링크에서 돼요.';
 const rkRows=(L,hi)=>L.length?`<ol class="rkl">${L.map((x,i)=>`<li class="${x.id===hi?'hi':x.mine?'me':''}"><span class="no">${i+1}</span><span class="nk">${esc(x.nick)}</span><b>${(x.m||0).toLocaleString()}m</b><small>${fmt(x.k||0)} 처치 · ${tStr(x.t)}</small></li>`).join('')}</ol>`:'<p class="hint">아직 기록이 없어요. 첫 기록을 남겨 보세요!</p>';
 const SD=$('#side');
 function sideOpen(html){SD.innerHTML=`<div class="mbox sidebox">${html}</div>`;SD.hidden=false;const x=SD.querySelector('[data-x]');if(x)x.onclick=()=>{SD.hidden=true;LS.set('rhs_seen','1')}}
 SD.addEventListener('pointerdown',e=>{if(e.target===SD){SD.hidden=true;LS.set('rhs_seen','1')}});
-function showRank(){sideOpen(`<span class="eyebrow">명예의 전당</span><h2>전진 거리 랭킹</h2><p class="msub">내 최고 기록 <b>${RK.best.toLocaleString()}m</b>${AC.s?' · '+esc(AC.s.id):''}</p><div id="rkV"><p class="hint">불러오는 중…</p></div><div class="mf"><span class="hint">상위 100명 · 한 판마다 한 줄</span><button class="btn primary" data-x>닫기</button></div>`);
-  rkFetch().then(L=>{const v=$('#rkV');if(v)v.innerHTML=rkRows(L)}).catch(e=>{const v=$('#rkV');if(v)v.innerHTML=`<p class="hint">${rkErrMsg(e)}</p>`})}
+function showRank(tab){tab=tab||LS.get('rhs_rtab')||'all';LS.set('rhs_rtab',tab);
+  sideOpen(`<span class="eyebrow">명예의 전당</span><h2>전진 거리 랭킹</h2><div class="rtabs"><button class="${tab==='all'?'on':''}" data-t="all">🌍 전체</button><button class="${tab==='fr'?'on':''}" data-t="fr">👥 친구 ${FR.L.length}</button></div>
+    <p class="msub">내 최고 기록 <b>${RK.best.toLocaleString()}m</b>${AC.s?' · '+esc(AC.s.id):''}</p>
+    ${tab==='fr'?`<div class="frbox"><p class="hint">내 친구 코드 <b class="code">${myCode()}</b> · 초대 링크로 들어온 친구는 자동으로 추가돼요${AC.s?'':' · 로그인하면 친구 목록이 계정에 저장돼요'}</p><div class="rkin"><button class="btn primary" id="frInv">🔗 초대 링크 보내기</button></div><div class="rkin"><input id="frC" maxlength="9" placeholder="친구 코드 (예: u1a2b3c4d)" autocapitalize="off"><input id="frN" maxlength="12" placeholder="이름 (선택)"><button class="btn" id="frA">추가</button></div><p id="frM" class="hint"></p></div>`:''}
+    <div id="rkV"><p class="hint">불러오는 중…</p></div><div class="mf"><span class="hint">${tab==='fr'?'나와 친구들의 최고 기록':'상위 100명 · 한 판마다 한 줄'}</span><button class="btn primary" data-x>닫기</button></div>`);
+  SD.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>showRank(b.dataset.t));
+  const load=()=>(tab==='fr'?frFetch().then(L=>{const v=$('#rkV');if(!v)return;v.innerHTML=(FR.L.length?'':'<p class="hint">아직 친구가 없어요. 초대 링크를 보내 보세요!</p>')+frRows(L);v.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{FR.L=FR.L.filter(f=>f.c!==b.dataset.rm);frSave();showRank('fr')})}):rkFetch().then(L=>{const v=$('#rkV');if(v)v.innerHTML=rkRows(L)})).catch(e=>{const v=$('#rkV');if(v)v.innerHTML=`<p class="hint">${rkErrMsg(e)}</p>`});
+  if(tab==='fr'){$('#frInv').onclick=e=>copyInvite(e.currentTarget);const add=()=>{const m=frAdd($('#frC').value,$('#frN').value.trim());$('#frM').textContent=m||'추가했어요!';if(!m){$('#frC').value='';$('#frN').value='';load()}};$('#frA').onclick=add;$('#frC').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')add()};$('#frN').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')add()};
+    frPull().then(()=>{const t=SD.querySelector('[data-t=fr]');if(t)t.textContent='👥 친구 '+FR.L.length});}
+  load()}
 function showAcct(msg,bad){
   if(AC.s){sideOpen(`<span class="eyebrow">계정</span><h2>${esc(AC.s.id)}</h2><p class="msub">로그인돼 있어요. 랭킹 기록이 이 아이디로 남아요. 랜덤 히어로 디펜스와 같은 계정이에요.</p><div class="mf"><button class="btn" data-o>로그아웃</button><button class="btn primary" data-x>닫기</button></div>`);SD.querySelector('[data-o]').onclick=()=>{AC.s=null;acStore();acctUI();showAcct('로그아웃했어요')};return}
   sideOpen(`<span class="eyebrow">계정</span><h2>로그인</h2><p class="msub">랜덤 히어로 디펜스 아이디가 있으면 그대로 쓰면 돼요.</p><div class="acf"><input id="acId" maxlength="16" placeholder="아이디 (영문 소문자·숫자 3~16자)" autocomplete="username" autocapitalize="off"><input id="acPw" type="password" maxlength="64" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div><p id="acM" class="msub${bad?' bad':''}">${esc(msg||'비밀번호는 찾을 수 없으니 꼭 기억해 두세요')}</p><div class="mf"><button class="btn" data-x>로그인 없이 하기</button><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-u>처음이에요 · 가입</button><button class="btn primary" data-i>로그인</button></span></div>`);
   const go=su=>async()=>{const id=$('#acId').value,pw=$('#acPw').value;$('#acM').className='msub';$('#acM').textContent=su?'가입하는 중…':'로그인 중…';
-    try{await acLogin(id,pw,su);acctUI();SD.hidden=true;LS.set('rhs_seen','1');toastStart(su?'가입 완료! 기록이 이 아이디로 남아요':'어서 와요, '+AC.s.id)}catch(e){showAcct(typeof e==='string'?e:acErr(e,su),1);$('#acId').value=id}};
+    try{await acLogin(id,pw,su);acctUI();frPull().then(()=>{if(FR.L.length)frPush()});SD.hidden=true;LS.set('rhs_seen','1');toastStart(su?'가입 완료! 기록이 이 아이디로 남아요':'어서 와요, '+AC.s.id)}catch(e){showAcct(typeof e==='string'?e:acErr(e,su),1);$('#acId').value=id}};
   SD.querySelector('[data-i]').onclick=go(false);SD.querySelector('[data-u]').onclick=go(true);$('#acPw').onkeydown=e=>{if(e.key==='Enter')go(false)()}}
 function acctUI(){$('#acctBtn').textContent=AC.s?'👤 '+AC.s.id:'👤 로그인';$('#bestLine').textContent=RK.best?`내 최고 기록 ${RK.best.toLocaleString()}m`:''}
 function toastStart(m){const b=$('#bestLine');b.textContent=m;setTimeout(acctUI,2500)}
@@ -1509,7 +1536,7 @@ function rkEndPanel(){const run={m:distM(),k:G.kills,t:Math.round(G.t),lv:G.pact
 function rkEndBind(){const P=RKP;$('#rkB').onclick=rkEndSubmit;$('#rkN').onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')rkEndSubmit()};
   rkFetch().then(L=>{if(!P.done&&$('#rkL'))$('#rkL').innerHTML=rkRows(L.slice(0,10))}).catch(e=>{if($('#rkL'))$('#rkL').innerHTML=`<p class="hint">${rkErrMsg(e)}</p>`})}
 async function rkEndSubmit(){const P=RKP;if(!P||P.done||P.busy)return;const raw=(($('#rkN')&&$('#rkN').value)||LS.get('rhs_nick')||'').trim().slice(0,12);LS.set('rhs_nick',raw);const nick=raw?cleanNick(raw):'이름없는 위원';P.busy=true;const M=$('#rkM');if(M)M.textContent='등록하는 중…';
-  try{const id=await rkSend(P.run,nick);P.done=true;const L=await rkFetch(),i=L.findIndex(x=>x.id===id);if(RKP===P){if($('#rkM'))$('#rkM').textContent=i>=0?`${i+1}위에 올랐어요!`:'등록했어요 (100위 밖이에요)';if($('#rkL'))$('#rkL').innerHTML=rkRows(L.slice(0,Math.max(10,i+3)),id);if($('#rkB'))$('#rkB').disabled=true}}
+  try{const id=await rkSend(P.run,nick);P.done=true;const L=await rkFetch(),i=L.findIndex(x=>x.id===id);if(RKP===P){if($('#rkM'))$('#rkM').textContent=i>=0?`${i+1}위에 올랐어요!`:'등록했어요 (100위 밖이에요)';if(FR.L.length)frFetch().then(F=>{const j=F.findIndex(x=>x.me);if($('#rkM'))$('#rkM').textContent+=` · 친구 ${F.length}명 중 ${j+1}등`+(j>0?` (1등 ${F[0].nick} ${F[0].m.toLocaleString()}m)`:' 👑')}).catch(()=>{});if($('#rkL'))$('#rkL').innerHTML=rkRows(L.slice(0,Math.max(10,i+3)),id);if($('#rkB'))$('#rkB').disabled=true}}
   catch(e){P.busy=false;if(RKP===P&&$('#rkM'))$('#rkM').textContent=rkErrMsg(e)}}
 function rkAuto(){const P=RKP;if(P&&!P.done&&!P.busy&&P.run.m>0)rkEndSubmit()}
 /* ---------- boot ---------- */
@@ -1518,7 +1545,8 @@ function startRun(mode){
   $('#start').hidden=true;$('#hud').hidden=false;
 }
 $('#modeNormal').onclick=()=>startRun('normal');
-$('#rankBtn').onclick=showRank;$('#acctBtn').onclick=()=>showAcct();acctUI();
+$('#rankBtn').onclick=()=>showRank();$('#acctBtn').onclick=()=>showAcct();acctUI();
+{const q=new URLSearchParams(location.search),f=q.get('f');if(f){const m=frAdd(f,q.get('n')||'친구');try{history.replaceState(null,'',location.pathname)}catch(e){}if(!m)setTimeout(()=>{toastStart(`👥 ${q.get('n')||'친구'}님이 친구로 추가됐어요! 랭킹 → 친구 탭`)},400)}if(AC.s)frPull()}
 if(!AC.s&&!LS.get('rhs_seen')&&!(window.claude&&window.claude.use))setTimeout(()=>{if(!started)showAcct()},300);
 $('#pauseBtn').onclick=togglePause;$('#slotBtn').onclick=e=>{e.stopPropagation();slotSpin()};
 $('#collage').innerHTML=shuffle(DEFS.filter(d=>d.tier>=2)).slice(0,9).sort((a,b)=>a.tier-b.tier).map((d,i)=>`<img src="${portrait(d.id)}" alt="${d.name}" style="animation-delay:${i*.18}s">`).join('');
