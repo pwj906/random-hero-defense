@@ -1610,10 +1610,10 @@ function hud(){
 }
 let sheet=null;
 // ---------- 복권 ----------
-const LOT=[{k:'jack',s:'🦸',p:.006},{k:'x20',s:'7️⃣',p:.012,m:20},{k:'stone',s:'🍀',p:.05},{k:'x5',s:'👑',p:.05,m:5},{k:'x2',s:'💎',p:.12,m:2},{k:'x1',s:'💰',p:.2,m:1}];
+const LOT=[{k:'jack',s:'🦸',p:.01},{k:'x20',s:'7️⃣',p:.015,m:20},{k:'stone',s:'🍀',p:.06},{k:'x5',s:'👑',p:.06,m:5},{k:'x2',s:'💎',p:.14,m:2},{k:'x1',s:'💰',p:.22,m:1}];
 function lotCost(){return 1}
 const SELL4=2; // 우주·특수조합 판매 행운석 (조합→판매→복권 무한 루프 너프)
-function lotPrize(){return Math.round((40+3*G.wave)*(A('lotto')?1.5:1))}
+function lotPrize(){return Math.round((50+5*G.wave)*(A('lotto')?1.5:1))}
 let lotCur=null;
 function lotRoll(){let r=Math.random();for(const z of LOT){if(r<z.p)return z;r-=z.p}return null}
 function lotSyms(pz){if(pz)return [pz.s,pz.s,pz.s];const S=LOT.map(z=>z.s),a=S[Math.floor(Math.random()*S.length)];let b;do{b=S[Math.floor(Math.random()*S.length)]}while(b===a);const sy=Math.random()<.6?[a,a,b]:[a,b,S[Math.floor(Math.random()*S.length)]];if(sy[0]===sy[1]&&sy[1]===sy[2])sy[2]=b;return sy.sort(()=>Math.random()-.5)}
@@ -1798,7 +1798,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:281};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:282};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
