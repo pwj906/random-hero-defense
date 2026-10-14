@@ -830,7 +830,7 @@ function place(id){
 function readyCells(){const r=[];G.cells.forEach((c,i)=>{if(c&&!c.lk&&c.n===3&&U[c.u].t<3&&BY[U[c.u].t+1].length)r.push(i)});return r}
 function mergeAll(){if(G.over)return;let n=0;for(let g=0;g<60;g++){const r=readyCells();if(!r.length)break;G.sel=r[0];merge();n++}G.sel=null;if(n)toast('일괄 승급 '+n+'회!');refresh()}
 function hint3(id){if(U[id].t>=3||!BY[U[id].t+1].length)return;G.h3=(G.h3||0)+1;if(G.h3<=3)setTimeout(()=>toast('3명 모였어요! 칸을 눌러 ▲승급'),50)}
-function fmt(d){return d>=1e6?(d/1e6).toFixed(1)+'M':d>=1e4?Math.round(d/1e3)+'k':''+Math.round(d)}
+function fmt(d){const f=(v,u)=>(v>=100?Math.round(v):+v.toFixed(1))+u;return d>=1e12?f(d/1e12,'조'):d>=1e8?f(d/1e8,'억'):d>=1e4?f(d/1e4,'만'):''+Math.round(d)}
 function parts(x,y,n,c,v,r,dl){if(G.fx.length>260)return;for(let j=0;j<n;j++){const a=Math.random()*6.283,sp=v*(.4+Math.random()*.6);G.fx.push({k:'pf',x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,t:.45,T:.45,c,r:r*(.6+Math.random()*.6),dl:dl||0})}}
 let toastT;
 function toast(s){const t=$('toast');t.textContent=s;t.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>t.style.opacity=0,900)}
@@ -962,7 +962,7 @@ function spawn(){
 function hit(m,u,d,dl,src){if(!m||m.hp<=0)return;if(src)m.last=src;if(m.shd>0)d*=.2;if(u.bossK&&m.boss)d*=u.bossK;if(u.exec&&m.hp<m.max*.3)d*=u.exec;if(u.hi&&m.hp>m.max*.5)d*=u.hi;if(u.slx&&(m.sl>0||m.sl2>0))d*=u.slx;if(u.rng)d*=u.rng[0]+Math.random()*(u.rng[1]-u.rng[0]);if(m.k===2&&!m.boss&&!(m.vu>0))d*=.75;if(G.aug){if(G.aug.cc&&(m.st>0||m.rt>0))d*=2;if(G.aug.chill&&(m.sl>0||m.sl2>0))d*=1.4;if(G.aset){if(G.aset.ctrl&&(m.st>0||m.rt>0))d*=1.5;if(G.aset.ice&&(m.sl>0||m.sl2>0||m.st>0))d*=1.5;if(G.aset.poison&&m.dotT>0)d*=1.25;if(G.aset.hunt&&m.boss)d*=1.5}}
   if(m.boss&&A('bossbane'))d*=1.6;if(m.boss&&A('hunt'))d*=2;if(m.boss&&A('execute')&&m.hp<m.max*.3)d*=2;let cr=false;const ec=u.planet==='earth'&&G.plOn&&G.plOn.earth>0,crc=(u.cr||0)+(ec?.15:0)+(u.bm&&A('crit')?.15:0);if(crc&&Math.random()<crc){d*=u.cm||(ec?2.5:2);cr=true;if(G.fx.length<220){const[x,y]=pos(m.p);fxs('common/critical',x,y-10,40,{fps:16})}}if(u.exec&&m.hp<m.max*.3&&G.fx.length<230){const[x,y]=pos(m.p);fxs('cacton/execute',x,y-10,48,{fps:14})}if(u.hi&&m.hp>m.max*.5&&Math.random()<.4&&G.fx.length<200){const[x,y]=pos(m.p);fxs('orbin/lifedrain',x,y-10,40,{fps:12})}
   if(m.vu>0)d*=1.3;if(m.vu2>0)d*=A('weak')?1.2:1.12;if(m.boss&&src&&src.u&&FUB[src.u])d*=FUB[src.u];m.hp-=d;m.fl=.12;
-  if(G.fx.length<220&&(G.nT=(G.nT||0)+1)&&(cr||m.boss||G.tN<40)){const[x,y]=pos(m.p);G.tN=(G.tN||0)+1;G.fx.push({k:'t',x:x+(Math.random()-.5)*12,y:y-10,t:cr?.8:.55,T:cr?.8:.55,s:fmt(d),cr,dl})}
+  {const o=m._tf;if(o&&o.t>0&&o.T-o.t<.35&&G.fx.includes(o)){o.v+=d;o.s=fmt(o.v);if(cr&&!o.cr){o.cr=true;o.t=o.T=.8}}else if(G.fx.length<220&&(cr||m.boss||G.tN<24)){const[x,y]=pos(m.p);G.tN=(G.tN||0)+1;const f={k:'t',x:x+(Math.random()-.5)*12,y:y-10,t:cr?.8:.55,T:cr?.8:.55,v:d,s:fmt(d),cr,dl};m._tf=f;G.fx.push(f)}}
   if(cr)G.shake=Math.max(G.shake,.12);
   if(u.sl)m.sl=Math.max(m.sl,u.sl);if(u.sl2)m.sl2=Math.max(m.sl2||0,u.sl2);if(u.vuc&&Math.random()<u.vuc)m.vu=Math.max(m.vu||0,u.vut);if(u.rtc&&!m.boss&&Math.random()<u.rtc){m.rt=Math.max(m.rt||0,u.rtd);m.rtT=u.rtd}if(u.kbc&&!m.boss&&Math.random()<u.kbc){m.kb=.25;m.kbv=u.kbd/.25}if(u.bm&&A('shock')&&!m.boss&&Math.random()<.1)m.st=Math.max(m.st||0,.6);if(A('reaper')&&!m.boss&&m.hp>0&&m.hp<m.max*.12)m.hp=0;if(A('execute')&&!m.boss&&m.hp>0&&m.hp<m.max*.25)m.hp=0;if(u.dot){m.dot=Math.max(m.dotT>0?m.dot:0,d*u.dot*(A('venom')?2:1));m.dotT=u.dott;m.dsrc=src}else if(A('venom')&&d>0&&!dl){m.dot=Math.max(m.dotT>0?m.dot:0,d*(SO('poison')?.3:.1));m.dotT=Math.max(m.dotT||0,3);m.dsrc=src}
   if(u.rt&&!m.boss){m.rt=Math.max(m.rt||0,u.rt);m.rtT=u.rt}if(u.vu2)m.vu2=Math.max(m.vu2||0,u.vu2);else if(u.bm&&A('weak'))m.vu2=Math.max(m.vu2||0,3);if(u.fmk&&src)markSet(m,src,u.fmk);
@@ -1777,6 +1777,7 @@ $('start').onclick=start;
 const SAVE_KEY='umd_save';let SAVE={lv:{},kills:{},frag:{},boxes:0,games:0,best:0};
 try{const r=localStorage.getItem(SAVE_KEY);if(r)Object.assign(SAVE,JSON.parse(r))}catch(e){}
 function saveClean(){for(const f of ['lv','frag','kills'])if(SAVE[f]){delete SAVE[f].cheongram;if(SAVE[f].white_tiger!=null){SAVE[f].mugyeom=Math.max(SAVE[f].mugyeom||0,SAVE[f].white_tiger);delete SAVE[f].white_tiger}}}saveClean();
+if(!SAVE.c293){SAVE.c293=1;if((SAVE.best||0)>=51){SAVE.boxes=(SAVE.boxes||0)+20;setTimeout(()=>{try{toast('🎁 지형 변화 버그 보상: 랜덤박스 20개!');saveAll()}catch(e){}},2500)}}
 const LOCKP={lumiel:{w:100,x:'100웨이브 돌파'},drakanis:{g:3,x:'3판 이상 플레이'},biikseong:{w:110,x:'110웨이브 돌파'},seolryeong:{g:5,x:'5판 이상 플레이'},haeyeon:{g:7,x:'7판 이상 플레이'}},PL_MAX=7;
 const UNLOCK_ALL=['pwj0906']; // 이 계정은 잠긴 행성을 처음부터 열어 줌
 function plUnlocked(p){const L=LOCKP[p];return !L||(L.w!=null&&(SAVE.best||0)>L.w)||(L.g!=null&&(SAVE.games||0)>=L.g)||!!(typeof AC!=='undefined'&&AC&&AC.s&&UNLOCK_ALL.includes(AC.s.id))}
@@ -1851,7 +1852,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:293};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:294};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
