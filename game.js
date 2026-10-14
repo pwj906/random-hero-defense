@@ -771,6 +771,7 @@ const $=id=>document.getElementById(id);
 let G,speed=1,running=false,last=0;
 
 // ---- 지형(길 모양) — 50웨이브마다 바뀜 ----
+const TERR_ON=0; // 지형 변화 — 그림 오기 전까지 꺼 둠(1로 켜기)
 const TERR=[{k:'sq',n:'네모 길',d:'바깥을 한 바퀴'},{k:'rev',n:'거꾸로 길',d:'반대 방향으로 한 바퀴'},{k:'mid',n:'日자 길',d:'가운데 줄을 가로지름 — 그 줄 칸은 막힘'},{k:'u',n:'U자 길',d:'가운데 세로줄을 지나감 — 그 줄 칸은 막힘'}];
 let PATHS=[[L,T],[R,T],[R,B],[L,B],[L,T]],PCUM=[0,PW,PW+PH,2*PW+PH,PER],PLOOP=1,BLK=new Set();
 function terrDef(k){const xm=CXS[2],ym=CYS[2];
@@ -942,7 +943,7 @@ let tapI=-1,tapAt=0;
 
 function nextWave(){
   if(G.wave>=1000){end(true);return}
-  G.wave++;if(G.wave>1&&(G.wave-1)%50===0){const o=G.terr||0,L2=TERR.map((_,j)=>j).filter(j=>j!==o);setTerrain(L2[Math.floor(Math.random()*L2.length)],1)}const b=isBoss(G.wave);
+  G.wave++;if(TERR_ON&&G.wave>1&&(G.wave-1)%50===0){const o=G.terr||0,L2=TERR.map((_,j)=>j).filter(j=>j!==o);setTerrain(L2[Math.floor(Math.random()*L2.length)],1)}const b=isBoss(G.wave);
   G.waveT=b?60:20;G.free=1;if(A('seed'))G.coins+=15;if(A('supply'))G.coins+=25;if(A('midas')&&G.wave>1)G.stones++;if(A('dice')){const L=G.cells.filter(c=>c).sort(()=>Math.random()-.5).slice(0,5);G.diceS=L;for(const c of L){const j=G.cells.indexOf(c),[dx,dy]=cellXY(j);G.fx.push({k:'t',x:dx,y:dy-30,t:1.3,T:1.3,s:'🎲×2.5',cr:true,dl:.2})}}if(A('evolve')&&G.wave>1)evolveOne();if(A('interest')&&G.wave>1){const g=Math.min(60,Math.floor(G.coins*.05));G.coins+=g}if(G.wave===5)G.sched.push({t:1.2,f:boonOpen});G.spawnLeft=b?1:30;G.spawnT=0;G.spawnFast=false;
   // 행운석은 보스 보상과 희귀 이상 판매에서만 획득.
   SND.play(b?'bossIn':'wave');SND.bg(false,b?1:0);if(!b)toast('웨이브 '+G.wave)
@@ -1107,7 +1108,7 @@ function boonShow(){const t=G.boonT;$('boonH').innerHTML='💎 증강 선택 <sp
 function boonOpen(){if(G.over)return;G.aug=G.aug||{};G.pause=true;const t=G.forceT&&G.forceT.length?G.forceT.shift():augTier();G.boonT=t;G.boonP=augRoll(t);if(!G.boonP.length){G.pause=false;return}G.boonRr=1;boonShow();$('boon').style.display='flex';SND.play(t===2?'reveal':'boonOpen')}
 function boonRe(){if(!G.pause||!G.boonP||!(G.boonRr>0))return;G.boonRr--;G.boonP=augRoll(G.boonT);SND.play('card');boonShow()}
 function boonPick(j){if(!G.pause||!G.boonP)return;const k=G.boonP[j]||G.boonP[0];G.boonP=null;SND.play('boonPick');G.aug[k]=1;(G.augL=G.augL||[]).push(k);if(AUGP[k])AUGP[k]();if(G.forceT&&G.forceT.length)G.sched.push({t:.4,f:boonOpen});G.pause=false;$('boon').style.display='none';G.nBoon=(G.nBoon||0)+1;const a=AUG[k];toast(a.e+' '+a.n+' 획득!');augTick();augUI();refresh()}
-function augUI(){const S=$('augS'),L=$('augL');if(!S)return;const l=(G&&G.augL)||[];S.innerHTML=l.map(k=>{const ik=augIcon(k);return '<i class="t'+AUG[k].t+(ik?' im':'')+'">'+(ik?v5img(ik):AUG[k].e)+'</i>'}).join('');S.style.display=l.length?'flex':'none';
+function augUI(){const S=$('augS'),L=$('augL');if(!S)return;const l=(G&&G.augL)||[];const AM=4,sh=l.length>AM?l.map((k,j)=>[k,j]).sort((a,b)=>AUG[b[0]].t-AUG[a[0]].t||b[1]-a[1]).slice(0,AM-1).map(x=>x[0]):l;S.innerHTML=sh.map(k=>{const ik=augIcon(k);return '<i class="t'+AUG[k].t+(ik?' im':'')+'">'+(ik?v5img(ik):AUG[k].e)+'</i>'}).join('')+(l.length>AM?'<i class="more">+'+(l.length-AM+1)+'</i>':'');S.style.display=l.length?'flex':'none';
   L.innerHTML='<div style="text-align:center;color:#c9d0f0">보유 증강 (눌러서 닫기)</div>'+l.map(k=>'<div class="c'+AUG[k].t+'">'+(augIcon(k)?v5img(augIcon(k),'','width:1.4em;height:1.4em;vertical-align:middle'):AUG[k].e)+' <b>'+AUG[k].n+'</b> · '+AUG[k].x+'</div>').join('')}
 // ---------- 사용자 스킬 (보상 상자에서 극악 확률) ----------
 const USK={
@@ -1822,7 +1823,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:285};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:286};
   const b=RK.best,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 async function rkFetch(){if(RK.sb){const r=await fetch(SB_URL+'/rest/v1/runs?select=id,pid,nick,w,k,t,created_at&order=w.desc,k.desc,t.asc&limit=100',{headers:{apikey:SB_KEY}});if(!r.ok)throw {status:r.status};const a=await r.json();RK.list=a.map(x=>({id:x.id,mine:x.pid===RK.uid,nick:cleanNick(x.nick),w:x.w,k:x.k,t:x.t,d:x.created_at}));const m=RK.list.filter(x=>x.mine);if(m.length)RK.bestW=Math.max(RK.bestW||0,...m.map(x=>x.w));return RK.list}const q=await RK.db.collection('rank').orderBy('w','desc').limit(200).get();RK.list=q.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>typeof r.w==='number').sort((a,b)=>b.w-a.w||b.k-a.k||a.t-b.t);return RK.list}
