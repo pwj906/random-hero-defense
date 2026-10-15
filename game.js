@@ -1,4 +1,38 @@
 
+// v309: 새로 넣은 화면 스타일을 JS에서도 한 번 더 넣음(폰 캐시로 옛 index.html CSS + 새 game.js가 섞여도 화면이 깨지지 않게)
+(function(){try{const st=document.createElement('style');st.id='cssLate';st.textContent=`#pqP{position:absolute;z-index:25;left:8%;right:8%;top:24%;display:none;background:rgba(10,18,36,.97);border:2px solid #8fd8ff;border-radius:14px;padding:12px;color:#fff;font-size:calc(1.7*var(--sh));line-height:1.45;text-align:center}#pqP .rw{font-size:.85em;color:#dff4ff;background:rgba(255,255,255,.06);border-radius:8px;padding:.4em .6em}#pqP button{margin:8px 4px 0;padding:6px 16px;border-radius:10px;border:0;font-size:1em}#pqP button[data-a=ok]{background:linear-gradient(#8fe0ff,#2a8ad0);color:#06223a;font-weight:700}#bBty.pqOn{animation:mgp2 1.2s 3}#bBty img{filter:drop-shadow(0 1px 1px #000)}
+#sheet .lotOne{display:flex;flex-direction:column;gap:6px}#sheet .lotSeg{display:flex;gap:4px;justify-content:center}#sheet .lotSeg button{flex:0 0 auto;padding:4px 14px;border-radius:99px;border:2px solid #f5b921;background:#3a2a1a;color:#ffe9a8;font-size:.9em}#sheet .lotSeg button.on{background:#f5b921;color:#3a2a1a}#gLot{background:linear-gradient(#ffdf5a,#f5b921);color:#3a2a1a;padding:10px;border-radius:12px;font-size:1.05em}#gLot small{display:block;font-size:.72em;opacity:.8}
+#sheet{background:linear-gradient(180deg,rgba(18,30,62,.97),rgba(11,19,42,.97))!important;border:2px solid #d9b45a!important;box-shadow:0 0 0 1px #000a,0 6px 18px #0008}
+#sheet h3{color:#ffe9a8}#sheet h3>span{display:flex;align-items:center;gap:2px}
+#sheet #x{background:#2a3a66!important;color:#ffe9a8;border-color:#d9b45a!important}
+.hI{position:relative;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-12px -10px -12px -6px;padding:0;border:0!important;background:none!important;box-shadow:none!important;cursor:pointer;flex:0 0 auto;vertical-align:middle}
+.hI::before{content:'i';display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.6px solid #d9b45a;color:#ffd96a;font:700 12px/1 Georgia,serif;font-style:italic;background:#16244a}
+#helpPop{position:fixed;z-index:60;display:none;width:min(320px,calc(100vw - 24px));max-height:min(52vh,420px);overflow:auto;-webkit-overflow-scrolling:touch;background:#101b38;border:2px solid #d9b45a;border-radius:14px;color:#e9eefc;padding:12px 14px 12px;box-shadow:0 10px 30px #000b;font-size:14px;line-height:1.45}
+#helpPop.sheet{left:0!important;right:0;bottom:0;top:auto!important;width:auto;max-height:55vh;border-radius:16px 16px 0 0;border-bottom:0}
+#helpPop h4{margin:0 30px 6px 0;font-weight:400;font-size:16px;color:#ffd96a}
+#helpPop ul{margin:0;padding-left:1.1em}#helpPop li{margin:3px 0}#helpPop li b{color:#ffe9a8;font-weight:400}
+#helpPop .ex{margin-top:8px;padding:6px 8px;border-radius:8px;background:#1c2b55;color:#c9d6ff;font-size:13px}
+#helpPop .hx{position:absolute;top:4px;right:4px;width:40px;height:40px;border:0;background:none;color:#ffe9a8;font-size:18px}
+#sheet .uph{margin:8px 2px 4px;color:#d9b45a;font-size:13px;letter-spacing:.5px}
+#sheet .upc{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1px 10px;width:100%;text-align:left;padding:8px 10px!important;margin:0 0 5px;background:linear-gradient(180deg,#22366b,#182a55)!important;border:1.5px solid #3c5aa0!important;border-radius:10px;color:#fff;box-shadow:none!important}
+#sheet .upc:disabled{opacity:1;filter:none;background:#141f3d!important;border-color:#2a3a66!important}#sheet .upc:disabled .uc{color:#8a93ad}
+#sheet .upc .ut{grid-column:1;font-size:15px;white-space:nowrap}#sheet .upc .ut b{color:#ffd96a;font-weight:400}
+#sheet .upc .ud{grid-column:2;font-size:12.5px;color:#b9c6ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#sheet .upc .ud b{color:#9ff0b0;font-weight:400}
+#sheet .upc .uc{grid-column:3;font-size:15px;color:#ffd96a;white-space:nowrap}
+#sheet .upc .ur{grid-column:1/4;font-size:12px;color:#ff9a9a}
+#sheet .upg{display:block}#sheet #u3 .ut{white-space:normal}#sheet #u3{grid-template-columns:1fr auto}#sheet #u3 .ud{grid-column:1}#sheet #u3 .uc{grid-column:2;grid-row:1/3}
+[data-hk].hkCh{box-shadow:inset 0 0 0 2px #d9b45a!important}
+[data-hk].hkCh::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(90deg,rgba(255,217,106,.32),rgba(255,217,106,.32)) no-repeat;background-size:0 100%;animation:hkFill .4s linear forwards}
+@keyframes hkFill{to{background-size:100% 100%}}
+[data-hk].hkRep{box-shadow:inset 0 0 0 2px #ffd96a,0 0 10px rgba(255,217,106,.55)!important}
+[data-hk].hkRep::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(255,240,180,.28) 50%,transparent 70%);background-size:200% 100%;animation:hkShine .7s linear infinite}
+@keyframes hkShine{from{background-position:120% 0}to{background-position:-80% 0}}
+#hkTip{position:fixed;z-index:58;display:none;background:#101b38;color:#ffe9a8;border:1.5px solid #d9b45a;border-radius:10px;padding:6px 10px;font-size:13px;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px #0009}
+#hkTip::after{content:'';position:absolute;left:var(--ax,50%);bottom:-7px;width:10px;height:10px;background:#101b38;border-right:1.5px solid #d9b45a;border-bottom:1.5px solid #d9b45a;transform:translateX(-50%) rotate(45deg)}
+#orbP{border-color:#d9b45a!important;background:linear-gradient(180deg,rgba(18,30,62,.98),rgba(11,19,42,.98))!important}#orbP .oh{color:#ffe9a8!important}
+#orbP .oEmpty{text-align:center;padding:14px 0 8px;color:#9fb0d8}#orbP .oEmpty i{display:block;font-style:normal;font-size:26px;opacity:.6}
+#sheet .go.pr{background:#20356a!important;color:#cfe0ff}`;document.head.appendChild(st)}catch(e){}})();
+
 // 집 등급 제외 (v265): NO_HOME=0으로 바꾸면 전부 원래대로. 집 영웅 데이터·그림은 그대로 남아 있음
 const NO_HOME=1;let HOME_COST=2.7;
 const TN=['집','동네','나라','행성','우주'], TC=['#aaaab3','#77bd50','#30b6f4','#ac6cec','#f5b63c'];
@@ -1028,19 +1062,19 @@ function spawn(){
 // ---------- 전투 계열(행성과 별개인 두 번째 소속) + 최상급 역할 ----------
 // 시너지는 '서로 다른 영웅 종류 수'로 발동. 같은 영웅을 여러 칸 두어도 1종.
 const CLS={
- guard:{e:'🧱',n:'길막러',need:[2,4,6],c:'#7fb6ff',x:['길막러 영웅이 12초마다 사거리 안 가장 앞선 적 앞에 작은 벽(1초) · 벽·제어에서 풀린 적 3초간 받는 피해 +20%','작은 벽 10초마다 1.5초 · 풀린 적 피해 +40%','작은 벽 8초마다 2초 · 풀린 적 피해 +70%'],s:'길 막기'},
+ guard:{e:'🧱',n:'길막러',need:[2,4,6],c:'#7fb6ff',x:['길막러 영웅은 특수기마다 작은 벽(2초), 그리고 12초마다 사거리 안 가장 앞선 적 앞에 작은 벽(1초) · 벽·제어에서 풀린 적 3초간 받는 피해 +20%','작은 벽 10초마다 1.5초 · 풀린 적 피해 +40%','작은 벽 8초마다 2초 · 풀린 적 피해 +70%'],s:'길 막기'},
  brawl:{e:'⚔️',n:'투사',need:[2,4,6],c:'#ff8a6a',x:['투사 영웅 공격속도 +15%','투사 공격속도 +30% · 공격력 +20%','투사 공격속도 +50% · 공격력 +40%'],s:'근접 딜'},
- snipe:{e:'🎯',n:'저격수',need:[2,4,6],c:'#ffd23e',x:['저격수가 같은 적을 이어 맞히면 한 번마다 피해 +8% (최대 5번)','한 번마다 +12% (최대 6번)','한 번마다 +16% (최대 8번)'],s:'단일 집중'},
- bomb:{e:'💥',n:'폭격수',need:[2,4,6],c:'#ff9f2e',x:['폭격수 공격 한 번에 적 3명 이상 맞히면 추가 폭발(공격력 40%, 반경 1칸) · 영웅마다 3초에 1번','폭발 70% · 2.5초','폭발 100% · 2초'],s:'광역'},
+ snipe:{e:'🎯',n:'저격수',need:[2,4,6],c:'#ffd23e',x:['저격수 특수기는 보스·체력 많은 적을 노림 · 같은 적을 이어 맞히면 한 번마다 피해 +8% (최대 5번)','한 번마다 +12% (최대 6번)','한 번마다 +16% (최대 8번)'],s:'단일 집중'},
+ bomb:{e:'💥',n:'폭격수',need:[2,4,6],c:'#ff9f2e',x:['폭격수 특수기는 적이 가장 몰린 곳을 노림 · 공격 한 번에 적 3명 이상 맞히면 추가 폭발(공격력 40%, 반경 1칸) · 영웅마다 3초에 1번','폭발 70% · 2.5초','폭발 100% · 2초'],s:'광역'},
  support:{e:'✨',n:'지원가',need:[2,3],c:'#6fe8c8',x:['모든 오라 효과 1.3배 (같은 종류 오라는 여전히 가장 센 것 하나)','오라 효과 1.6배'],s:'오라 강화'},
- heal:{e:'💚',n:'치유사',need:[2,3],c:'#7fe87f',x:['치유사가 적을 처치하면 2% 확률로 ❤️+1(유저 체력) · 실제로 회복되면 4초간 모든 아군 공격속도 +15%','처치 3% 확률 · 공격속도 +25%'],s:'유저 체력 회복'}};
+ heal:{e:'💚',n:'치유사',need:[2,3],c:'#7fe87f',x:['치유사 특수기마다 ❤️+1(체력이 깎여 있을 때) · 적을 처치하면 2% 확률로 ❤️+1(유저 체력) · 실제로 회복되면 4초간 모든 아군 공격속도 +15%','처치 3% 확률 · 공격속도 +25%'],s:'유저 체력 회복'}};
 const CLS_ORD=['guard','brawl','snipe','bomb','support','heal'];
 const HCLS={mugyeom:'guard',bubon:'guard',noctia:'guard',mold:'guard',snow_yeti:'guard',ice_golem:'guard',baekho:'brawl',hyeonmu:'guard',abyssadmiral:'guard',coralgiant:'guard',chronel:'guard',iron_dragonkin:'guard',
  goldwing_commander:'brawl',fang_lancer:'brawl',hongryeon:'brawl',cacton:'brawl',elderon:'brawl',clawlancer:'brawl',vargon:'brawl',jacko:'brawl',selene:'brawl',
- veteran:'snipe',bricks:'snipe',archeon:'snipe',deliverybot:'snipe',nero:'snipe',alpaca:'snipe',pulu:'snipe',feather_archer:'snipe',icicle_bat:'snipe',policebot:'snipe',
+ veteran:'bomb',bricks:'snipe',archeon:'snipe',deliverybot:'snipe',nero:'snipe',alpaca:'snipe',pulu:'bomb',feather_archer:'snipe',icicle_bat:'bomb',policebot:'snipe',
  storm_owl:'bomb',jujak:'bomb',zeus:'bomb',jir:'bomb',fortressbot:'bomb',lunette:'bomb',poseidon:'bomb',stella:'bomb',cheongryong:'bomb',
- napoleon:'support',seraphine:'support',belkaon:'support',aurielle:'support',
- sporun:'heal',orca:'heal',miel:'heal',sylvaion:'heal',
+ napoleon:'snipe',seraphine:'support',belkaon:'support',aurielle:'heal',
+ sporun:'support',orca:'support',miel:'heal',sylvaion:'heal',
  // 특수 조합
  jinmu:'guard',cheora:'guard',clockweaver:'guard',yeongeopsu:'heal',unhwa:'support',nox:'brawl',astraon:'snipe',wolroe:'brawl',noeha:'bomb',bideung:'bomb',jeokhwang:'bomb',hwangryong:'bomb',yeongwol:'brawl',heukjo:'bomb'};
 // 최상급(우주·특수 조합) 역할: 강점과 약점이 같이 붙음
@@ -1090,6 +1124,11 @@ const GW_T=[0,1,1.5,2],GW_CD=[0,12,10,8];
 // 길막러 계열(최상급 차단형 제외 소속 영웅 전부): 계열 단계에 따라 주기적으로 작은 벽
 function guardTick(dt){let L=clsLv('guard');if(L&&A('wall'))L=Math.min(3,L+1);if(!L)return;G.cells.forEach((c,i)=>{if(!c||HCLS[c.u]!=='guard'||ROLE[c.u]==='block')return;c.gw=(c.gw==null?GW_CD[L]*Math.random():c.gw)-dt;if(c.gw>0)return;const[x,y]=cellXY(i),r=effR(i,c);let best=null;for(const m of G.mobs){if(m.hp<=0||m.p<28||m.boss||m.wImm>0||m.ccImm>0)continue;const[mx,my]=pos(m.p);if(Math.hypot(mx-x,my-y)<=r&&(!best||m.p>best.p))best=m}
   if(!best){c.gw=1;return}c.gw=GW_CD[L];G.walls=G.walls||[];while(G.walls.length>=WALL_MAX)wallEnd(G.walls[0]);G.walls.push({p:best.p+CS*.5,t:GW_T[L],T:GW_T[L],c,col:'#7fb6ff',held:new Set(),u:c.u,small:1})})}
+// v309: 계열 = 스킬 성격. 최상급 역할이 없는 영웅도 특수기에 계열 효과가 실제로 붙음
+//  🧱길막러: 특수기마다 가장 앞선 적 앞에 작은 벽 2초 / 💚치유사: 체력이 깎여 있으면 ❤️+1(회복 한도 안) / 🎯저격수: 특수기 대상 보스→체력 많은 적 / 💥폭격수: 적이 가장 몰린 곳
+const CLS_AIM={snipe:'single',bomb:'aoe'},CLS_SPX={guard:'🧱 길 위에 작은 벽 2초',heal:'💚 체력이 깎여 있으면 ❤️+1',snipe:'🎯 보스·체력 많은 적 우선',bomb:'💥 적이 가장 몰린 곳'};
+for(const k in SP){const q=HCLS[k];if(!q||ROLE[k]||!CLS_SPX[q]||!SP[k].x)continue;if(q==='snipe'&&/보스/.test(SP[k].x))continue;if(q==='bomb'&&/몰린/.test(SP[k].x))continue;SP[k].x+=' · '+CLS_SPX[q]}
+function clsSpecial(c,best){const k=HCLS[c.u];if(k==='guard'&&best){G.walls=G.walls||[];while(G.walls.length>=WALL_MAX)wallEnd(G.walls[0]);G.walls.push({p:best.p+CS*.3,t:2,T:2,c,col:'#7fb6ff',held:new Set(),u:c.u,small:1})}else if(k==='heal'&&G.hp<hpMax())healTry(1,c)}
 function wallTick(dt){guardTick(dt);if(!G.walls||!G.walls.length)return;for(const w of [...G.walls]){w.t-=dt;if(w.t<=0||!G.cells.includes(w.c))wallEnd(w)}}
 // 적 이동 직전: 이번 프레임에 벽을 넘으려 하면 벽 바로 앞에 세움
 function wallStop(m,v,dt){if(!G.walls||!G.walls.length||v<=0)return v;if(m.wImm>0||m.ccImm>0||m.sk==='immune'){return v}
@@ -1973,9 +2012,9 @@ function update(dt){
     if(!c)return;if(c.seal>0){c.seal-=dt;return}if(c.b>0)c.b-=dt;if(c.pop>0)c.pop-=dt;if(c.sc>0)c.sc-=c.u==='hwangryong'?dt*(G.cdLock>0?0:1):dt*Math.min(CD_MAX,(c.hst>0?c.hsv||1:1)*(G.bn?G.bn.cd:1)*(G.aug&&G.aug.cosmo&&U[c.u].t===4?1.33:1)*(A('mana')?1.25:1)*(A('timelord')?1.67:1)*(SO('time')?1.25:1)*(A('ascend')&&U[c.u].fu?1.33:1)*concSpd(c)*(c.pcd||1))*(G.cdLock>0?0:1);if(c.hst>0)c.hst-=dt;if(c.drop>0)c.drop-=dt;if(c.sh>0)c.sh-=dt;if(c.as>0)c.as-=dt;if(c.sb>0)c.sb-=dt;
     if(c.rg>0)c.rg-=dt;if(c.slb>0)c.slb-=dt;const u0=U[c.u];c.sy=u0.syn&&synOn(i,u0)?u0.syn:0;const eye=i===G.eyeI&&A('eye'),u=(c.rg>0||c.slb>0||eye||c.prg>0||c.psl>0||c.pcr>0)?Object.assign(Object.create(u0),{r:eye?u0.r+CS*3:u0.r+(c.rg>0?CS:0)+(c.prg||0)},c.pcr>0?{cr:(u0.cr||0)+c.pcr,cm:u0.cm||2.5}:{},(c.slb>0||c.psl>0)?{sl:Math.max(u0.sl||0,c.slb>0?.8:0,c.psl||0)}:{}):u0,s=u.sp2;if(c.sb>0)return;
     if(s&&c.sc<=0){const[x,y]=cellXY(i);let best=null,bp=-1;
-      {const rl=ROLE[c.u],cand=[];for(const m of G.mobs){if(m.hp<=0||m.p<28)continue;const[mx,my]=pos(m.p);if(Math.hypot(mx-x,my-y)<=(u.spR||u.r))cand.push([m,mx,my])}
+      {const rl=ROLE[c.u]||CLS_AIM[HCLS[c.u]],cand=[];for(const m of G.mobs){if(m.hp<=0||m.p<28)continue;const[mx,my]=pos(m.p);if(Math.hypot(mx-x,my-y)<=(u.spR||u.r))cand.push([m,mx,my])}
        for(const[m,mx,my]of cand){let k;if(rl==='single')k=m.boss?1e30:m.hp;else if(rl==='aoe'){k=m.boss?.5:0;for(const[o,ox,oy]of cand)if(Math.abs(ox-mx)<CS*1.2&&Math.abs(oy-my)<CS*1.2)k++}else k=m.boss?1e9:m.p;if(k>bp){bp=k;best=m}}}
-      if(best||s.buff){c.sc=s.cd;special(c,i,u,s,x,y,best);{const rl=ROLE[c.u];if(rl==='block'&&best)wallCast(c,best);else if(c.u==='sylvaion'&&G.hp<hpMax())healTry(2,c)}if(G.aug&&G.aug.echo&&Math.random()<.5)G.sched.push({t:1,f:()=>echoSp(c)});c.cd=Math.max(c.cd,.5);return}}
+      if(best||s.buff){c.sc=s.cd;special(c,i,u,s,x,y,best);{const rl=ROLE[c.u];if(rl==='block'&&best)wallCast(c,best);else if(c.u==='sylvaion'&&G.hp<hpMax())healTry(2,c);else if(!rl)clsSpecial(c,best)}if(G.aug&&G.aug.echo&&Math.random()<.5)G.sched.push({t:1,f:()=>echoSp(c)});c.cd=Math.max(c.cd,.5);return}}
     c.cd-=dt;if(c.cd>0)return;
     const [x,y]=cellXY(i);let best=null,bp=-1;
     const hiT=ROLE[c.u]==='single';for(const m of G.mobs){if(m.hp<=0||m.p<28||m.hp<=(m.inc||0))continue;const[mx,my]=pos(m.p),key=m.boss?1e30:hiT?m.hp-(m.inc||0):m.p;if(Math.hypot(mx-x,my-y)<=u.r&&key>bp){bp=key;best=m}}
@@ -2411,7 +2450,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:308};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:309};
   const b=RK.best&&(RK.best.at||0)>=RK_SEASON_MS?RK.best:null,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 // 랭킹 시즌: 규칙이 크게 바뀐 v299부터 새로 시작 — 그 전 기록은 지우지 않고 화면에서만 뺌
