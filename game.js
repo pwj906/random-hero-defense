@@ -820,7 +820,7 @@ let HP_G=1.13;function hpEase(w){return w<=30?4-3*Math.pow((w-1)/29,.7):Math.max
 function bossMul(w){return 25*Math.pow(.978,Math.max(0,w-20))}
 function isBoss(w){return w%10===0}
 function reset(){
-  G={upPlanet:{},runKills:{},tile:Array(NC).fill(0),tileN:0,cells:Array(NC).fill(null),mobs:[],fx:[],pend:[],sched:[],coins:NO_HOME?Math.round(100*HOME_COST):100,stones:0,wave:0,waveT:0,spawnLeft:0,spawnT:0,summons:0,up:[0,0,0],luck:0,sel:null,over:false,kills:0,time:0,shake:0,flash:0,buff:0,hp:HP_MAX,ovT:0,zi:-1,zm:'loop',prep:0};
+  G={upPlanet:{},runKills:{},tile:Array(NC).fill(0),tileN:0,cells:Array(NC).fill(null),mobs:[],fx:[],pend:[],sched:[],coins:NO_HOME?Math.round(100*HOME_COST):100,stones:0,wave:0,waveT:0,spawnLeft:0,spawnT:0,summons:0,up:[0,0,0],luck:0,sel:null,over:false,kills:0,time:0,shake:0,flash:0,buff:0,hp:HP_MAX,ovT:0,zi:-1,zm:'loop',prep:0,orb:{},autoS:autoInit()};
   setTerrain(0);nextWave();refresh();
 }
 function total(){return G.cells.reduce((a,c)=>a+(c?c.n:0),0)}
@@ -832,6 +832,7 @@ const LUCK_MAX=30;
 function odds(){const n=Math.min(G.luck,10)+.5*Math.max(0,G.luck-10),w=[1,.09+.06*n,.018+.02*n,.003+.004*n],t=w[0]+w[1]+w[2]+w[3];if(NO_HOME){w[1]+=w[0];w[0]=0}return w.map(v=>v/t*100)}
 function rnd(a){return a[Math.floor(Math.random()*a.length)]}
 function place(id){
+  if(autoTo(id))return true;
   let at=-1;
   if(U[id].t<4)for(let i=0;i<NC;i++){const c=G.cells[i];if(c&&c.u===id&&c.n<3&&!c.lk){c.n++;c.pop=.25;at=i;if(c.n===3)hint3(id);break}}
   if(at<0){const e=[];G.cells.forEach((c,i)=>{if(!c&&!BLK.has(i))e.push(i)});if(!e.length)return false;const RO=ringOrd();e.sort((a,b)=>RO[a]-RO[b]);at=e[0];G.cells[at]={u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0}}
@@ -853,7 +854,7 @@ function pickU(t){const pool=BY[t],inc={},pl={},have={};for(const c of G.cells)i
   const need={};for(const m in RECIPE){const r=rcp(m),got=r.filter(k=>have[k]).length;if(got>=2&&got<r.length)for(const k of r)if(!have[k])need[k]=1}
   const w=pool.map(k=>(inc[k]?PULL_SAME:pl[U[k].planet]?PULL_PLANET:1)*(need[k]?PULL_RECIPE:1));let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let j=0;j<pool.length;j++){r-=w[j];if(r<0)return pool[j]}return pool[pool.length-1]}
 function summon(){
-  if(G.over)return;if(total()>=MAXU){toast('필드가 가득 찼어요!');return}
+  if(G.over)return;if(total()>=MAXU&&!autoAny()){toast('필드가 가득 찼어요!');return}
   const c=cost();if(G.coins<c)return;
   const o=odds();let r=Math.random()*100,t=0;while(t<3&&r>=o[t]){r-=o[t];t++}
   let leap=false,pity=false;G.pity=(G.pity||0)+1;if(t>=3)G.pity=0;else if(G.pity>=PITY_N&&BY[3].length){t=3;G.pity=0;pity=true}
@@ -864,7 +865,7 @@ function summon(){
 }
 const GAM=[{t:1,c:1,p:.6},{t:2,c:1,p:.2},{t:3,c:2,p:.1}];
 function gamble(i){
-  const g=GAM[i];if(G.over||G.stones<g.c||!BY[g.t].length)return;if(total()>=MAXU){toast('필드가 가득 찼어요!');return}
+  const g=GAM[i];if(G.over||G.stones<g.c||!BY[g.t].length)return;if(total()>=MAXU&&!autoAny()){toast('필드가 가득 찼어요!');return}
   if(Math.random()<g.p){const id=rnd(BY[g.t]);if(!place(id)){toast('놓을 칸이 없어요');return}G.stones-=g.c;toast('성공! '+U[id].n)}
   else{G.stones-=g.c;toast('꽝! 🍀💨')}
   refresh()
@@ -972,6 +973,7 @@ function merge(){
  if(G.over)return;const c=G.cells[G.sel];if(!c||c.n!==3||U[c.u].t>=3)return;if(c.lk){toast('🔒 잠긴 영웅이에요');return}if(!autoOK(c.u,3)&&!confirmUse('m'+c.u,'🎯 목표('+U[G.goal].n+') 재료예요 — 한 번 더 누르면 승급'))return;
  const pool=BY[U[c.u].t+1];if(!pool.length){toast('다음 단계 히어로가 아직 준비되지 않았어요');return}
  const i=G.sel;G.cells[i]=null;const id=pickU(U[c.u].t+1);
+ if(autoTo(id)){G.nMerge=(G.nMerge||0)+1;SND.play('merge',U[id].t);G.sel=null;toast('▲ '+TN[U[id].t]+' 등급 — '+U[id].n+' (🛰️ 자동 보관)');refresh();return}
  let at=-1;if(U[id].t<4)for(let j=0;j<NC;j++){const d=G.cells[j];if(d&&d.u===id&&d.n<3&&!d.lk){at=j;break}}
  if(at<0){at=i;G.cells[i]={u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0}}else{const d=G.cells[at];d.n++;d.pop=.25;if(d.n===3)hint3(id)}
  const[px,py]=cellXY(at),t=U[id].t,[qx,qy]=cellXY(i);for(let q=0;q<3;q++){const a=q*2.1+Math.random();G.fx.push({k:'tr',x1:qx+Math.cos(a)*CS*.9,y1:qy+Math.sin(a)*CS*.9,x2:px,y2:py,w:4,c:TC[t],t:.22,T:.22,dl:0})}G.nMerge=(G.nMerge||0)+1;SND.play('merge',t);burst(px,py,t,t>=2);fxs('common/merge',px,py,CS*1.9,{fps:14});G.fx.push({k:'t',x:px,y:py-26,t:1.1,T:1.1,s:'▲ '+TN[t]+'!',cr:true,dl:.05});G.sel=at;
@@ -1056,16 +1058,38 @@ function healTry(n,src){if(!G||G.over)return 0;G.healW=G.healW||0;const room=Mat
 // ---------- 목표 조합 재료 보호 + 궤도 대기소 ----------
 // 대기소(G.orb={영웅id:수량}) 영웅은 싸우지 않고 오라·시너지도 없음. 승급·조합 재료로는 전장과 합쳐 계산.
 // 재료 보호: 목표(G.goal) 1종의 직접 재료를 필요 수만큼 자동 소비(일괄 승급·진화·다른 조합)에서 지킴. 초과분은 자유.
-const ORB_CAP=30;
+const ORB_CAP=Infinity; // v303: 대기소 개체 수 제한 없음(종류별 ×수량 표시)
+// 종류별 자동 보관: G.autoS={id:1}. 지정하면 이 판에서 그 영웅을 새로 얻을 때(소환·승급·조합·진화·복권 등) 전장 대신 대기소로.
+// 보유 0이 되거나 1기를 출전시켜도 유지, 해제는 사용자만. SAVE.autoKeep이면 다음 판에도 SAVE.autoS를 이어 씀.
+function autoInit(){const o={};if(SAVE.autoKeep&&SAVE.autoS)for(const k in SAVE.autoS)if(U[k]&&!U[k].hidden)o[k]=1;return o}
+function autoAny(){return !!(G.autoS&&Object.keys(G.autoS).length)}
+function autoTo(id){if(!G.autoS||!G.autoS[id])return false;G.orb=G.orb||{};G.orb[id]=(G.orb[id]||0)+1;G.autoN=(G.autoN||0)+1;if(G.fx&&G.fx.length<320){const[x,y]=cellXY(NC-COLS);G.fx.push({k:'t',x,y:y+CS*.3,t:.9,T:.9,s:'🛰️ +1 '+U[id].n,cr:false,dl:0})}return true}
+function autoSet(id,on){G.autoS=G.autoS||{};if(on)G.autoS[id]=1;else delete G.autoS[id];if(SAVE.autoKeep){SAVE.autoS=Object.assign({},G.autoS);saveAll()}
+  if(on){let n=0;G.cells.forEach((c,i)=>{if(c&&c.u===id&&!c.pin&&!((c.k||1)>1)&&orbStore(i,true))n++});toast('🛰️ '+U[id].n+' 자동 보관 켬'+(n?' — 전장 '+n+'칸 보관':'')+' · 대기소에서 끌 수 있어요')}else toast('🛰️ '+U[id].n+' 자동 보관 끔')}
 function orbN(){let n=0;const O=G.orb||{};for(const k in O)n+=O[k];return n}
 function orbHas(id){return (G.orb&&G.orb[id])||0}
 function fieldUnits(id,noLk){return G.cells.reduce((n,c)=>n+(c&&c.u===id&&!(noLk&&c.lk)?c.n*(c.k||1):0),0)}
 function owned(id,noLk){return fieldUnits(id,noLk)+orbHas(id)}
 function goalMats(g){g=g||G.goal;if(!g)return [];return RECIPE[g]?rcp(g):FUSION[g]?FUSION[g].mat:[]}
-function goalNeed(){const o={};for(const k of goalMats())o[k]=(o[k]||0)+1;return o}
+// v303: 목표 전체 경로 — 목표 → 특수조합 → 우주 → 1~3단계 재료까지 재귀로 내려가며, 전장+대기소 보유분을 한 번만 배정(공유 재료는 합산).
+//  이미 가진 중간 영웅은 그대로 예약하고 그 아래 재료는 예약하지 않음. 조합식은 영웅마다 하나라 경로도 하나.
+//  need[id]=경로가 요구하는 수(보호 기준), wants[id]=아직 만들어야 하는 중간 영웅 수, miss=없는 맨 아래 재료, par=어느 중간 영웅에 쓰이는지.
+function matsOf(id){return RECIPE[id]?rcp(id):FUSION[id]?FUSION[id].mat:null}
+function goalPlan(g){g=g||G.goal;if(!g)return {need:{},wants:{},miss:{},par:{},have:{}};const pool={},need={},wants={},miss={},par={},have={};
+  const own=k=>k in pool?pool[k]:(pool[k]=owned(k));
+  const ex=(id,n,parent,d)=>{need[id]=(need[id]||0)+n;(par[id]=par[id]||[]).includes(parent)||par[id].push(parent);const h=own(id),tk=Math.min(h,n);pool[id]=h-tk;have[id]=(have[id]||0)+tk;const r=n-tk;if(r<=0)return;
+    const mats=matsOf(id);if(mats&&d<7){wants[id]=(wants[id]||0)+r;const c={};for(const k of mats)c[k]=(c[k]||0)+1;for(const k in c)ex(k,c[k]*r,id,d+1)}else miss[id]=(miss[id]||0)+r};
+  const c={};for(const k of goalMats(g))c[k]=(c[k]||0)+1;for(const k in c)ex(k,c[k],g,1);return {need,wants,miss,par,have}}
+function goalNeed(){return goalPlan().need}
+function onPath(id){return !!(G.goal&&(id===G.goal||goalPlan().wants[id]>0))}
+function pathWhy(id){if(id===G.goal)return '🎯 목표';const pr=(goalPlan().par[id]||[]).filter(x=>x!==G.goal);return '🎯 '+U[G.goal].n+' 제작에 필요한 중간 재료'+(pr.length?' ('+pr.map(x=>U[x]?U[x].n:x).join('·')+'용)':'')}
+function goalTreeHTML(){if(!G.goal)return '';const P=goalPlan(),nm=k=>U[k]?U[k].n:k,lines=[];
+  const walk=(id,n,d)=>{const mats=matsOf(id),own=owned(id);lines.push('<div style="padding-left:'+(d*1.1)+'em">'+(d?'└ ':'')+'<b style="color:'+(U[id]&&U[id].fu?'#ff5a6e':U[id]?TC[U[id].t]:'#fff')+'">'+nm(id)+'</b>'+(d?' <small>필요 '+n+' · 보유 '+own+'</small>'+(P.wants[id]>0&&d?' <small style="color:#ffd23e">→ '+P.wants[id]+' 더 만들기</small>':own>=n?' ✓':''):'')+'</div>');
+    if(mats&&(d===0||P.wants[id]>0)&&d<6){const c={};for(const k of mats)c[k]=(c[k]||0)+1;for(const k in c)walk(k,c[k],d+1)}};
+  walk(G.goal,1,0);const ms=Object.keys(P.miss);return '<div class="gP" style="text-align:left">🛡️ 전체 경로 보호 중 (전장+대기소)'+lines.join('')+(ms.length?'<div style="margin-top:.3em;color:#ffb0b0">부족: '+ms.map(k=>nm(k)+' ×'+P.miss[k]).join(' · ')+'</div>':'<div style="margin-top:.3em;color:#7fe8a0">재료가 다 있어요 — 중간 영웅부터 만들면 돼요</div>')+'</div>'}
 function protN(id){const nd=goalNeed()[id]||0;return Math.min(nd,owned(id))}
 function autoOK(id,n){const nd=goalNeed()[id]||0;return !nd||owned(id)-n>=nd}
-function matsOK(mats,except){if(!G.goal||G.goal===except)return true;const c={};for(const k of mats)c[k]=(c[k]||0)+1;return Object.keys(c).every(k=>autoOK(k,c[k]))}
+function matsOK(mats,except){if(!G.goal||G.goal===except||(except&&goalPlan().wants[except]>0))return true;const c={};for(const k of mats)c[k]=(c[k]||0)+1;return Object.keys(c).every(k=>autoOK(k,c[k]))}
 // 보호 재료를 손으로 쓰려 할 때: 한 번 안내, 3.5초 안에 다시 누르면 허용
 function confirmUse(key,msg){const t=performance.now();if(G.cfK===key&&t-G.cfT<3500){G.cfK=null;return true}G.cfK=key;G.cfT=t;toast(msg);return false}
 // 재료 소비 계획: 대기소 먼저 → 전장(잠금 제외, 적게 쌓인 칸부터). dry면 실제로 안 바꿈
@@ -1077,8 +1101,8 @@ function takePlan(mats,dry){const n0=orbN(),orb=Object.assign({},G.orb||{}),cell
   return {freed,fromField,orbFree:ORB_CAP-(n0-orbUsed)}}
 // 결과 위치: ① 재료로 비워진 전장 칸 → ② 전장 재료를 썼으면 같은 영웅 칸(3명 미만)·다른 빈 전장 칸 → ③ 궤도 대기소 → 다 안 되면 null(실행 전 차단)
 function resSpot(id,P){if(!P)return null;if(P.freed.length)return {c:P.freed[0]};if(P.fromField){if(U[id].t<4){const j=G.cells.findIndex(c=>c&&c.u===id&&c.n<3&&!c.lk);if(j>=0)return {s:j}}const e=G.cells.findIndex((c,j)=>!c&&!BLK.has(j));if(e>=0)return {c:e}}if(P.orbFree>=1)return {o:1};return null}
-function putRes(id,sp,extra){if(sp.c!=null){G.cells[sp.c]=Object.assign({u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0},extra||{});return sp.c}if(sp.s!=null){const d=G.cells[sp.s];d.n++;d.pop=.25;if(d.n===3)hint3(id);return sp.s}G.orb=G.orb||{};G.orb[id]=(G.orb[id]||0)+1;toast('🛰️ '+U[id].n+' → 궤도 대기소');return -1}
-function orbStore(i,silent){const c=G.cells[i];if(!c)return false;if((c.k||1)>1){if(!silent)toast('🔮 농축한 영웅은 보관할 수 없어요');return false}if(orbN()+c.n>ORB_CAP){if(!silent)toast('🛰️ 대기소가 가득 찼어요 ('+orbN()+'/'+ORB_CAP+')');return false}
+function putRes(id,sp,extra){if(G.autoS&&G.autoS[id]&&!(extra&&extra.k>1))sp={o:1};if(sp.c!=null){G.cells[sp.c]=Object.assign({u:id,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0},extra||{});return sp.c}if(sp.s!=null){const d=G.cells[sp.s];d.n++;d.pop=.25;if(d.n===3)hint3(id);return sp.s}G.orb=G.orb||{};G.orb[id]=(G.orb[id]||0)+1;toast('🛰️ '+U[id].n+' → 궤도 대기소'+(G.autoS&&G.autoS[id]?' (자동 보관)':''));return -1}
+function orbStore(i,silent){const c=G.cells[i];if(!c)return false;if((c.k||1)>1){if(!silent)toast('🔮 농축한 영웅은 보관할 수 없어요');return false}
   G.orb=G.orb||{};G.orb[c.u]=(G.orb[c.u]||0)+c.n;G.cells[i]=null;if(G.sel===i)G.sel=null;const[x,y]=cellXY(i);if(G.fx.length<320)G.fx.push({k:'ring',x,y,r:CS*.5,t:.35,T:.35,c:'#8fd8ff',dl:0});return true}
 function orbDeploy(id){if(!orbHas(id))return false;let j=U[id].t<4?G.cells.findIndex(c=>c&&c.u===id&&c.n<3&&!c.lk):-1;
   if(j>=0){G.cells[j].n++;G.cells[j].pop=.25}else{const RO=ringOrd(),e=[];G.cells.forEach((c,i)=>{if(!c&&!BLK.has(i))e.push(i)});if(!e.length){toast('전장에 빈 칸이 없어요');return false}e.sort((a,b)=>RO[a]-RO[b]);j=e[0];G.cells[j]={u:id,n:1,cd:.5,b:0,pop:.25,ax:0,ay:0,sc:SP[id]?SP[id].cd:0}}
@@ -1092,17 +1116,19 @@ function orbReady(){return Object.keys(G.orb||{}).filter(id=>orbMergeOK(id,true)
 function synSnap(cells){const pc={},cc=clsCount(cells);for(const c of cells)if(c&&!U[c.u].fu)(pc[U[c.u].planet]=pc[U[c.u].planet]||new Set()).add(c.u);const o={};for(const k in pc)o[k]=pc[k].size;return {p:o,c:cc}}
 function synDiffTxt(a,b){const out=[];for(const k of CLS_ORD){const x=a.c[k]||0,y=b.c[k]||0;if(x!==y){const lx=clsLvOf(k,x),ly=clsLvOf(k,y);out.push('<span style="color:'+(y>x?'#7fe8a0':'#ff8a8a')+'">'+CLS[k].e+CLS[k].n+' '+x+'→'+y+(lx!==ly?(ly>lx?' ▲':' ▼'):'')+'</span>')}}const nd=plNeed();for(const k in Object.assign({},a.p,b.p)){const x=a.p[k]||0,y=b.p[k]||0;if(x!==y){const lv=v=>v>=nd[1]?2:v>=nd[0]?1:0;out.push('<span style="color:'+(y>x?'#7fe8a0':'#ff8a8a')+'">'+(PLANETS[k]||k)+' '+x+'→'+y+(lv(x)!==lv(y)?(lv(y)>lv(x)?' ▲':' ▼'):'')+'</span>')}}return out.length?out.join(' · '):'시너지 변화 없음'}
 function bulkPlan(tmax){const idx=[];G.cells.forEach((c,i)=>{if(c&&U[c.u].t<=tmax&&!c.pin&&!((c.k||1)>1))idx.push(i)});let room=ORB_CAP-orbN(),take=[],units=0;for(const i of idx){const n=G.cells[i].n;if(n>room)continue;room-=n;units+=n;take.push(i)}const after=G.cells.map((c,i)=>take.includes(i)?null:c);return {take,units,skipped:idx.length-take.length,diff:synDiffTxt(synSnap(G.cells),synSnap(after))}}
-function orbUI(){const P=$('orbP');if(!P||P.style.display!=='block'||!G)return;const O=G.orb||{},ks=Object.keys(O).sort((a,b)=>U[b].t-U[a].t||O[b]-O[a]),gn=goalNeed();
-  let h='<div class="oh"><b>🛰️ 궤도 대기소 '+orbN()+'/'+ORB_CAP+'</b><button class="oX">✕</button></div><div class="ohelp">보관한 영웅은 싸우지 않고 오라·시너지도 주지 않아요 · 승급·조합 재료로는 그대로 쓰여요</div>';
-  if(G.goal&&U[G.goal])h+='<div class="og">🎯 목표 <b>'+U[G.goal].n+'</b> — 재료 보호 중: '+Object.keys(gn).map(k=>U[k].n+' '+protN(k)+'/'+gn[k]).join(' · ')+'</div>';
-  h+=ks.length?ks.map(id=>{const u=U[id],f=fieldUnits(id);return '<div class="oi">'+(u.url?'<img src="'+cardUrl(id)+'" alt="">':'<span>'+u.e+'</span>')+'<span class="on"><b style="color:'+(u.fu?'#ff5a6e':TC[u.t])+'">'+u.n+'</b><small>보관 ×'+O[id]+' · 전장 '+f+(gn[id]?' · 🎯보호 '+protN(id):'')+'</small></span><button data-od="'+id+'">출전 1</button>'+(orbMergeOK(id,false)?'<button data-om="'+id+'" class="up">▲ 승급</button>':'')+'</div>'}).join(''):'<div class="ohelp" style="text-align:center;padding:8px">비어 있어요 · 영웅을 누른 뒤 🛰️ 보관</div>';
-  h+='<div class="ob"><b>일괄 보관</b> <small>📌 출전 고정한 영웅은 빠져요</small><div>'+[1,2,3].map(t=>'<button data-ob="'+t+'">'+TN[t]+' 이하</button>').join('')+'</div><div id="obPrev">'+(G.obPv?obPrevH(G.obPv):'')+'</div></div>';
+function orbUI(){const P=$('orbP');if(!P||P.style.display!=='block'||!G)return;const O=G.orb||{},AS=G.autoS||{},ks=[...new Set([...Object.keys(O),...Object.keys(AS)])].filter(k=>U[k]).sort((a,b)=>U[b].t-U[a].t||(O[b]||0)-(O[a]||0)),gn=goalNeed();
+  let h='<div class="oh"><b>🛰️ 궤도 대기소 · 총 '+orbN()+'명</b><button class="oX">✕</button></div><div class="ohelp">보관한 영웅은 싸우지 않고 오라·시너지도 주지 않아요 · 승급·조합 재료로는 그대로 쓰여요</div>';
+  if(G.goal&&U[G.goal])h+='<div class="og">🎯 목표 <b>'+U[G.goal].n+'</b> — 전체 경로 재료 보호 중: '+Object.keys(gn).filter(k=>U[k]&&!(goalPlan().wants[k]>0)).map(k=>U[k].n+' '+protN(k)+'/'+gn[k]).join(' · ')+'</div>';
+  h+=ks.length?ks.map(id=>{const u=U[id],f=fieldUnits(id);return '<div class="oi">'+(u.url?'<img src="'+cardUrl(id)+'" alt="">':'<span>'+u.e+'</span>')+'<span class="on"><b style="color:'+(u.fu?'#ff5a6e':TC[u.t])+'">'+u.n+'</b><small>보관 <b style="display:inline;color:#fff;font-size:1.15em">×'+(O[id]||0)+'</b> · 전장 '+f+(gn[id]?' · 🎯보호 '+protN(id):'')+'</small></span><button data-oa="'+id+'" class="'+(AS[id]?'aon':'aoff')+'" title="새로 얻으면 자동으로 대기소로">'+(AS[id]?'자동 보관 ON':'자동 보관 OFF')+'</button>'+(O[id]?'<button data-od="'+id+'">출전 1</button>':'')+(orbMergeOK(id,false)?'<button data-om="'+id+'" class="up">▲ 승급</button>':'')+'</div>'}).join(''):'<div class="ohelp" style="text-align:center;padding:8px">비어 있어요 · 영웅을 누른 뒤 🛰️ 보관</div>';
+  h+='<div class="ob"><label style="display:flex;gap:.4em;align-items:center"><input type="checkbox" id="oKeep"'+(SAVE.autoKeep?' checked':'')+'> 자동 보관 설정을 다음 판에도 유지</label><small style="opacity:.7">자동 보관 ON 종류는 새로 얻으면 바로 대기소로 가요 · 출전 1로 꺼내도 설정은 그대로</small></div><div class="ob"><b>일괄 보관</b> <small>📌 출전 고정한 영웅은 빠져요</small><div>'+[1,2,3].map(t=>'<button data-ob="'+t+'">'+TN[t]+' 이하</button>').join('')+'</div><div id="obPrev">'+(G.obPv?obPrevH(G.obPv):'')+'</div></div>';
   P.innerHTML=h}
 function obPrevH(tm){const B=bulkPlan(tm);return B.take.length?'<div class="opv">'+TN[tm]+' 이하 <b>'+B.take.length+'칸 '+B.units+'명</b> 보관'+(B.skipped?' (자리 부족으로 '+B.skipped+'칸 제외)':'')+'<br>'+B.diff+'<br><button data-obgo="'+tm+'" class="up">보관하기</button><button data-obno="1">취소</button></div>':'<div class="opv">옮길 영웅이 없어요</div>'}
-function orbBtn(){const b=$('orbB');if(b&&G){const t='🛰️ '+orbN()+'/'+ORB_CAP;if(b.textContent!==t)b.textContent=t}}
+function orbBtn(){const b=$('orbB');if(b&&G){const t='🛰️ ×'+orbN()+(autoAny()?' 🔁':'');if(b.textContent!==t)b.textContent=t}}
 function orbInit(){if($('orbB'))return;const st=$('stage');const b=document.createElement('button');b.id='orbB';st.appendChild(b);const P=document.createElement('div');P.id='orbP';st.appendChild(P);
   b.onclick=()=>{P.style.display=P.style.display==='block'?'none':'block';orbUI()};
+  P.onchange=e=>{if(e.target.id==='oKeep'){SAVE.autoKeep=e.target.checked?1:0;SAVE.autoS=SAVE.autoKeep?Object.assign({},G.autoS||{}):{};saveAll();toast(SAVE.autoKeep?'다음 판에도 자동 보관 유지':'자동 보관은 이번 판만')}};
   P.onclick=e=>{const t=e.target.closest('button');if(!t)return;if(t.classList.contains('oX')){P.style.display='none';return}
+    if(t.dataset.oa){const id=t.dataset.oa;autoSet(id,!(G.autoS&&G.autoS[id]));synTick();refresh();orbUI();return}
     if(t.dataset.od){orbDeploy(t.dataset.od);synTick();refresh();orbUI();return}
     if(t.dataset.om){orbMerge(t.dataset.om,false);synTick();refresh();orbUI();return}
     if(t.dataset.ob){G.obPv=+t.dataset.ob;orbUI();return}
@@ -1216,7 +1242,7 @@ function commTick(){if(!G||!G.sty)return;const C=$('comm');if(!C)return;const no
   while(Q.length&&Q[0].exp<now)Q.shift();if(!Q.length)return;const gap=Q[0].p>=2||G.sty.chain?1200:STORY_GAP;if(now-(G.sty.lastAt||0)<gap)return;
   const L=Q.shift();G.sty.used[L.id]=1;const S=sty();S.recent.push(L.id);if(S.recent.length>30)S.recent.splice(0,S.recent.length-30);G.sty.lastAt=now;G.sty.chain=Q.length&&Q[0].p>=1;
   if(L.scene)S.seen[L.scene]=1;const sp=SCH[L.who],sw=SW[L.who];G.sty.cur=Object.assign(L,{until:now+(L.req?STORY_SHOW+2400:STORY_SHOW)});
-  C.innerHTML=(sp&&U[L.who]&&U[L.who].url?'<img src="'+cardUrl(L.who)+'" alt="">':'<i>'+(sw?sw.e:'💬')+'</i>')+'<span><b style="color:'+(sp?sp.c:'#bfe8ff')+'">'+(sp?sp.n:sw?sw.n:'')+'</b> '+L.t+(L.req?' <u>눌러서 확인</u>':'')+'</span>';C.classList.remove('on');void C.offsetWidth;C.classList.add('on');commPos()}
+  C.innerHTML=(sp&&U[L.who]&&U[L.who].url?'<img src="'+cardUrl(L.who)+'" alt="">':'<i>'+(sw?sw.e:'💬')+'</i>')+'<span><b style="color:'+(sp?sp.c:'#bfe8ff')+'">'+(sp?sp.n:sw?sw.n:'')+'</b> '+String(L.t).replace(/^\s*\[[^\]]*\]\s*/,'')+(L.req?' <u>눌러서 확인</u>':'')+'</span>';C.classList.remove('on');void C.offsetWidth;C.classList.add('on');commPos()}
 function commPos(){const C=$('comm'),st=$('stage'),app=$('app');if(!C||!st||!app)return;const r=st.getBoundingClientRect(),a=app.getBoundingClientRect(),top=r.top-a.top,bot=a.bottom-r.bottom;C.style.left=(r.left-a.left+r.width*.03)+'px';C.style.width=(r.width*.94)+'px';
   const ch=C.offsetHeight||32;if(top>=ch+4){C.style.top=(top-ch-2)+'px';C.dataset.m='out'}else if(bot>=ch+4){C.style.top=(r.bottom-a.top+2)+'px';C.dataset.m='out'}else{C.style.top=(top+2)+'px';C.dataset.m='in'}}
 // 사건 장면 재생(본 기록은 실제로 화면에 뜰 때 seen에 남음)
@@ -2073,40 +2099,41 @@ function openSheet(k){if(HOLD.k)holdStop();sheet=sheet===k?null:k;refresh();hold
 function refresh(){
   {const n=G&&!G.over?readyCells().length+orbReady().length:0,b=$('bAll');if(b){b.style.display=n&&G.sel===null&&!sheet?'block':'none';b.textContent='▲ 일괄 승급 ×'+n}}
   {const b=$('bCraft');if(b){const L=[];if(G&&!G.over){const nm=k=>U[k]?U[k].n:k;
-   for(const m of Object.keys(RECIPE))if(canCraft(m))L.push({t:'m',id:m,c:craftCost(),mat:rcp(m).map(nm).join(' + ')});
-   for(const f of Object.keys(FUSION))if(U[f]&&canFuse(f))L.push({t:'f',id:f,c:fuseCost(),mat:FUSION[f].mat.map(nm).join(' + ')});
-   {const seen={};for(let i=0;i<NC;i++){const c=G.cells[i];if(!c||U[c.u].t<4)continue;if(seen[c.u]!=null){const j=seen[c.u],ka=G.cells[j].k||1,kb=c.k||1;if(!L.some(o=>o.t==='k'&&o.id===c.u))L.push({t:'k',id:c.u,a:j,b:i,c:0,kk:ka+kb,mat:nm(c.u)+' ×'+ka+' + ×'+kb})}else seen[c.u]=i}}}
+   const GL=!!G.goal;
+   for(const m of Object.keys(RECIPE))if(canCraft(m)&&(!GL||onPath(m)))L.push({t:'m',id:m,c:craftCost(),mat:GL?pathWhy(m):rcp(m).map(nm).join(' + ')});
+   for(const f of Object.keys(FUSION))if(U[f]&&canFuse(f)&&(!GL||onPath(f)))L.push({t:'f',id:f,c:fuseCost(),mat:GL?pathWhy(f):FUSION[f].mat.map(nm).join(' + ')});
+   if(!GL){const seen={};for(let i=0;i<NC;i++){const c=G.cells[i];if(!c||U[c.u].t<4)continue;if(seen[c.u]!=null){const j=seen[c.u],ka=G.cells[j].k||1,kb=c.k||1;if(!L.some(o=>o.t==='k'&&o.id===c.u))L.push({t:'k',id:c.u,a:j,b:i,c:0,kk:ka+kb,mat:nm(c.u)+' ×'+ka+' + ×'+kb})}else seen[c.u]=i}}}
    const ids=L.map(o=>o.t+o.id),newOne=ids.some(x=>!(b.__seen||[]).includes(x));if(newOne&&b.__hid){b.__hid=0}b.__seen=ids;if(!L.length)b.__open=0;
    const show=L.length&&G.sel===null&&!sheet&&!b.__hid;b.style.display=show?'flex':'none';
    const opt=(o,j)=>'<button class="cOpt'+(o.t!=='m'?' fu':'')+'" data-j="'+j+'">'+(U[o.id].url?'<img src="'+cardUrl(o.id)+'" alt="">':'')+'<span class="cT"><b>'+(o.t==='m'?'✦ '+U[o.id].n+' 조합':o.t==='f'?'✨ '+U[o.id].n+' 특수 조합':'🔮 '+U[o.id].n+' 농축 ×'+o.kk)+(o.c?' <small>🪙'+o.c+'</small>':'')+'</b><em>'+o.mat+'</em></span></button>';
-   const key=L.map(o=>o.t+o.id+o.c+'_'+(o.kk||0)).join('|')+'#'+(b.__open?1:0);if(b.dataset.k!==key){b.dataset.k=key;b.__L=L;
+   const key=L.map(o=>o.t+o.id+o.c+'_'+(o.kk||0)+o.mat).join('|')+'#'+(b.__open?1:0);if(b.dataset.k!==key){b.dataset.k=key;b.__L=L;
     b.innerHTML=!L.length?'':(L.length===1?opt(L[0],0):b.__open?L.map(opt).join('')+'<button class="cMore" data-a="close">▾ 접기</button>':'<button class="cOpt cSum'+(L.some(o=>o.t!=='m')?' fu':'')+'" data-a="open">'+(U[L[0].id].url?'<img src="'+cardUrl(L[0].id)+'" alt="">':'')+'<span class="cT"><b>✦ 조합 '+L.length+' ▴</b></span></button>')+'<button class="cHide" data-a="hide" title="숨기기">✕</button>'}}}
   $('cost').textContent=cost()?'🪙'+cost():'무료';orbUI();
-  $('bMyth').classList.toggle('ready',Object.keys(RECIPE).some(m=>canCraft(m))||Object.keys(FUSION).some(k=>U[k]&&canFuse(k)));
+  $('bMyth').classList.toggle('ready',Object.keys(RECIPE).some(m=>canCraft(m)&&(!G.goal||onPath(m)))||Object.keys(FUSION).some(k=>U[k]&&canFuse(k)&&(!G.goal||onPath(k))));
   const s=$('sel'),c=G.sel!==null?G.cells[G.sel]:null;
   {const S=$('synS');if(S)S.style.visibility=c||sheet?'hidden':'visible'}$('bSnd').style.visibility=sheet?'hidden':'';$('bMenu').style.visibility=sheet?'hidden':'';if(!c)s.style.display='none';
   else{
     const u=U[c.u];s.style.display='flex';
     s.innerHTML='<button id="selX" style="position:absolute;top:-12px;right:-8px;z-index:3;width:30px;height:30px;border-radius:50%;border:2px solid #2a1d14;background:#5a4636;color:#fff;font-size:15px;line-height:1;padding:0">✕</button>'+ic(c.u,1)+'<div class="t"><b>'+u.n+(u.nick?' <span style="font-weight:400;font-size:11px;color:#d8c8b0">'+u.nick+'</span>':'')+'</b><small><span style="color:'+(u.fu?'#ff5a6e':TC[u.t])+'">'+(u.fu?'✨ 특수 조합':TN[u.t])+(c.n>1?' ×'+c.n:'')+(c.k>1?' · 🔮농축 ×'+c.k+' (공격력 '+concK(c).toFixed(1)+'배·속도 +'+Math.round((concSpd(c)-1)*100)+'%)':'')+'</span> · '+pic(u.planet)+PLANETS[u.planet]+(HCLS[c.u]?' · '+clsTag(c.u):'')+(ROLE[c.u]?' · '+roleTag(c.u):'')+'</small><small>'+(lvK(c.u)>1?'Lv.'+SAVE.lv[c.u]+' · ':'')+'⚔️'+fmt(u.d*c.n*mult(c.u)*tileMult(G.sel)*(c.pa||1)*augA(c))+' · 🎯'+(+((effR(G.sel)-16)/CS).toFixed(1))+'칸'+(effR(G.sel)>u.r+1?' <span style="color:#7fe8a0">(+'+(+((effR(G.sel)-u.r)/CS).toFixed(1))+')</span>':'')+(G.tile[G.sel]?' · <span style="color:'+TILEC[G.tile[G.sel]]+'">▦ 강화 칸 ×'+(1+G.tile[G.sel]).toFixed(1)+'</span>':'')+(cellOut(G.sel)?' <b style="color:#ff8a8a;font-weight:400">⚠ 길에 안 닿음</b>':'')+'</small>'+(()=>{const D=dmgParts(G.sel);return D&&D.L.length?'<small style="display:block;font-size:12px;color:#ffd9a0;white-space:normal">💥 공격력 ×'+D.t.toFixed(2)+' = '+D.L.map(q=>q[0]+' ×'+q[1].toFixed(2)).join(' · ')+' <span style="opacity:.7">(모두 곱해짐)</span></small>':''})()+(PV[c.u]?'<small style="display:block;font-size:12px;white-space:normal"><b style="font-weight:400;color:#c9d0f0">기본</b> '+tagH([rngTag(c.u)].concat(PVT[c.u]||[]))+'<br><span style="color:#9fe8ff">'+PV[c.u].x+'</span>'+(AURA[c.u]?'<br><span style="color:#6fe8c8">✨ 오라(초록 칸): '+AURA[c.u].x+'</span>':'')+(c.aur?'<br><span style="color:#6fe8c8">▲ 오라 받는 중: '+(c.aurL||[c.aurK]).map(k=>U[k]?U[k].n:k).join(', ')+'</span><br><span style="color:#a8f0d8;font-size:12px">'+[c.pa>1?'공격력 +'+Math.round((c.pa-1)*100)+'%':'',c.pas>1?'공격속도 +'+Math.round((c.pas-1)*100)+'%':'',c.pcd>1?'쿨타임 '+Math.round((c.pcd-1)*100)+'% 빨리':'',c.prg>0?'사거리 +'+(+(c.prg/CS).toFixed(1))+'칸':'',c.pcr>0?'치명타 +'+Math.round(c.pcr*100)+'%p':'',c.psl>0?'감속 부여':''].filter(Boolean).join(' · ')+' (행성 시너지 포함 · 같은 종류 오라는 겹치지 않고 가장 센 것 하나)</span>':'')+'</small>':'')+(u.sp2?'<small>★ '+u.sp2.n+' · 쿨 '+u.sp2.cd+'초 '+tagH(SPT[c.u])+'</small>'+(SPD[c.u]?'<small style="display:block;color:#ffe9a8;font-size:12px;white-space:normal">'+SPD[c.u]+'</small>':''):'')+'</div><div class="bt">'+
       (c.n===3&&u.t<3&&BY[u.t+1].length&&!c.lk?'<button id="bM" class="mergeBtn">▲ 승급<br><small>'+TN[u.t+1]+' 등급으로</small></button>':'')+(u.t<4?'<button id="bL" style="background:'+(c.lk?'#3d6fb0':'#55607a')+'">'+(c.lk?'🔓 잠금 해제':(u.t===3?'🔒 재료 잠금':'🔒 승급 잠금'))+(u.t===3&&!c.lk?'<br><small>우주 조합에 안 씀</small>':'')+'</button>':'')+
-      (u.t>=4&&G.cells.some((q,j)=>q&&j!==G.sel&&q.u===c.u)?'<button id="bK" style="background:linear-gradient(#ffcf4a,#e08a1a);color:#3a2408">🔮 농축<br><small>×'+((c.k||1)+(G.cells.find((q,j)=>q&&j!==G.sel&&q.u===c.u).k||1))+'</small></button>':'')+'<button id="bO" style="background:#2f5f8a">🛰️ 보관'+(c.n>1?'<br><small>'+c.n+'명</small>':'')+'</button><button id="bP" style="background:'+(c.pin?'#b07a1a':'#55607a')+'">'+(c.pin?'📌 고정 해제':'📌 출전 고정')+'</button><button id="bS" style="background:#7a5234">판매 '+(u.t===0?'🪙10':'🍀'+Math.round((u.t===4?SELL4:u.t)*(A('refund')?1.5:1)))+(c.k>1?'<br><small>한 겹</small>':'')+'</button></div>';
-    if($('selX'))$('selX').onclick=e=>{e.stopPropagation();G.sel=null;refresh()};if($('bM'))$('bM').onclick=merge;if($('bL'))$('bL').onclick=()=>{c.lk=!c.lk;toast(c.lk?(U[c.u].t===3?'🔒 잠금 — 우주 조합 재료로 쓰지 않아요':'🔒 승급 잠금 — 일괄 승급에서도 빠져요'):'🔓 잠금 해제');refresh()};if($('bS'))$('bS').onclick=sell;if($('bO'))$('bO').onclick=()=>{if(orbStore(G.sel)){synTick();refresh()}};if($('bP'))$('bP').onclick=()=>{c.pin=!c.pin;toast(c.pin?'📌 출전 고정 — 일괄 보관에서 빠져요':'📌 고정 해제');refresh()};if($('bK'))$('bK').onclick=()=>{const o=G.cells.findIndex((q,j)=>q&&j!==G.sel&&q.u===c.u);if(o>=0)concDo(G.sel,o)};if($('bU'))$('bU').onclick=()=>upgradeK(c.u)
+      (u.t>=4&&G.cells.some((q,j)=>q&&j!==G.sel&&q.u===c.u)?'<button id="bK" style="background:linear-gradient(#ffcf4a,#e08a1a);color:#3a2408">🔮 농축<br><small>×'+((c.k||1)+(G.cells.find((q,j)=>q&&j!==G.sel&&q.u===c.u).k||1))+'</small></button>':'')+'<button id="bO" style="background:#2f5f8a">🛰️ 보관'+(c.n>1?'<br><small>'+c.n+'명</small>':'')+'</button><button id="bOA" style="background:'+(G.autoS&&G.autoS[c.u]?'#1f8a5a':'#2a4766')+'">🛰️ 자동<br><small>'+(G.autoS&&G.autoS[c.u]?'켜짐 · 끄기':'이 종류 계속')+'</small></button><button id="bP" style="background:'+(c.pin?'#b07a1a':'#55607a')+'">'+(c.pin?'📌 고정 해제':'📌 출전 고정')+'</button><button id="bS" style="background:#7a5234">판매 '+(u.t===0?'🪙10':'🍀'+Math.round((u.t===4?SELL4:u.t)*(A('refund')?1.5:1)))+(c.k>1?'<br><small>한 겹</small>':'')+'</button></div>';
+    if($('selX'))$('selX').onclick=e=>{e.stopPropagation();G.sel=null;refresh()};if($('bM'))$('bM').onclick=merge;if($('bL'))$('bL').onclick=()=>{c.lk=!c.lk;toast(c.lk?(U[c.u].t===3?'🔒 잠금 — 우주 조합 재료로 쓰지 않아요':'🔒 승급 잠금 — 일괄 승급에서도 빠져요'):'🔓 잠금 해제');refresh()};if($('bS'))$('bS').onclick=sell;if($('bO'))$('bO').onclick=()=>{if(orbStore(G.sel)){synTick();refresh()}};if($('bOA'))$('bOA').onclick=()=>{const on=!(G.autoS&&G.autoS[c.u]);autoSet(c.u,on);if(on)G.sel=null;synTick();refresh()};if($('bP'))$('bP').onclick=()=>{c.pin=!c.pin;toast(c.pin?'📌 출전 고정 — 일괄 보관에서 빠져요':'📌 고정 해제');refresh()};if($('bK'))$('bK').onclick=()=>{const o=G.cells.findIndex((q,j)=>q&&j!==G.sel&&q.u===c.u);if(o>=0)concDo(G.sel,o)};if($('bU'))$('bU').onclick=()=>upgradeK(c.u)
   }
   const sh=$('sheet');if(!sheet){sh.style.display='none';return}
   sh.style.display='block';const body=$('sheetBody'),X='<button id="x">✕</button></h3>';
   if(sheet==='myth'){
     body.innerHTML='<h3><span>우주 히어로 조합</span>'+X+'<div class="mhelp">같은 행성 영웅을 <b>등급마다 1명씩</b> 필드에 모으면 <b>우주 히어로 1명</b>으로 합쳐져요. 재료는 1명씩만 빠지고, 3명 쌓인 칸도 1명만 써요. 조합할 때마다 코인이 들고, 할수록 비싸져요 (지금 <b>🪙'+craftCost()+'</b>).</div><div id="myth"></div>';
-    const ord=Object.keys(RECIPE).filter(m=>plIn().includes(U[m].planet)).map(m=>[m,rcp(m).filter(id=>hasUnit(id)).length,rcp(m).length]).sort((a,b)=>canCraft(b[0])-canCraft(a[0])||b[1]/b[2]-a[1]/a[2]);
+    const ord=Object.keys(RECIPE).filter(m=>plIn().includes(U[m].planet)).map(m=>[m,rcp(m).filter(id=>hasUnit(id)).length,rcp(m).length]).sort((a,b)=>onPath(b[0])-onPath(a[0])||canCraft(b[0])-canCraft(a[0])||b[1]/b[2]-a[1]/a[2]);
     for(const[m,have,need]of ord){const ok=canCraft(m),b=document.createElement('button'),pl=U[m].planet;
       b.className='mr'+(ok?' ok':'');
       b.innerHTML='<div class="mh">'+ic(m)+'<span class="mn"><b>'+U[m].n+'</b><small>'+pic(pl)+PLANETS[pl]+' 우주 히어로 · '+clsTag(m)+(ROLE[m]?' · '+roleTag(m):'')+'</small>'+(have===need?'<small class="sd">'+synDelta(m,rcp(m))+'</small>':'')+'</span><span class="mp'+(have===need?' full':'')+'">'+have+' / '+need+'</span></div><div class="mi">'+
         rcp(m).map(id=>{const h=hasUnit(id);return '<span class="ing'+(h?' h':'')+'">'+ic(id)+'<em>'+TN[U[id].t]+'</em>'+U[id].n+'<i>'+(h?(fieldUnits(id)?'✓ 있음':'✓ 🛰️대기소'):'필요')+'</i></span>'}).join('')+'</div>'+(ok?'<div class="go">✦ 조합하기 <small>🪙'+craftCost()+'</small></div>':canCraft(m,1)?'<div class="go no">🪙'+craftCost()+' 필요 · '+(craftCost()-Math.floor(G.coins))+' 부족</div>':'');
-      {const gb=document.createElement('span');gb.className='gB'+(G.goal===m?' on':'');gb.textContent=G.goal===m?'🎯 목표 해제':'🎯 목표로';gb.onclick=e=>{e.stopPropagation();G.goal=G.goal===m?null:m;toast(G.goal?'🎯 목표: '+U[m].n+' — 재료를 필요한 만큼 지켜요':'🎯 목표 해제');refresh()};b.querySelector('.mh').appendChild(gb);if(G.goal===m){const gn=goalNeed();b.insertAdjacentHTML('beforeend','<div class="gP">🛡️ 재료 보호 중 · '+Object.keys(gn).map(k=>U[k].n+' 확보 '+protN(k)+'/'+gn[k]).join(' · ')+'</div>')}}
+      {const gb=document.createElement('span');gb.className='gB'+(G.goal===m?' on':'');gb.textContent=G.goal===m?'🎯 목표 해제':'🎯 목표로';gb.onclick=e=>{e.stopPropagation();G.goal=G.goal===m?null:m;toast(G.goal?'🎯 목표: '+U[m].n+' — 재료를 필요한 만큼 지켜요':'🎯 목표 해제');refresh()};b.querySelector('.mh').appendChild(gb);if(G.goal===m)b.insertAdjacentHTML('beforeend',goalTreeHTML());else if(onPath(m))b.insertAdjacentHTML('beforeend','<div class="gP">'+pathWhy(m)+'</div>')}
       b.onclick=()=>{craft(m);refresh()};$('myth').appendChild(b)}
     {const h=document.createElement('div');h.className='fuhd';h.innerHTML='✨ <b>특수 조합</b> <small>서로 다른 행성의 우주 히어로를 합쳐 최상위 영웅으로 (지금 🪙'+fuseCost()+')</small>';$('myth').appendChild(h);
      for(const id of Object.keys(FUSION).filter(fuAvail)){const f=FUSION[id],ready=fuseReady(id),ok=canFuse(id),art=!!U[id],b=document.createElement('button');b.className='mr fu'+(ok?' ok':'');
-      b.innerHTML='<div class="mh">'+(art?ic(id):'✨')+'<span class="mn"><b>'+f.n+'</b><small>특수조합 · '+clsTag(id)+(ROLE[id]?' · '+roleTag(id):'')+'</small>'+(ready?'<small class="sd">'+synDelta(id,f.mat)+'</small>':'')+'</span><span class="mp'+(ready?' full':'')+'">'+f.mat.filter(k=>G.cells.some(c=>c&&c.u===k)).length+' / '+f.mat.length+'</span></div><div class="mi">'+f.mat.map(k=>{const h=G.cells.some(c=>c&&c.u===k),nm=U[k]?U[k].n:FUSION[k]?FUSION[k].n:k;return '<span class="ing'+(h?' h':'')+'">'+(U[k]?ic(k):'✨')+'<em>우주</em>'+nm+'<i>'+(h?'✓ 있음':'필요')+'</i></span>'}).join('')+'</div>'+(!art?'<div class="go no">그림 준비 중</div>':ok?'<div class="go">✦ 특수 조합하기 <small>🪙'+fuseCost()+'</small></div>':ready?'<div class="go no">🪙'+fuseCost()+' 필요 · '+(fuseCost()-Math.floor(G.coins))+' 부족</div>':'');
-      if(art){const gb=document.createElement('span');gb.className='gB'+(G.goal===id?' on':'');gb.textContent=G.goal===id?'🎯 목표 해제':'🎯 목표로';gb.onclick=e=>{e.stopPropagation();G.goal=G.goal===id?null:id;toast(G.goal?'🎯 목표: '+U[id].n+' — 재료를 필요한 만큼 지켜요':'🎯 목표 해제');refresh()};b.querySelector('.mh').appendChild(gb);if(G.goal===id){const gn=goalNeed();b.insertAdjacentHTML('beforeend','<div class="gP">🛡️ 재료 보호 중 · '+Object.keys(gn).map(k=>U[k].n+' 확보 '+protN(k)+'/'+gn[k]).join(' · ')+'</div>')}}
+      b.innerHTML='<div class="mh">'+(art?ic(id):'✨')+'<span class="mn"><b>'+f.n+'</b><small>특수조합 · '+clsTag(id)+(ROLE[id]?' · '+roleTag(id):'')+'</small>'+(ready?'<small class="sd">'+synDelta(id,f.mat)+'</small>':'')+'</span><span class="mp'+(ready?' full':'')+'">'+f.mat.filter(k=>owned(k)>0).length+' / '+f.mat.length+'</span></div><div class="mi">'+f.mat.map(k=>{const h=owned(k)>0,nm=U[k]?U[k].n:FUSION[k]?FUSION[k].n:k;return '<span class="ing'+(h?' h':'')+'">'+(U[k]?ic(k):'✨')+'<em>우주</em>'+nm+'<i>'+(h?'✓ 있음':'필요')+'</i></span>'}).join('')+'</div>'+(!art?'<div class="go no">그림 준비 중</div>':ok?'<div class="go">✦ 특수 조합하기 <small>🪙'+fuseCost()+'</small></div>':ready?'<div class="go no">🪙'+fuseCost()+' 필요 · '+(fuseCost()-Math.floor(G.coins))+' 부족</div>':'');
+      if(art){const gb=document.createElement('span');gb.className='gB'+(G.goal===id?' on':'');gb.textContent=G.goal===id?'🎯 목표 해제':'🎯 목표로';gb.onclick=e=>{e.stopPropagation();G.goal=G.goal===id?null:id;toast(G.goal?'🎯 목표: '+U[id].n+' — 재료를 필요한 만큼 지켜요':'🎯 목표 해제');refresh()};b.querySelector('.mh').appendChild(gb);if(G.goal===id)b.insertAdjacentHTML('beforeend',goalTreeHTML());else if(onPath(id))b.insertAdjacentHTML('beforeend','<div class="gP">'+pathWhy(id)+'</div>')}
       b.onclick=()=>{if(art)fuse(id)};$('myth').appendChild(b)}}
   }else if(sheet==='gam'){
     body.innerHTML='<h3><span>행운 도박 <small>행운석으로 뽑기</small></span>'+X+'<div class="row r3" id="gam">'+GAM.map((g,i)=>'<button id="g'+i+'">'+TN[g.t]+'<small style="white-space:nowrap">🍀'+g.c+' · '+g.p*100+'%</small></button>').join('')+'</div><div class="row" style="margin-top:6px;display:flex;gap:6px"><button id="gLot" style="background:linear-gradient(#ffdf5a,#f5b921);color:#3a2a1a;flex:2">🎫 복권 긁기 🍀'+lotCost()+' <small>당첨금 🪙'+lotPrize()+' 기준 최대 20배 · 행성 히어로 잭팟</small></button><button id="gLot10" style="background:linear-gradient(#ffb85a,#f58a21);color:#3a2a1a;flex:1">🎫×10<br>일괄 긁기<br><small>🍀'+lotCost()*10+'</small></button></div>';
@@ -2239,7 +2266,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:302};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:303};
   const b=RK.best&&(RK.best.at||0)>=RK_SEASON_MS?RK.best:null,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 // 랭킹 시즌: 규칙이 크게 바뀐 v299부터 새로 시작 — 그 전 기록은 지우지 않고 화면에서만 뺌
