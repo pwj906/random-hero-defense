@@ -946,8 +946,8 @@ function zoneSwitch(zi,anim){const Z=ZONES[zi],was=G.zm;G.zi=zi;G.zm=Z.mode;G.ze
   G.prep=ZONE_PREP;G.spawnT=Math.max(G.spawnT,ZONE_PREP);G.waveT+=ZONE_PREP;
   if(ZONE_HEAL)hpGain(ZONE_HEAL,null);
   const zb=$('zBan');if(zb){zb.innerHTML='🗺️ <b>'+Z.n+'</b> — '+Z.d+'<br>준비 '+ZONE_PREP+'초 · 영웅을 끌어 자리를 바꿔 두세요';zb.style.display='block'}
-  toast('🗺️ 구간 변경! '+Z.n);SND.play('alarm')}
-function hpLose(n,why){if(!G||G.over||!(n>0))return;if(SO('fort'))n*=.7;G.hp=Math.max(0,G.hp-n);G.hpLost=(G.hpLost||0)+n;G.hpWhy=why;const b=$('hpbar');if(b){b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')}G.flash=Math.max(G.flash||0,.12);if(G.hp<=30&&!G.hpLowT){G.hpLowT=1;toast('❤️ 체력이 얼마 안 남았어요!');SND.play('alarm')}}
+  toast('🗺️ 구간 변경! '+Z.n);SND.play('alarm');try{storyZone()}catch(e){}}
+function hpLose(n,why){if(!G||G.over||!(n>0))return;if(SO('fort'))n*=.7;G.hp=Math.max(0,G.hp-n);G.hpLost=(G.hpLost||0)+n;G.hpWhy=why;const b=$('hpbar');if(b){b.classList.remove('hit');void b.offsetWidth;b.classList.add('hit')}G.flash=Math.max(G.flash||0,.12);if(G.hp<=30&&!G.hpLowT){G.hpLowT=1;toast('❤️ 체력이 얼마 안 남았어요!');SND.play('alarm');storyEv('hp')}}
 function hpGain(n,src){if(!G||!(n>0))return 0;const r=Math.min(n,hpMax()-G.hp);G.hp+=r;if(G.hp>30)G.hpLowT=0;if(src&&src.u){const o=stO(src.u);o.heal+=r;o.hov=(o.hov||0)+(n-r)}return r}
 function arrive(m){if(m.arr)return;m.arr=1;const dm=m.old?0:m.boss?ARR_DMG.boss:m.el?ARR_DMG.el:ARR_DMG.n;m.hp=0;G.nArr=(G.nArr||0)+1;if(dm){hpLose(dm,'arrive');const[x,y]=pos(PER-1);if(G.fx.length<300)G.fx.push({k:'t',x,y:y-20,t:.9,T:.9,s:'❤️-'+dm,cr:true,dl:0})}if(m.boss)toast('😱 보스가 출구를 지났어요! ❤️-'+dm)}
 function mobCount(){let n=0;for(const m of G.mobs)n+=m.esc?BOSS_ESC:1;return n}
@@ -996,7 +996,7 @@ function nextWave(){
   G.wave++;{const zi=zoneIdx(G.wave);if(zi!==G.zi)zoneSwitch(zi,G.wave>1);else if(G.wave%100>=96){const Z=ZONES[zoneIdx(G.wave+(100-G.wave%100)+1)];toast('🗺️ '+(101-G.wave%100)+'웨이브 뒤 구간 변경 — '+Z.n+': '+Z.d)}}const b=isBoss(G.wave);
   G.waveT=b?60:20;G.free=1;G.healW=0;if(A('seed'))G.coins+=20+2*G.wave;if(A('supply'))G.coins+=5*G.wave;if(A('midas')&&G.wave>1)G.stones++;if(SO('gold')&&G.wave>1)G.stones++;if(A('dice')){const L=G.cells.filter(c=>c).sort(()=>Math.random()-.5).slice(0,5);G.diceS=L;for(const c of L){const j=G.cells.indexOf(c),[dx,dy]=cellXY(j);G.fx.push({k:'t',x:dx,y:dy-30,t:1.3,T:1.3,s:'🎲×2.5',cr:true,dl:.2})}}if(A('evolve')&&G.wave>1)evolveOne();if(A('interest')&&G.wave>1){const g=Math.min(500+50*G.wave,Math.floor(G.coins*.1));if(g>0){G.coins+=g;if(g>=50)toast('🏦 이자 +'+g)}}if(G.wave===5)G.sched.push({t:1.2,f:boonOpen});G.spawnLeft=b?1:30;G.spawnT=0;G.spawnFast=false;
   // 행운석은 보스 보상과 희귀 이상 판매에서만 획득.
-  SND.play(b?'bossIn':'wave');SND.bg(false,b?1:0);if(!b)toast('웨이브 '+G.wave)
+  SND.play(b?'bossIn':'wave');SND.bg(false,b?1:0);if(!b)toast('웨이브 '+G.wave);try{storyWave()}catch(e){repErr(e,'story')}
 }
 function spawn(){
   const w=G.wave,b=isBoss(w),hp=mobHP(w)*(b?bossMul(w):1);
@@ -1025,7 +1025,7 @@ const HCLS={mugyeom:'guard',bubon:'guard',noctia:'guard',mold:'guard',snow_yeti:
  jinmu:'guard',cheora:'guard',clockweaver:'guard',yeongeopsu:'heal',unhwa:'support',nox:'brawl',astraon:'snipe',wolroe:'brawl',noeha:'bomb',bideung:'bomb',jeokhwang:'bomb',hwangryong:'bomb',yeongwol:'brawl',heukjo:'bomb'};
 // 최상급(우주·특수 조합) 역할: 강점과 약점이 같이 붙음
 const ROLES={
- block:{e:'🧱',n:'경로 차단형',c:'#7fb6ff',x:'특수기로 맞힌 적을 2초간 그 자리에 묶어 둠(보스는 감속만) · 풀린 적은 6초간 다시 안 묶임',w:'자체 피해 -25%'},
+ block:{e:'🧱',n:'경로 차단형',c:'#7fb6ff',x:'특수기로 맞힌 적을 2초간 그 자리에 묶어 둠(보스는 감속만) · 풀린 적은 6초간 다시 안 묶임',w:'자체 피해 -40%'},
  aoe:{e:'💥',n:'범위 공격형',c:'#ff9f2e',x:'일반 적에게 피해 +15%',w:'보스에게 피해 -30%'},
  single:{e:'🗡️',n:'단일 극딜형',c:'#ff5a6e',x:'보스에게 피해 +50% · 체력 많은 적을 먼저 노림',w:'일반 적에게 피해 -25%'},
  buff:{e:'📯',n:'시너지 지원형',c:'#6fe8c8',x:'자기 오라·버프 효과 1.5배',w:'자체 피해 -40%'},
@@ -1034,7 +1034,7 @@ const ROLE={hyeonmu:'block',chronel:'block',jinmu:'block',cheora:'block',clockwe
  archeon:'single',selene:'single',baekho:'single',nox:'single',astraon:'single',
  zeus:'aoe',lunette:'aoe',jujak:'aoe',poseidon:'aoe',cheongryong:'aoe',noeha:'aoe',bideung:'aoe',jeokhwang:'aoe',wolroe:'aoe',hwangryong:'aoe',heukjo:'aoe',yeongwol:'aoe',
  belkaon:'buff',unhwa:'buff',sylvaion:'heal',yeongeopsu:'heal'};
-const ROLE_DMG={block:{a:.75},aoe:{n:1.15,b:.7},single:{n:.75,b:1.5},buff:{a:.6},heal:{a:.7}};
+const ROLE_DMG={block:{a:.6},aoe:{n:1.15,b:.7},single:{n:.75,b:1.5},buff:{a:.6},heal:{a:.7}};
 const BLK_T=2,BLK_IMM=6,BLK_BSL=2,CC_MAX=4,CC_IMM=3,HEAL_CAP=3,CD_MAX=3,AURA_MAXK=2.5;
 function clsOf(k){return HCLS[k]||null}
 function clsTag(k){const c=HCLS[k];return c?'<span style="color:'+CLS[c].c+'">'+CLS[c].e+CLS[c].n+'</span>':''}
@@ -1051,7 +1051,7 @@ function clsNeed(id){const nd=CLS[id].need;return G&&G.clTop===id?nd.map((q,j)=>
 function clsLvOf(id,n){const nd=clsNeed(id);let l=0;for(let j=0;j<nd.length;j++)if(n>=nd[j])l=j+1;return l}
 // 차단: 이미 묶여 있으면 연장·갱신 없음, 풀린 뒤 BLK_IMM초 면역(어느 영웅이든), 보스는 감속만, 연속 제어 상한(CC_MAX초 묶이면 CC_IMM초 모든 이동 불가 면역)
 function tryBlock(m,c){if(!m||m.hp<=0)return false;if(m.boss){m.sl=Math.max(m.sl,BLK_BSL);return false}if(m.blkT>0||m.blkImm>0||m.ccImm>0||m.sk==='immune')return false;m.blkT=BLK_T;m.blkSrc=c;const o=stO(c.u);o.cn++;if(G.fx.length<320){const[x,y]=pos(m.p);G.fx.push({k:'ring',x,y,r:CS*.32,t:.35,T:.35,c:'#7fb6ff',dl:0})}return true}
-function healTry(n,src){if(!G||G.over)return 0;G.healW=G.healW||0;const room=Math.max(0,HEAL_CAP+(A('spring')?2:0)-G.healW);if(room<=0||G.hp>=hpMax()){if(src&&src.u)stO(src.u).hov=(stO(src.u).hov||0)+n;return 0}const r=hpGain(Math.min(n,room),src);G.healW+=r;if(r>0){const L=clsLv('heal');if(L)G.healB=4;if(src){const ci=G.cells.indexOf(src);if(ci>=0&&G.fx.length<320){const[x,y]=cellXY(ci);G.fx.push({k:'t',x,y:y-CS*.6,t:1.2,T:1.2,s:'❤️+'+r,cr:true,dl:0})}}}return r}
+function healTry(n,src){if(!G||G.over)return 0;G.healW=G.healW||0;const room=Math.max(0,HEAL_CAP+(A('spring')?2:0)+(G.styHeal||0)-G.healW);if(room<=0||G.hp>=hpMax()){if(src&&src.u)stO(src.u).hov=(stO(src.u).hov||0)+n;return 0}const r=hpGain(Math.min(n,room),src);G.healW+=r;if(r>0){if(src&&src.u)storyEv('heal',{u:src.u,n:r});const L=clsLv('heal');if(L)G.healB=4;if(src){const ci=G.cells.indexOf(src);if(ci>=0&&G.fx.length<320){const[x,y]=cellXY(ci);G.fx.push({k:'t',x,y:y-CS*.6,t:1.2,T:1.2,s:'❤️+'+r,cr:true,dl:0})}}}return r}
 
 // ---------- 목표 조합 재료 보호 + 궤도 대기소 ----------
 // 대기소(G.orb={영웅id:수량}) 영웅은 싸우지 않고 오라·시너지도 없음. 승급·조합 재료로는 전장과 합쳐 계산.
@@ -1108,6 +1108,188 @@ function orbInit(){if($('orbB'))return;const st=$('stage');const b=document.crea
     if(t.dataset.ob){G.obPv=+t.dataset.ob;orbUI();return}
     if(t.dataset.obgo){G.obPv=null;const B=bulkPlan(+t.dataset.obgo);let n=0;for(const i of B.take)if(orbStore(i,true))n++;toast('🛰️ '+n+'칸 보관');synTick();refresh();orbUI();return}
     if(t.dataset.obno){G.obPv=null;orbUI();return}}}
+
+// ---------- 서사·캐릭터 (1차: 대표 3명 · 연속 사건 2갈래 · 일상/전투 반응 · 항해 기록) ----------
+// 저장: SAVE.story = {seen:{장면id:1}, done:{사건id:'win'|'fail'}, tries:{사건id:n}, claim:{사건id:1}, rel:{영웅:0~3}, met:{영웅:1}, recent:[대사id…], log:[{e,r,w,at}]}
+//  · seen(봤다)과 done(완료=성공)을 구분. 스킵·중도 종료는 done이 아님 → 재도전 가능, 다시 볼 때 도입은 짧게.
+//  · rel은 올라가기만(Math.max). claim은 영구 보상 1회 지급 기록(기기 합치기 때 합집합).
+// 이번 판 상태: G.sty = {used:{대사id:1}, req:현재 요청, log:[이번 판 사건], zoneSaid:{}}
+// 대사마다 고유 id·화자(who)가 있어 나중에 음성을 붙일 수 있음.
+const SCH={ // 대표 캐릭터 설정
+ hyeonmu:{n:'현무',c:'#3fe0b0',want:'다시는 백성을 잃지 않는 것',fear:'큰 소리와 갑작스러운 일에 몸이 굳어 등껍질에 숨는 버릇 — 그래서 결정을 늦게 내림',twist:'‘대지의 왕’이지만 무척 수줍고, 백성 아이들 이름을 전부 외움',rel:'제욱스는 시끄러워서 피하지만 위기엔 꼭 그 앞에 섬 · 실바이온과는 천 년 지기',voice:'느릿한 하오체 · 쿵 하고 발 구르기',fight:'경로 차단형 — 적을 묶어 동료에게 시간을 벌어 줌'},
+ zeus:{n:'제욱스',c:'#ffd23e',want:'인정받는 것, 혼자서 다 해결하는 영웅',fear:'도움을 청하지 못함 — 혼자 뛰어들었다 위기를 부름',twist:'구한 사람 이름을 몰래 수첩에 적어 둠',rel:'현무를 ‘거북 영감’이라 놀리지만 결국 등을 맡김 · 실바이온의 잔소리엔 꼼짝 못함',voice:'반말·감탄사 “번쩍!”',fight:'범위 공격형 — 한 번에 쓸어버리지만 보스엔 약함'},
+ sylvaion:{n:'실바이온',c:'#b6f04a',want:'모두가 살아서 돌아오는 것',fear:'또 누군가를 잃는 것(제륵이 숲 하나를 태웠음) — 그래서 일부러 거리를 둠',twist:'무뚝뚝하지만 동료마다 이름 붙인 씨앗을 몰래 심어 둠',rel:'현무와 오래된 친구 · 제욱스를 ‘불씨’라 부르며 잔소리',voice:'짧은 반말과 마침표 “…다치지 마.”',fight:'유저 체력 회복형 — 체력을 조금씩 되살림'}};
+const REL_N=['처음','아는 사이','신뢰','전우'];
+// 대사: id·화자·문장. who가 출전 중이 아니면 alt(대체 화자: 행성 통신·위원회)로
+const SL={
+ // 첫 만남(계정당 1회)
+ meet_hyeonmu:{who:'hyeonmu',t:'…위원회의 분이시오? 나는 현무. 크게 부르지만 마시오, 놀라면 숨어 버리니.'},
+ meet_zeus:{who:'zeus',t:'번쩍! 제욱스 등장! 걱정 마, 이 판은 나 혼자로도 충분하니까.'},
+ meet_sylvaion:{who:'sylvaion',t:'실바이온. …이름은 됐고, 살아서 돌아와.'},
+ // 원정 시작
+ st_base:{who:'council',t:'원정 시작. 제륵 함대가 협정 행성 경계에 다가오고 있어요.'},
+ st_cv_wait:{who:'council',t:'파우니아 쪽 항로가 불안해요. 수송대 신호가 끊겼다 이어졌다 해요.'},
+ st_cv_after:{who:'council',t:'지난번 구한 파우니아 수송대가 고맙다며 보급을 보내왔어요.'},
+ st_sv_wait:{who:'council',t:'플로라시아에서 씨앗 운반선을 보낸대요. 항로를 지켜야 해요.'},
+ st_done:{who:'council',t:'협정 행성들이 조용해요. 오늘은 제륵만 막으면 돼요.'},
+ // 사건: 파우니아 수송대 (cv1 → cv2 → cv3)
+ cv1_a:{who:'hyeonmu',alt:'purmia_comm',t:'수송대가 쫓기고 있소… 내, 내가 가야 하는데. 다리가 안 움직이오.',ta:'[파우니아 통신] 수송대가 제륵에게 쫓기고 있어요! 길을 열어 주세요!'},
+ cv1_b:{who:'council',t:'📡 긴급 지원: 3웨이브 안에 적 50마리 처치 — 수송대가 지나갈 길을 열어 주세요.'},
+ cv1_win:{who:'hyeonmu',alt:'purmia_comm',t:'…해냈소. 아이들이 무사하오. 다음엔, 내가 먼저 나서겠소.',ta:'[파우니아 통신] 수송대 무사 통과! 은혜는 잊지 않을게요.'},
+ cv1_fail:{who:'hyeonmu',alt:'purmia_comm',t:'늦었소… 아니, 아직이오. 수송대는 다시 길을 찾을 거요.',ta:'[파우니아 통신] 수송대가 후퇴했어요. 다음 원정 때 다시 부탁해요.'},
+ cv2_a:{who:'hyeonmu',alt:'purmia_comm',t:'지난번 수송대가 보급을 보냈소. 아이들이 그린 그림도 같이 왔다오.',ta:'[파우니아 통신] 지난번 구해 주신 수송대가 보급품을 보냈어요!'},
+ cv3_a:{who:'zeus',alt:'earth_comm',t:'우회로? 그딴 거 필요 없어. 보스는 내가 혼자 지진다!',ta:'[지구 통신] 수송대가 지구 항로로 우회해요. 보스를 빨리 잡아 길을 터 주세요.'},
+ cv3_b:{who:'hyeonmu',alt:'purmia_comm',t:'…제욱스, 혼자 가지 마시오. 내가 앞을 막겠소.',ta:'[파우니아 통신] 이번엔 우리 수송대가 끝까지 갈 수 있을까요…'},
+ cv3_c:{who:'council',t:'📡 후속 임무: 다음 보스를 나타난 뒤 40초 안에 처치 — 우회로를 열어 주세요.'},
+ cv3_win:{who:'zeus',alt:'earth_comm',t:'…고마워, 영감. 혼자였으면 못 했어. 이건 수첩에 적어 둘게.',ta:'[지구 통신] 우회로 확보! 수송대가 무사히 도착했어요.'},
+ cv3_win2:{who:'hyeonmu',t:'쿵. …처음으로, 숨지 않았소.'},
+ cv3_fail:{who:'zeus',alt:'earth_comm',t:'쳇… 너무 빨랐어. 다음엔 기다릴게. 진짜로.',ta:'[지구 통신] 보스가 너무 오래 버텼어요. 다음 원정에서 다시!'},
+ // 사건: 플로라시아 씨앗 (sv1 → sv2)
+ sv1_a:{who:'sylvaion',alt:'flora_comm',t:'씨앗 운반선이 지나가. …한 알도 잃고 싶지 않아.',ta:'[플로라시아 통신] 세계수의 씨앗을 실은 배가 지나가요!'},
+ sv1_b:{who:'council',t:'📡 긴급 지원: 다음 보스를 잡을 때까지 ❤️ 체력을 5 넘게 잃지 마세요.'},
+ sv1_win:{who:'sylvaion',alt:'flora_comm',t:'…무사해. 고마워. 이건, 진심이야.',ta:'[플로라시아 통신] 씨앗이 무사히 도착했어요. 숲이 기뻐해요.'},
+ sv1_fail:{who:'sylvaion',alt:'flora_comm',t:'괜찮아. 씨앗은 또 맺혀. …너만 무사하면 돼.',ta:'[플로라시아 통신] 운반선이 돌아갔어요. 다음에 다시 보낼게요.'},
+ sv2_a:{who:'sylvaion',alt:'flora_comm',t:'그때 씨앗, 싹 텄어. 네 이름 붙여 뒀어. …말하지 마, 아무한테도.',ta:'[플로라시아 통신] 그때 지킨 씨앗이 싹을 틔웠대요! 이번 원정엔 회복 상한 +1.'},
+ sv2_b:{who:'hyeonmu',t:'실바이온이 이름을 붙였다니… 천 년 동안 처음 보는 일이오.'},
+ // 구간 전환(준비 8초 동안)
+ zn_any:{who:'council',t:'구간 변경! 길이 바뀌어요. 준비 시간에 영웅 자리를 다시 잡으세요.'},
+ zn_hy_cv:{who:'hyeonmu',t:'길이 바뀌어도 걱정 마시오. 지난번처럼, 내가 앞을 막겠소.'},
+ zn_hy:{who:'hyeonmu',t:'땅이 흔들리오… 괜찮소, 괜찮소. 발을 구르면 멈추오.'},
+ zn_ze:{who:'zeus',t:'새 길이다! 번쩍, 기대되는데?'},
+ zn_ze_bond:{who:'zeus',t:'영감, 이번에도 앞은 맡길게. …그 대신 뒤는 내가 다 태울게.'},
+ zn_sy:{who:'sylvaion',t:'길이 바뀌었어. 다친 사람 있으면 말해.'},
+ zn_sy_seed:{who:'sylvaion',t:'씨앗이 자라는 동안엔, 아무도 안 쓰러지게 할 거야.'},
+ // 전투 반응(실제 사건이 일어났을 때만)
+ bk_hy:{who:'hyeonmu',t:'…쓰러졌소? 휴. 다리가 아직 떨리오.'},
+ bk_hy2:{who:'hyeonmu',r:2,t:'모두 무사하오. 이번엔 숨지 않았소.'},
+ bk_ze:{who:'zeus',t:'번쩍! 봤지? 보스도 별거 아니—'},
+ bk_ze2:{who:'zeus',r:2,t:'영감이 막아 준 덕이야. 수첩에 적어 둘게.'},
+ bk_sy:{who:'sylvaion',t:'끝났어. 다들 숨 쉬고 있지?'},
+ bl_hy:{who:'hyeonmu',t:'여기서 멈추시오! …쿵!'},
+ bl_hy2:{who:'hyeonmu',r:2,t:'지금이오, 제욱스! 내가 붙잡고 있겠소!'},
+ mk_ze:{who:'zeus',t:'한 방에 우르르! 이 정도는 기본이지.'},
+ mk_ze2:{who:'zeus',r:2,t:'영감이 모아 준 덕에 한 번에 지졌어!'},
+ hl_sy:{who:'sylvaion',t:'…버텨. 잎 한 장 나눠 줄게.'},
+ hl_sy2:{who:'sylvaion',r:2,t:'무리하지 마. 네가 쓰러지면 씨앗도 슬퍼해.'},
+ hp_sy:{who:'sylvaion',t:'체력이 바닥이야. 지금 물러설 순 없어… 내가 붙잡을게.'},
+ hp_hy:{who:'hyeonmu',t:'위험하오! 모두 내 뒤로 오시오!'},
+ hp_ze:{who:'zeus',t:'괜, 괜찮아! 아직 번개 남았어!'},
+ // 일상·관계(가끔)
+ dy_hy0:{who:'hyeonmu',r0:0,t:'…위원회 분, 오늘 날씨가 좋소. 그, 그냥 그렇다고.'},
+ dy_hy1:{who:'hyeonmu',r:1,t:'파우니아 아이들이 위원회 분 그림을 그렸다오. 조금 닮았소.'},
+ dy_hy2:{who:'hyeonmu',r:2,t:'제욱스가 시끄럽긴 해도… 뒤에 있으면 마음이 놓이오.'},
+ dy_hy3:{who:'hyeonmu',r:3,t:'천 년 동안 숨어만 살았소. 이제는 앞에 서는 게 무섭지 않소.'},
+ dy_ze0:{who:'zeus',r0:0,t:'지구엔 전기가 끊긴 동네가 많아. …아, 아무것도 아냐.'},
+ dy_ze2:{who:'zeus',r:2,t:'수첩이 벌써 반이나 찼어. 누구 이름이냐고? 비밀.'},
+ dy_ze3:{who:'zeus',r:3,t:'예전엔 혼자 다 하는 게 영웅인 줄 알았어. 지금은… 같이 버티는 게 더 멋져.'},
+ dy_sy0:{who:'sylvaion',r0:0,t:'…뭘 봐. 싸움에 집중해.'},
+ dy_sy1:{who:'sylvaion',r:1,t:'현무는 천 년째 저래. 겁쟁이인데, 한 번도 친구를 버린 적은 없어.'},
+ dy_sy2:{who:'sylvaion',r:2,t:'불씨(제욱스)가 또 앞으로 튀어 나가. …내가 뒤에서 받쳐야지.'},
+ dy_sy3:{who:'sylvaion',r:2,t:'오늘도 다 같이 돌아가자. 그게 내 유일한 부탁이야.'},
+ dy_hz:{who:'zeus',with:'hyeonmu',t:'영감, 거북이 등딱지는 번개도 막아? …시험은 안 해 볼게.'},
+ dy_zs:{who:'sylvaion',with:'zeus',t:'불씨, 혼자 나가지 마. 이건 잔소리 아니고 부탁이야.'}};
+const SW={council:{n:'위원회',e:'🛰️'},purmia_comm:{n:'파우니아 통신',e:'📡'},earth_comm:{n:'지구 통신',e:'📡'},flora_comm:{n:'플로라시아 통신',e:'📡'}};
+// 사건: 조건·참여 인물·선행·결과·후속·반복
+const SEV={
+ cv1:{chain:'convoy',n:'파우니아 수송대 구조',pl:['purmia'],who:['hyeonmu'],pre:[],w:[12,70],intro:['cv1_a','cv1_b'],short:'cv1_b',
+  goal:{t:'적 처치',n:50,waves:3,get:()=>G.kills},win:{line:'cv1_win',rel:{hyeonmu:1},unlock:['cv2'],coins:300,box:2},fail:{line:'cv1_fail'},rep:'until_win'},
+ cv2:{chain:'convoy',n:'수송대의 감사 보급',pl:['purmia'],who:['hyeonmu'],pre:['cv1'],auto:'start',intro:['cv2_a'],win:{rel:{hyeonmu:2},unlock:['cv3'],coins:400},rep:'once'},
+ cv3:{chain:'convoy',n:'지구 우회로 호위',pl:['purmia'],who:['zeus','hyeonmu'],pre:['cv2'],w:[25,95],bossWave:1,intro:['cv3_a','cv3_b','cv3_c'],short:'cv3_c',
+  goal:{t:'보스 40초 안에 처치',boss:40},win:{line:'cv3_win',line2:'cv3_win2',rel:{hyeonmu:3,zeus:2},box:3},fail:{line:'cv3_fail'},rep:'until_win'},
+ sv1:{chain:'seed',n:'세계수 씨앗 운반',pl:['florasia'],who:['sylvaion'],pre:[],w:[15,80],intro:['sv1_a','sv1_b'],short:'sv1_b',
+  goal:{t:'다음 보스까지 체력 5 넘게 잃지 않기',hp:5},win:{line:'sv1_win',rel:{sylvaion:1},unlock:['sv2'],coins:300,box:2},fail:{line:'sv1_fail'},rep:'until_win'},
+ sv2:{chain:'seed',n:'싹 튼 씨앗',pl:['florasia'],who:['sylvaion','hyeonmu'],pre:['sv1'],auto:'start',intro:['sv2_a','sv2_b'],win:{rel:{sylvaion:2},buff:'healcap'},rep:'once'}};
+const STORY_GAP=9000,STORY_SHOW=4600;  // 대사 사이 최소 간격·한 줄 표시 시간(실제 시간 ms, 배속과 무관)
+function sty(){SAVE.story=SAVE.story||{};const S=SAVE.story;for(const k of ['seen','done','tries','claim','rel','met'])S[k]=S[k]||{};S.recent=S.recent||[];S.log=S.log||[];return S}
+function onField(u){return !!(G&&G.cells.some(c=>c&&c.u===u))}
+function relOf(u){return sty().rel[u]||0}
+function relUp(u,l){const S=sty();if((S.rel[u]||0)<l){S.rel[u]=l;return true}return false}
+function evDone(e){return sty().done[e]==='win'}
+function preOK(E){return E.pre.every(evDone)}
+// 대사 하나를 화자 상황에 맞게: 화자가 없으면 대체 화자(행성 통신), 그것도 없으면 null(재생 안 함)
+function lineFor(id){const L=SL[id];if(!L)return null;if(L.who==='council'||SW[L.who])return {id,who:L.who,t:L.t};if(onField(L.who)&&(!L.with||onField(L.with)))return {id,who:L.who,t:L.t};if(L.alt&&L.ta)return {id:id+'#alt',who:L.alt,t:L.ta};return null}
+// 대기열: 중요도 높은 것 먼저, 오래된 반응(ttl 지남)은 버림, 같은 판 같은 일상 대사 반복 금지
+function say(id,o){o=o||{};if(!G||!G.sty)return false;const S=sty(),L=lineFor(id);if(!L)return false;const imp=o.p>=2;if(SAVE.storyOff&&!imp)return false;
+  if(!o.rep&&G.sty.used[L.id])return false;const now=performance.now();G.sty.q.push(Object.assign({},L,{p:o.p||0,exp:now+(o.ttl||6000),req:o.req,skipTo:o.skipTo}));G.sty.q.sort((a,b)=>b.p-a.p);if(G.sty.q.length>6)G.sty.q.length=6;return true}
+function commTick(){if(!G||!G.sty)return;const C=$('comm');if(!C)return;const now=performance.now(),Q=G.sty.q;
+  if(G.sty.cur&&now<G.sty.cur.until)return;if(G.sty.cur){G.sty.cur=null;C.classList.remove('on')}
+  while(Q.length&&Q[0].exp<now)Q.shift();if(!Q.length)return;const gap=Q[0].p>=2||G.sty.chain?1200:STORY_GAP;if(now-(G.sty.lastAt||0)<gap)return;
+  const L=Q.shift();G.sty.used[L.id]=1;const S=sty();S.recent.push(L.id);if(S.recent.length>30)S.recent.splice(0,S.recent.length-30);G.sty.lastAt=now;G.sty.chain=Q.length&&Q[0].p>=1;
+  if(L.scene)S.seen[L.scene]=1;const sp=SCH[L.who],sw=SW[L.who];G.sty.cur=Object.assign(L,{until:now+(L.req?STORY_SHOW+2400:STORY_SHOW)});
+  C.innerHTML=(sp&&U[L.who]&&U[L.who].url?'<img src="'+cardUrl(L.who)+'" alt="">':'<i>'+(sw?sw.e:'💬')+'</i>')+'<span><b style="color:'+(sp?sp.c:'#bfe8ff')+'">'+(sp?sp.n:sw?sw.n:'')+'</b> '+L.t+(L.req?' <u>눌러서 확인</u>':'')+'</span>';C.classList.remove('on');void C.offsetWidth;C.classList.add('on');commPos()}
+function commPos(){const C=$('comm'),st=$('stage'),app=$('app');if(!C||!st||!app)return;const r=st.getBoundingClientRect(),a=app.getBoundingClientRect(),top=r.top-a.top,bot=a.bottom-r.bottom;C.style.left=(r.left-a.left+r.width*.03)+'px';C.style.width=(r.width*.94)+'px';
+  const ch=C.offsetHeight||32;if(top>=ch+4){C.style.top=(top-ch-2)+'px';C.dataset.m='out'}else if(bot>=ch+4){C.style.top=(r.bottom-a.top+2)+'px';C.dataset.m='out'}else{C.style.top=(top+2)+'px';C.dataset.m='in'}}
+// 사건 장면 재생(본 기록은 실제로 화면에 뜰 때 seen에 남음)
+function scene(ev,ids,o){o=o||{};ids.forEach((id,j)=>{const L=lineFor(id);if(!L)return;say(id,{p:o.p||1,ttl:30000,rep:1,req:o.req&&j===ids.length-1});const q=G.sty.q.find(x=>x.id===L.id);if(q)q.scene=ev+':'+id})}
+// ----- 판 시작/웨이브/틱 -----
+function storyStart(){G.sty={used:{},q:[],cur:null,log:[],zoneSaid:{},lastAt:performance.now()-STORY_GAP+3000};const S=sty(),pl=plIn();
+  // 원정 시작 한 줄: 사건 진행 상황을 반영
+  const cvw=pl.includes('purmia')&&!evDone('cv1'),cva=evDone('cv1')&&!evDone('cv2')&&pl.includes('purmia'),svw=pl.includes('florasia')&&!evDone('sv1');
+  G.sched.push({t:2.5,f:()=>{say(cva?'st_cv_after':cvw?'st_cv_wait':svw?'st_sv_wait':Object.keys(SEV).every(evDone)?'st_done':'st_base',{p:1,ttl:20000})}});
+  // 자동 사건(감사 보급·싹 튼 씨앗): 시작하고 조금 뒤, 관련 행성이 있을 때만
+  for(const k of ['cv2','sv2']){const E=SEV[k];if(evDone(k)||!preOK(E)||!E.pl.every(p=>pl.includes(p)))continue;G.sched.push({t:9,f:()=>{if(G.over)return;scene(k,E.intro,{p:1});storyWin(k)}})}}
+function storyWave(){if(!G||!G.sty||G.over)return;const S=sty(),pl=plIn();
+  // 처음 출전한 대표 캐릭터: 첫 만남(계정당 1번)
+  for(const u in SCH)if(!S.met[u]&&onField(u)){S.met[u]=1;relUp(u,0);say('meet_'+u,{p:1,ttl:20000});break}
+  if(G.sty.req)return;
+  for(const k in SEV){const E=SEV[k];if(E.auto||evDone(k)||!preOK(E)||G.sty.log.some(x=>x.e===k))continue;if(!E.pl.every(p=>pl.includes(p)))continue;if(G.wave<E.w[0]||G.wave>E.w[1])continue;if(E.bossWave&&G.wave%10>7)continue;if(Math.random()>.45)continue;
+    const re=S.seen[k+':'+E.intro[0]];G.sty.req={e:k,st:'offer',exp:G.wave+2};G.sty.log.push({e:k,r:'offer'});scene(k,re?[E.short]:E.intro,{p:2,req:1});return}
+  const R=G.sty.req;if(R&&R.st==='offer'&&G.wave>R.exp){G.sty.req=null}}
+function reqAccept(){const R=G.sty&&G.sty.req;if(!R||R.st!=='offer')return;const E=SEV[R.e];R.st='on';R.w0=G.wave;R.k0=G.kills;R.h0=G.hpLost||0;R.bw=null;sty().tries[R.e]=(sty().tries[R.e]||0)+1;const lg=G.sty.log.find(x=>x.e===R.e);if(lg)lg.r='on';toast('📡 수락 — '+E.n);$('reqP').style.display='none'}
+function reqLater(){const R=G.sty&&G.sty.req;if(R&&R.st==='offer'){G.sty.req=null;const lg=G.sty.log.find(x=>x.e===R.e);if(lg)lg.r='later'}$('reqP').style.display='none'}
+function storyTick(){if(!G||!G.sty)return;const R=G.sty.req;if(!R||R.st!=='on'||G.over)return;const E=SEV[R.e],g=E.goal;
+  if(g.n){const v=G.kills-R.k0;R.v=v;if(v>=g.n)return storyWin(R.e);if(G.wave>=R.w0+g.waves)return storyFail(R.e)}
+  else if(g.boss){const b=G.mobs.find(m=>m.boss&&!m.esc&&m.hp>0);if(b&&R.bw==null){R.bw=G.wave;R.bt=G.time}if(R.bw!=null){R.v=Math.max(0,Math.ceil(g.boss-(G.time-R.bt)));if(!b&&!R.bd){R.bd=1;return G.time-R.bt<=g.boss?storyWin(R.e):storyFail(R.e)}if(G.time-R.bt>g.boss)return storyFail(R.e)}}
+  else if(g.hp){const lost=(G.hpLost||0)-R.h0;R.v=lost;if(lost>g.hp)return storyFail(R.e);if(isBoss(G.wave)&&G.wave>R.w0)R.bw=1;if(R.bw&&!G.mobs.some(m=>m.boss&&m.hp>0)&&!G.mobs.some(m=>m.esc))return storyWin(R.e)}}
+function storyWin(k){const E=SEV[k],S=sty(),W=E.win||{};const first=!S.claim[k];S.done[k]='win';if(G.sty.req&&G.sty.req.e===k)G.sty.req=null;
+  for(const u in W.rel||{})relUp(u,W.rel[u]);for(const n of W.unlock||[])S.seen['unlock:'+n]=1;if(W.coins)G.coins+=W.coins;if(W.buff==='healcap')G.styHeal=1;
+  if(first&&W.box){S.claim[k]=1;SAVE.boxes=(SAVE.boxes||0)+W.box;toast('📡 '+E.n+' 성공! 🪙+'+(W.coins||0)+' · 🎁 랜덤박스 +'+W.box+' (처음 1번)')}else if(W.coins)toast('📡 '+E.n+' 완료 · 🪙+'+W.coins);
+  if(W.line)say(W.line,{p:2,ttl:20000,rep:1});if(W.line2)say(W.line2,{p:1,ttl:25000,rep:1});
+  const lg=G.sty.log.find(x=>x.e===k);if(lg)lg.r='win';else G.sty.log.push({e:k,r:'win'});S.log.push({e:k,r:'win',w:G.wave,at:Date.now()});if(S.log.length>60)S.log.splice(0,S.log.length-60);saveAll()}
+function storyFail(k){const E=SEV[k],S=sty();if(S.done[k]!=='win')S.done[k]='fail';G.sty.req=null;if(E.fail&&E.fail.line)say(E.fail.line,{p:2,ttl:20000,rep:1});toast('📡 '+E.n+' 실패 — 다음 원정에서 다시 도전할 수 있어요');const lg=G.sty.log.find(x=>x.e===k);if(lg)lg.r='fail';S.log.push({e:k,r:'fail',w:G.wave,at:Date.now()});saveAll()}
+// 실제 전투 사건에 대한 반응(해당 영웅이 출전 중이고 실제로 그 일을 했을 때만, 오래 지나면 버림)
+function storyEv(type,o){if(!G||!G.sty||G.over)return;const pk=(base,u)=>{const r=relOf(u),hi=base+'2';return SL[hi]&&r>=2&&!G.sty.used[hi]?hi:base};
+  if(type==='boss'){const u=o&&o.u&&SCH[o.u]?o.u:Object.keys(SCH).find(onField);if(!u)return;say(pk({hyeonmu:'bk_hy',zeus:'bk_ze',sylvaion:'bk_sy'}[u],u),{ttl:3500})}
+  else if(type==='block'&&o.u==='hyeonmu'&&o.n>=4)say(pk('bl_hy','hyeonmu'),{ttl:3000});
+  else if(type==='multi'&&o.u==='zeus'&&o.n>=6)say(pk('mk_ze','zeus'),{ttl:3000});
+  else if(type==='heal'&&o.u==='sylvaion')say(pk('hl_sy','sylvaion'),{ttl:3500});
+  else if(type==='hp'){const u=['sylvaion','hyeonmu','zeus'].find(onField);if(u)say({sylvaion:'hp_sy',hyeonmu:'hp_hy',zeus:'hp_ze'}[u],{p:1,ttl:3000})}}
+// 일상 대화: 조용할 때 가끔(최근 본 것은 뒤로, 같은 판 반복 없음, 관계 단계 반영)
+function storyIdle(){if(!G||!G.sty||G.over||SAVE.storyOff)return;const now=performance.now();if(now-(G.sty.lastAt||0)<45000||G.sty.q.length||G.sty.cur)return;if(Math.random()>.35){G.sty.lastAt=now-30000;return}
+  const S=sty(),rec=S.recent;const C=Object.keys(SL).filter(id=>id.startsWith('dy_')&&!G.sty.used[id]).filter(id=>{const L=SL[id];if(!onField(L.who)||(L.with&&!onField(L.with)))return false;const r=relOf(L.who);if(L.r0!=null&&r!==L.r0)return false;if(L.r!=null&&r<L.r)return false;return true});
+  if(!C.length)return;C.sort((a,b)=>(rec.lastIndexOf(a)-rec.lastIndexOf(b))||Math.random()-.5);say(C[0],{ttl:8000})}
+// 구간 전환: 준비 시간에 짧게(누르면 바로 넘김), 이전 사건 결과 반영
+function storyZone(){if(!G||!G.sty)return;const ids=['zn_any'];if(onField('hyeonmu'))ids.push(evDone('cv1')?'zn_hy_cv':'zn_hy');if(onField('zeus'))ids.push(evDone('cv3')?'zn_ze_bond':'zn_ze');if(onField('sylvaion'))ids.push(evDone('sv2')?'zn_sy_seed':'zn_sy');ids.slice(0,3).forEach(id=>say(id,{p:1,ttl:12000,rep:1}))}
+// 종료 화면: 이번 원정 사건 + 실제 활약 한 줄 + 짧은 반응
+function storyEndHTML(){if(!G||!G.sty)return '';const S=G.st||{},rows=[];
+  for(const x of G.sty.log){if(x.r==='offer'||x.r==='later')continue;rows.push('📡 '+SEV[x.e].n+' — '+(x.r==='win'?'<b style="color:#7fe8a0">성공</b>':x.r==='fail'?'<b style="color:#ff8a8a">실패</b>':'진행 중 (다음에 재도전)'))}
+  const top=Object.keys(S).filter(k=>U[k]).sort((a,b)=>S[b].d-S[a].d)[0];if(top)rows.push('⚔️ <b>'+U[top].n+'</b> — 피해 '+fmt(S[top].d)+(G.bestMk&&G.bestMk.u===top&&G.bestMk.n>=5?' · 한 번에 적 '+G.bestMk.n+'마리 처치':''));
+  const cs=Object.keys(S).filter(k=>U[k]&&S[k].cn>0).sort((a,b)=>S[b].cn-S[a].cn)[0];if(cs)rows.push('🧱 <b>'+U[cs].n+'</b> — 적 '+S[cs].cn+'마리의 진격을 '+S[cs].ctrl.toFixed(0)+'초 저지');
+  const hs=Object.keys(S).filter(k=>U[k]&&S[k].heal>0).sort((a,b)=>S[b].heal-S[a].heal)[0];if(hs)rows.push('💗 <b>'+U[hs].n+'</b> — 위기에서 ❤️ '+S[hs].heal+' 회복');
+  const sp=Object.keys(S).filter(k=>U[k]&&S[k].sup>0).sort((a,b)=>S[b].sup-S[a].sup)[0];if(sp)rows.push('📯 <b>'+U[sp].n+'</b> — 오라로 피해 '+fmt(S[sp].sup)+' 보탬');
+  const react=[];if(cs==='hyeonmu'||onField('hyeonmu'))react.push(['hyeonmu',relOf('hyeonmu')>=2?'“다들 무사하오. 다음에도 내가 앞에 서겠소.”':'“…수고했소. 다리가 아직 떨리오.”']);if(top==='zeus'||onField('zeus'))react.push(['zeus',relOf('zeus')>=2?'“혼자가 아니라서 이긴 거야. 진짜로.”':'“번쩍! 다음엔 더 많이 지져 줄게!”']);if(hs==='sylvaion'||onField('sylvaion'))react.push(['sylvaion',relOf('sylvaion')>=2?'“다 같이 돌아왔네. …그거면 됐어.”':'“…다친 데 없어? 그럼 됐어.”']);
+  if(!rows.length&&!react.length)return '';
+  return '<div class="sEnd"><b>📖 이번 원정</b>'+rows.map(r=>'<div>'+r+'</div>').join('')+react.slice(0,2).map(([u,t])=>'<div class="sR">'+(U[u]&&U[u].url?'<img src="'+cardUrl(u)+'" alt="">':'')+'<span><b style="color:'+SCH[u].c+'">'+SCH[u].n+'</b> '+t+'</span></div>').join('')+'</div>'}
+// 항해 기록(메인 화면)
+function logbook(){let D=$('lgB');if(!D){D=document.createElement('div');D.id='lgB';document.body.appendChild(D);D.onclick=e=>{const b=e.target.closest('[data-rp]');if(b){const ids=b.dataset.rp.split(','),L=ids.map(id=>SL[id]).filter(Boolean);b.parentElement.querySelector('.rp').innerHTML=L.map(l=>'<div><b style="color:'+(SCH[l.who]?SCH[l.who].c:'#bfe8ff')+'">'+(SCH[l.who]?SCH[l.who].n:SW[l.who]?SW[l.who].n:'')+'</b> '+l.t+'</div>').join('');return}if(e.target===D||e.target.closest('.lgX'))D.style.display='none'}}
+  const S=sty();let h='<div class="lgp"><button class="lgX">✕</button><h2>📖 항해 기록</h2><label class="lgO"><input type="checkbox" id="lgOff" '+(SAVE.storyOff?'':'checked')+'> 전투 중 대화 표시 (요청은 꺼도 표시)</label>';
+  h+='<h3>사건</h3>'+Object.keys(SEV).map(k=>{const E=SEV[k],d=S.done[k],ok=preOK(E),seen=E.intro.some(id=>S.seen[k+':'+id]);return '<div class="lgE '+(d==='win'?'win':ok?'':'lock')+'"><b>'+(d==='win'?'✅ ':d==='fail'?'🔁 ':ok?'📡 ':'🔒 ')+E.n+'</b><small>'+(E.pl.map(p=>PLANETS[p]).join('·'))+' 행성을 골랐을 때 · '+(d==='win'?'완료':d==='fail'?'실패 — 재도전 가능':ok?'아직 만나지 못함':'앞선 사건 필요')+(S.tries[k]?' · 도전 '+S.tries[k]+'회':'')+'</small>'+(seen?'<button data-rp="'+E.intro.concat(d==='win'&&E.win.line?[E.win.line]:[]).concat(d==='win'&&E.win.line2?[E.win.line2]:[]).join(',')+'">▶ 장면 다시 보기</button><div class="rp"></div>':'')+'</div>'}).join('');
+  h+='<h3>동료</h3>'+Object.keys(SCH).map(u=>{const C=SCH[u],r=S.rel[u]||0,met=S.met[u];return '<div class="lgC">'+(U[u]&&U[u].url?'<img src="'+cardUrl(u)+'" alt="">':'')+'<div><b style="color:'+C.c+'">'+C.n+'</b> <small>'+(met?'관계: '+REL_N[r]+' '+'♥'.repeat(r):'아직 함께 싸운 적 없음')+'</small>'+(met?'<p>'+C.twist+'</p><p class="m">'+C.rel+'</p>':'')+'</div></div>'}).join('');
+  const lg=S.log.slice(-8).reverse();if(lg.length)h+='<h3>최근 기록</h3>'+lg.map(x=>'<div class="lgL">'+new Date(x.at).toLocaleDateString()+' · '+x.w+'웨이브 · '+SEV[x.e].n+' '+(x.r==='win'?'성공':'실패')+'</div>').join('');
+  h+='<small class="lgN">'+(typeof AC!=='undefined'&&AC.s?'로그인 계정에 저장돼 다른 기기에서도 이어져요':'이 기기에만 저장돼요 · 로그인하면 다른 기기와 이어져요')+'</small></div>';
+  D.innerHTML=h;D.style.display='flex';$('lgOff').onchange=e=>{SAVE.storyOff=!e.target.checked;saveAll()}}
+function storyMerge(a,b){const A=a||{},B=b||{},o={};for(const k of ['seen','claim','met'])o[k]=Object.assign({},B[k]||{},A[k]||{});o.done={};for(const k of new Set([...Object.keys(A.done||{}),...Object.keys(B.done||{})]))o.done[k]=(A.done||{})[k]==='win'||(B.done||{})[k]==='win'?'win':'fail';
+  o.tries={};for(const k of new Set([...Object.keys(A.tries||{}),...Object.keys(B.tries||{})]))o.tries[k]=Math.max((A.tries||{})[k]||0,(B.tries||{})[k]||0);o.rel={};for(const k of new Set([...Object.keys(A.rel||{}),...Object.keys(B.rel||{})]))o.rel[k]=Math.max((A.rel||{})[k]||0,(B.rel||{})[k]||0);
+  o.recent=(A.recent||[]).slice(-30);const seenL=new Set(),L=[];for(const x of [...(B.log||[]),...(A.log||[])].sort((p,q)=>p.at-q.at)){const key=x.e+x.at;if(seenL.has(key))continue;seenL.add(key);L.push(x)}o.log=L.slice(-60);return o}
+
+function storyInit(){if($('comm'))return;const a=$('app');const C=document.createElement('div');C.id='comm';a.appendChild(C);const P=document.createElement('div');P.id='reqP';$('stage').appendChild(P);
+  C.onclick=()=>{const cur=G&&G.sty&&G.sty.cur;if(cur&&cur.req&&G.sty.req){reqOpen();return}if(cur){cur.until=0;G.sty.lastAt=performance.now()-STORY_GAP+600}};
+  P.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.a==='ok')reqAccept();else reqLater()};
+  setInterval(()=>{try{if(G&&!G.over){commTick();storyIdle()}else{const c=$('comm');if(c)c.classList.remove('on')}}catch(e){}},250);window.addEventListener('resize',commPos)}
+function reqOpen(){const R=G.sty&&G.sty.req;if(!R)return;const E=SEV[R.e],P=$('reqP'),W=E.win||{},first=!sty().claim[R.e];
+  P.innerHTML='<b>📡 '+E.n+'</b><div>'+E.goal.t+(E.goal.n?' '+E.goal.n+'마리 · '+E.goal.waves+'웨이브 안':'')+'</div><div class="rw">성공 보상: 🪙'+(W.coins||0)+(W.box&&first?' · 🎁 랜덤박스 '+W.box+' (처음 1번)':'')+(W.rel?' · 관계 진전':'')+'</div><div class="rw">실패해도 불이익 없음 · 다음 원정에서 다시 도전</div>'+(R.st==='offer'?'<button data-a="ok">수락</button><button data-a="no">나중에</button>':'<button data-a="no">닫기</button>');P.style.display='block'}
+function storyMsn(){const R=G.sty&&G.sty.req;if(!R)return '';const E=SEV[R.e];if(R.st==='offer')return '<div class="sreq" onclick="reqOpen()">📡 <b>'+E.n+'</b> — 눌러서 보기 · ⏳'+(R.exp-G.wave+1)+'</div>';const g=E.goal;return '<div class="sreq" onclick="reqOpen()">📡 '+E.n+' '+(g.n?(R.v||0)+'/'+g.n+' · ⏳'+(R.w0+g.waves-G.wave):g.boss?(R.bw!=null?'⏱'+R.v+'초':'보스 대기'):'잃은 ❤️ '+(R.v||0)+'/'+g.hp)+'</div>'}
+
 // ---------- 판 기여도 통계: 실제 피해(넘친 피해 제외)·보스 피해·지원 지표 ----------
 // G.st[영웅id]={d 실제 피해, b 보스 피해, coin 추가 코인, heal 실제 회복, ctrl 제어 시간(초), cn 제어한 적 수, sup 오라로 늘려 준 피해}
 function stO(k){G.st=G.st||{};return G.st[k]||(G.st[k]={d:0,b:0,coin:0,heal:0,ctrl:0,cn:0,sup:0})}
@@ -1159,7 +1341,7 @@ function msnNew(){const pool=MISSIONS.filter(m=>!G.ms||m.id!==G.ms.d.id).filter(
 function msnTick(){if(!G.ms)msnNew();const m=G.ms,v=Math.min(m.need,m.d.get()-m.base),E=$('msn');if(!E)return;
   if(v>=m.need){const q2=A('quest')?2:1;if(m.rw.c)G.coins+=m.rw.c*q2;if(m.rw.s)G.stones+=m.rw.s*q2;G.nMsn=(G.nMsn||0)+1;SND.play('mission');toast('📜 미션 완료! '+(m.rw.c?'🪙+'+m.rw.c+' ':'')+(m.rw.s?'🍀+'+m.rw.s:''));E.classList.remove('done');void E.offsetWidth;E.classList.add('done');G.flash=Math.max(G.flash||0,.08);msnNew();return msnTick()}
   if(m.d.ok&&!m.d.ok()||m.until&&G.wave>m.until){msnNew();return msnTick()}
-  const k=m.d.id+v+'_'+G.wave;if(k!==G.msK){G.msK=k;E.innerHTML='📜 <b>'+m.d.t(m.need)+'</b><div class="bar"><i style="width:'+(v/m.need*100)+'%"></i></div>'+v+'/'+m.need+' · '+(m.rw.c?'🪙'+m.rw.c+' ':'')+(m.rw.s?'🍀'+m.rw.s:'')+(m.until?' · ⏳'+(m.until-G.wave+1)+'웨이브':'')}}
+  const k=m.d.id+v+'_'+G.wave+'_'+(G.sty&&G.sty.req?G.sty.req.st+(G.sty.req.v||0):'');if(k!==G.msK){G.msK=k;E.innerHTML='📜 <b>'+m.d.t(m.need)+'</b><div class="bar"><i style="width:'+(v/m.need*100)+'%"></i></div>'+v+'/'+m.need+' · '+(m.rw.c?'🪙'+m.rw.c+' ':'')+(m.rw.s?'🍀'+m.rw.s:'')+(m.until?' · ⏳'+(m.until-G.wave+1)+'웨이브':'')+storyMsn()}}
 function bounty(){if(G.over||G.pause||G.menu)return;if(G.btyN==null)G.btyN=1;if(G.btyN<=0)return;if(G.mobs.filter(m=>m.bty>0).length>=3){toast('현상금 몬스터는 동시에 3마리까지예요');return}G.btyN--;const w=G.wave,hp=Math.round(mobHP(w)*9);G.mobs.push({p:0,hp,max:hp,sl:0,st:0,boss:false,v:30,k:Math.min(4,Math.floor((w-1)/10)),el:1,bty:30});SND.play('bounty');toast('🎯 현상금 몬스터 등장! 30초 안에 처치');G.shake=Math.max(G.shake,.2)}
 function btyTick(dt){if(G.btyN==null){G.btyN=1;G.btyCd=0}if(G.btyN<BTY_MAX){if(!(G.btyCd>0))G.btyCd=A('hunter')?25:45;G.btyCd-=dt;if(G.btyCd<=0){G.btyN++;G.btyCd=G.btyN<BTY_MAX?(A('hunter')?25:45):0}}else G.btyCd=0;for(const m of G.mobs)if(m.bty>0){m.bty-=dt;if(m.bty<=0){m.bty=0;toast('현상금 실패… 그냥 강한 적이 됐어요')}}
   const B=$('bBty');if(!B)return;const act=G.mobs.filter(m=>m.bty>0).length,k=G.btyN+'/'+act+'/'+Math.ceil(G.btyCd||0);if(k!==G.btyK){G.btyK=k;B.disabled=G.btyN<=0;B.innerHTML='🎯 현상금 소환'+(G.btyN>0?' <b style="color:#ffe066">×'+G.btyN+'</b>':'')+'<small>'+(act?'추격 중 '+act+'마리 · ':'')+(G.btyN>=BTY_MAX?'가득 참 (최대 '+BTY_MAX+')':Math.ceil(G.btyCd||0)+'초 뒤 +1')+'</small>'}}
@@ -1628,7 +1810,7 @@ function special(c,i,u,s,x,y,best){
   
 }
 function update(dt){
-  if(G.pause||G.menu||G.lotP)return;G.uiT=(G.uiT||0)-dt;if(G.uiT<=0){G.uiT=.25;msnTick();rcpTick();augTick()}btyTick(dt);if(G.freeT>0)G.freeT-=dt;if(G.healB>0)G.healB-=dt;if(G.unhB>0)G.unhB-=dt;if(G.hjB>0)G.hjB-=dt;if(A('overdrive')){G.odT=(G.odT??15)-dt;if(G.odT<=0){G.odT=15;G.odL=6;toast('⚡ 과부하! 6초간 공격속도 +70%')}if(G.odL>0)G.odL-=dt;G.odOn=G.odL>0}else G.odOn=false;if(G.cdLock>0)G.cdLock-=dt;if(A('warp')){G.warpT=(G.warpT??18)-dt;if(G.warpT<=0){G.warpT=18;for(const o of G.mobs)if(o.hp>0){o.st=Math.max(o.st||0,o.boss?1:3)}const[wx,wy]=cellXY(Math.floor(NC/2));for(let q=0;q<2;q++)G.fx.push({k:'ring',x:wx,y:wy,r:CS*(3+q*2),t:.6,T:.6,c:'#b48cff',dl:q*.1});toast('🌀 시간 왜곡!')}}if(G.uskc)for(const k in G.uskc)if(G.uskc[k]>0)G.uskc[k]-=dt;if(SAVE.skAuto){G.skAT=(G.skAT||0)-dt;if(G.skAT<=0){G.skAT=.5;skAutoTick()}}
+  if(G.pause||G.menu||G.lotP)return;G.uiT=(G.uiT||0)-dt;if(G.uiT<=0){G.uiT=.25;msnTick();rcpTick();augTick();try{storyTick()}catch(e){repErr(e,'story')}}btyTick(dt);if(G.freeT>0)G.freeT-=dt;if(G.healB>0)G.healB-=dt;if(G.unhB>0)G.unhB-=dt;if(G.hjB>0)G.hjB-=dt;if(A('overdrive')){G.odT=(G.odT??15)-dt;if(G.odT<=0){G.odT=15;G.odL=6;toast('⚡ 과부하! 6초간 공격속도 +70%')}if(G.odL>0)G.odL-=dt;G.odOn=G.odL>0}else G.odOn=false;if(G.cdLock>0)G.cdLock-=dt;if(A('warp')){G.warpT=(G.warpT??18)-dt;if(G.warpT<=0){G.warpT=18;for(const o of G.mobs)if(o.hp>0){o.st=Math.max(o.st||0,o.boss?1:3)}const[wx,wy]=cellXY(Math.floor(NC/2));for(let q=0;q<2;q++)G.fx.push({k:'ring',x:wx,y:wy,r:CS*(3+q*2),t:.6,T:.6,c:'#b48cff',dl:q*.1});toast('🌀 시간 왜곡!')}}if(G.uskc)for(const k in G.uskc)if(G.uskc[k]>0)G.uskc[k]-=dt;if(SAVE.skAuto){G.skAT=(G.skAT||0)-dt;if(G.skAT<=0){G.skAT=.5;skAutoTick()}}
   if(G.prep>0){G.prep-=dt;if(G.prep<=0){const zb=$('zBan');if(zb)zb.style.display='none'}}
   G.time+=dt;G.waveT-=dt;if(G.shake>0)G.shake-=dt;if(G.flash>(G.fPrev||0)+1e-6){if(G.time-(G.fAt??-9)<2.5)G.flash=G.fPrev||0;else G.fAt=G.time}if(G.flash>0)G.flash-=dt*2.2;G.fPrev=Math.max(0,G.flash);
   if(G.spawnLeft>0){G.spawnT-=dt;if(G.spawnT<=0){spawn();G.spawnLeft--;G.spawnT=G.spawnFast?.18:.65}}
@@ -1657,7 +1839,7 @@ function update(dt){
     if(c.rg>0)c.rg-=dt;if(c.slb>0)c.slb-=dt;const u0=U[c.u];c.sy=u0.syn&&synOn(i,u0)?u0.syn:0;const eye=i===G.eyeI&&A('eye'),u=(c.rg>0||c.slb>0||eye||c.prg>0||c.psl>0||c.pcr>0)?Object.assign(Object.create(u0),{r:eye?u0.r+CS*3:u0.r+(c.rg>0?CS:0)+(c.prg||0)},c.pcr>0?{cr:(u0.cr||0)+c.pcr,cm:u0.cm||2.5}:{},(c.slb>0||c.psl>0)?{sl:Math.max(u0.sl||0,c.slb>0?.8:0,c.psl||0)}:{}):u0,s=u.sp2;if(c.sb>0)return;
     if(s&&c.sc<=0){const[x,y]=cellXY(i);let best=null,bp=-1;
       for(const m of G.mobs){if(m.hp<=0||m.p<28)continue;const[mx,my]=pos(m.p);if(Math.hypot(mx-x,my-y)<=(u.spR||u.r)&&(m.boss?1e9:m.p)>bp){bp=m.boss?1e9:m.p;best=m}}
-      if(best||s.buff){c.sc=s.cd;special(c,i,u,s,x,y,best);{const rl=ROLE[c.u];if(rl==='block'&&best){const[bx,by]=pos(best.p),R2=CS*1.6;for(const o of G.mobs){if(o.hp<=0||o.p<28)continue;const[ox,oy]=pos(o.p);if(Math.hypot(ox-bx,oy-by)<=R2)tryBlock(o,c)}}else if(rl==='heal'&&G.hp<hpMax())healTry(1,c)}if(G.aug&&G.aug.echo&&Math.random()<.5)G.sched.push({t:1,f:()=>echoSp(c)});c.cd=Math.max(c.cd,.5);return}}
+      if(best||s.buff){c.sc=s.cd;special(c,i,u,s,x,y,best);{const rl=ROLE[c.u];if(rl==='block'&&best){const[bx,by]=pos(best.p),R2=CS*1.6;let nb=0;for(const o of G.mobs){if(o.hp<=0||o.p<28)continue;const[ox,oy]=pos(o.p);if(Math.hypot(ox-bx,oy-by)<=R2&&tryBlock(o,c))nb++}storyEv('block',{u:c.u,n:nb})}else if(rl==='heal'&&G.hp<hpMax())healTry(1,c)}if(G.aug&&G.aug.echo&&Math.random()<.5)G.sched.push({t:1,f:()=>echoSp(c)});c.cd=Math.max(c.cd,.5);return}}
     c.cd-=dt;if(c.cd>0)return;
     const [x,y]=cellXY(i);let best=null,bp=-1;
     const hiT=ROLE[c.u]==='single';for(const m of G.mobs){if(m.hp<=0||m.p<28||m.hp<=(m.inc||0))continue;const[mx,my]=pos(m.p),key=m.boss?1e30:hiT?m.hp-(m.inc||0):m.p;if(Math.hypot(mx-x,my-y)<=u.r&&key>bp){bp=key;best=m}}
@@ -1677,11 +1859,11 @@ function update(dt){
   G.pend=G.pend.filter(h=>h.t>0);
   const SQ=[];G.mobs=G.mobs.filter(m=>{
     if(m.hp>0)return true;if(m.arr)return false;if(m.sk==='split'){for(const dp of [-5,5]){const hp=Math.round(m.max*.3);SQ.push({p:Math.max(0,m.p+dp),hp,max:hp,sl:0,st:0,boss:false,sk:'small',v:ENV[0]*1.25,k:0,sd:Math.random()*4})}}
-    G.kills++;SND.play('die');if(m.last){m.last.kills=(m.last.kills||0)+1;G.runKills[m.last.u]=(G.runKills[m.last.u]||0)+1;{const hl=HCLS[m.last.u]==='heal'?clsLv('heal'):0;if(hl&&G.hp<hpMax()&&Math.random()<[0,.02,.03][hl])healTry(1,m.last)}}const[x,y]=pos(m.p);
-    if(m.boss){if(A('spring'))healTry(2,null);const fast=!m.esc&&G.waveT>30;G.coins+=(100+10*G.wave)*(A('greed')?2:1)*(A('bossgold')?3:1);G.stones+=(fast?3:2)+(A('clover')?3:0)+(A('bossgold')?2:0);if(!m.esc)G.waveT=Math.min(G.waveT,3);toast(m.esc?'놓친 보스 처치! 🍀+2':fast?'빠른 처치! 🍀+3':'보스 처치! 🍀+2');parts(x,y,34,'#ffd23e',190,5);G.fx.push({k:'ring',x,y,r:90,t:.5,T:.5,c:'#fff'});G.shake=.5;G.flash=.35;SND.play('reveal');G.sched.push({t:.9,f:boonOpen})}
+    G.kills++;SND.play('die');if(m.last){G.fk=G.fk||{};G.fk[m.last.u]=(G.fk[m.last.u]||0)+1;m.last.kills=(m.last.kills||0)+1;G.runKills[m.last.u]=(G.runKills[m.last.u]||0)+1;{const hl=HCLS[m.last.u]==='heal'?clsLv('heal'):0;if(hl&&G.hp<hpMax()&&Math.random()<[0,.02,.03][hl])healTry(1,m.last)}}const[x,y]=pos(m.p);
+    if(m.boss){storyEv('boss',{u:m.last&&m.last.u});if(A('spring'))healTry(2,null);const fast=!m.esc&&G.waveT>30;G.coins+=(100+10*G.wave)*(A('greed')?2:1)*(A('bossgold')?3:1);G.stones+=(fast?3:2)+(A('clover')?3:0)+(A('bossgold')?2:0);if(!m.esc)G.waveT=Math.min(G.waveT,3);toast(m.esc?'놓친 보스 처치! 🍀+2':fast?'빠른 처치! 🍀+3':'보스 처치! 🍀+2');parts(x,y,34,'#ffd23e',190,5);G.fx.push({k:'ring',x,y,r:90,t:.5,T:.5,c:'#fff'});G.shake=.5;G.flash=.35;SND.play('reveal');G.sched.push({t:.9,f:boonOpen})}
     else{if(m.el){if(m.bty>0){const hk=A('hunter')?2:1,b=killCoin(G.wave)*6*hk;G.coins+=b;G.stones+=2*hk;G.nBounty=(G.nBounty||0)+1;SND.play('bountyKill');toast('🎯 현상금 획득! 🍀+'+2*hk+' 🪙+'+b);parts(x,y,26,'#ffd23e',200,3.6);G.fx.push({k:'ring',x,y,r:60,t:.45,T:.45,c:'#ffd23e'});G.shake=Math.max(G.shake,.35)}}G.coins+=Math.round(killCoin(G.wave)*(A('bounty')?1.3:1)*(A('midas')?1.6:1)*(SO('gold')?1.5:1));{const ku=m.last&&U[m.last.u];const cr0=U.belkaon&&U.belkaon.pk&&U.belkaon.pk.coin_reward,cpop=()=>{if(cr0&&G.fx.length<300)G.fx.push({k:'seq',imgs:cr0,fps:8,w:26,x,y:y-12,t:.25,T:.25,dl:0})};if(ku&&ku.coinP){const cg=Math.round(killCoin(G.wave)*ku.coinP);G.coins+=cg;stO(m.last.u).coin+=cg;cpop()}if(ku&&ku.coinJ&&Math.random()<ku.coinJ){const b=killCoin(G.wave)*5;G.coins+=b;stO(m.last.u).coin+=b;cpop();if(G.fx.length<300)G.fx.push({k:'t',x,y:y-18,t:1,T:1,s:'+'+b+'🪙',cr:true,dl:0});SND.play('coin',2)}}parts(x,y,5,'#ffffff',80,3,0);if(G.aug){if(G.aug.jackpot&&Math.random()<.05){const b=killCoin(G.wave)*12;G.coins+=b;SND.play('jackpot');G.fx.push({k:'t',x,y:y-18,t:1.1,T:1.1,s:'🎰 +'+b+'🪙',cr:true,dl:0})}if(G.aug.boom&&!m.byB)augBoom(m,x,y)}if(m.cb&&G.time<=m.cb){const r=Math.random(),k=r<.1?10:r<.7?3:0;if(k){const b=killCoin(G.wave)*k;G.coins+=b;SND.play(k>=10?'jackpot':'coin',3);G.fx.push({k:'t',x,y:y-18,t:1.1,T:1.1,s:(k>=10?'잭팟! ':'')+'+'+b+'🪙',cr:true,dl:0});parts(x,y,k>=10?26:12,'#ffd23e',k>=10?200:130,3.4);if(k>=10){G.fx.push({k:'ring',x,y,r:46,t:.45,T:.45,c:'#ffd23e'});G.shake=Math.max(G.shake,.25)}}}}
     return false
-  });if(SQ.length)G.mobs.push(...SQ);
+  });if(SQ.length)G.mobs.push(...SQ);if(G.fk){for(const u in G.fk){const n=G.fk[u];if(n>=5){if(!G.bestMk||n>G.bestMk.n)G.bestMk={u,n};storyEv('multi',{u,n})}}G.fk=null}
   for(const f of G.fx){if(f.dl>0){f.dl-=dt;continue}f.t-=dt;if(f.k==='shk')G.shake=Math.max(G.shake,f.v);if(f.k==='pf'){f.x+=f.vx*dt;f.y+=f.vy*dt;f.vx*=.9;f.vy*=.9}}
   G.fx=G.fx.filter(f=>f.t>0);G.tN=0;for(const f of G.fx)if(f.k==='t')G.tN++;
   if(G.zm!=='arrive'&&G.prep<=0){const n=mobCount();if(n>=OV_N){G.ovT+=dt;const oi=A('exitguard')?3:OV_INT;while(G.ovT>=oi){G.ovT-=oi;hpLose(1+Math.floor((n-OV_N)/OV_STEP),'over')}}else G.ovT=Math.max(0,G.ovT-dt)}
@@ -1699,7 +1881,7 @@ function contribHTML(){const S=G.st||{},ks=Object.keys(S).filter(k=>k[0]!=='_'&&
   return '<details class="ctb" open><summary>📊 영웅별 기여도 <small>(총 '+fmt(tot)+')</small></summary><div class="cL">'+ks.slice(0,12).map(row).join('')+(ks.length>12?'<div class="cMore">외 '+(ks.length-12)+'종</div>':'')+sk+'</div><div class="cH">같은 영웅 여러 기는 합산 · 승급·조합으로 사라진 영웅 기록도 유지 · 적 남은 체력을 넘긴 피해는 뺌 · ✨지원 = 오라로 늘려 준 피해(이미 총피해 안에 있어 따로 더하지 않음)</div></details>'}
 function end(win,why){
   if(G.over)return;SND.play('over');SND.bg(true);G.over=true;running=false;$('bMenu').style.display='none';const o=$('over');o.style.display='flex';
-  o.innerHTML='<h1>'+(win?'🎉 1000웨이브 클리어!':'💥 게임 오버')+'</h1><div>'+(win?'운도 실력입니다.':why)+'<br>도달 웨이브 '+G.wave+' / 처치 '+G.kills+'마리</div>'+(()=>{try{return contribHTML()}catch(e){repErr(e,'contrib');return ''}})()+'<button id="start">다시 하기</button>';
+  o.innerHTML='<h1>'+(win?'🎉 1000웨이브 클리어!':'💥 게임 오버')+'</h1><div>'+(win?'운도 실력입니다.':why)+'<br>도달 웨이브 '+G.wave+' / 처치 '+G.kills+'마리</div>'+(()=>{try{return storyEndHTML()}catch(e){repErr(e,'storyEnd');return ''}})()+(()=>{try{return contribHTML()}catch(e){repErr(e,'contrib');return ''}})()+'<button id="start">다시 하기</button>';
   const rec=(SAVE.games||0)>0&&G.wave>(SAVE.best||0),nb=boxReward(G.wave)+(rec?BOX_REC:0);try{SAVE.frag=SAVE.frag||{};SAVE.boxes=(SAVE.boxes||0)+nb;for(const k in G.runKills)SAVE.kills[k]=(SAVE.kills[k]||0)+G.runKills[k];{const pre=Object.keys(LOCKP).filter(p=>!plUnlocked(p)&&plAll().includes(p));SAVE.games++;SAVE.best=Math.max(SAVE.best,G.wave);G.newPl=pre.filter(plUnlocked);if(G.newPl.length)SAVE.plNew=1}saveAll()}catch(e){}
   o.innerHTML+='<div id="loot" style="font-size:14px;line-height:1.5;max-width:92%">🎁 랜덤박스 '+nb+'개 획득!'+(rec?' <span style="color:#ffe066">(🏆 최고 기록 갱신 +'+BOX_REC+')</span>':'')+(SAVE.boxes>nb?' (보유 '+SAVE.boxes+'개)':'')+'</div><button id="openBox" style="background:linear-gradient(#c58bff,#8a4fd6);color:#fff">박스 열기</button><button id="openBoxA" style="background:linear-gradient(#ffcf4a,#e08a1a);color:#3a2408">모두 열기</button>';
   if(G.newPl&&G.newPl.length)o.innerHTML+=G.newPl.map(p=>'<div class="unl">'+(PICON[p]?'<img src="'+PICON[p]+'" alt="">':'')+'🌙 새 행성 해금! <b>'+PLANETS[p]+'</b><br><small>메인 화면 「🪐 행성 고르기」에서 7개 중 하나로 넣어 보세요</small></div>').join('');
@@ -1970,10 +2152,10 @@ function loop(ts){
   requestAnimationFrame(loop)
 }
 const TEST_START=false; // 테스트 기간: 시작 시 모든 캐릭터 1명씩 배치
-function start(){buildBY();$('bSnd').style.display='';$('bMenu').style.display='block';$('gmenu').style.display='none';SND.bg(false,0);$('over').style.display='none';$('boon').style.display='none';$('augL').style.display='none';$('synL').style.display='none';reset();orbInit();$('orbP').style.display='none';augUI();G.synK='';synTick();['sk0','sk1'].forEach(id=>$(id).dataset.k='');if(TEST_START){Object.keys(U).sort((a,b)=>U[b].t-U[a].t).forEach((k,i)=>{G.cells[[12,7,17,11,13,6,8,16,18][i]??i]={u:k,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[k]?SP[k].cd:0}});refresh()}running=true;last=performance.now();requestAnimationFrame(loop);TIP.last=performance.now()-4000;TIP.cur=null;tipHide()}
+function start(){buildBY();$('bSnd').style.display='';$('bMenu').style.display='block';$('gmenu').style.display='none';SND.bg(false,0);$('over').style.display='none';$('boon').style.display='none';$('augL').style.display='none';$('synL').style.display='none';reset();orbInit();storyInit();storyStart();$('orbP').style.display='none';augUI();G.synK='';synTick();['sk0','sk1'].forEach(id=>$(id).dataset.k='');if(TEST_START){Object.keys(U).sort((a,b)=>U[b].t-U[a].t).forEach((k,i)=>{G.cells[[12,7,17,11,13,6,8,16,18][i]??i]={u:k,n:1,cd:0,b:0,pop:.25,ax:0,ay:0,sc:SP[k]?SP[k].cd:0}});refresh()}running=true;last=performance.now();requestAnimationFrame(loop);TIP.last=performance.now()-4000;TIP.cur=null;tipHide()}
 
 tempArt();bake();
-$('bAll').onclick=mergeAll;$('bBty').onclick=bounty;$('bSnd').onclick=e=>{SND.cycle();sndBtn();toast(['🔊 소리 켜짐','🎵 배경음악 끔 (효과음만)','🔇 소리 끔'][SND.mode()])};sndBtn();$('rcp').onclick=()=>openSheet('myth');$('bCraft').onclick=e=>{const B=$('bCraft'),ac=e.target.closest('[data-a]');if(ac){const a=ac.dataset.a;if(a==='open')B.__open=1;else if(a==='close')B.__open=0;else if(a==='hide'){B.__hid=1;B.__open=0}B.dataset.k='';refresh();return}const bt=e.target.closest('.cOpt');if(!bt)return;const o=($('bCraft').__L||[])[+bt.dataset.j];if(!o)return;if(o.t==='m'){if(canCraft(o.id))craft(o.id)}else if(o.t==='f'){if(canFuse(o.id))fuse(o.id)}else{const A=G.cells[o.a],B=G.cells[o.b];if(A&&B&&A.u===o.id&&B.u===o.id)concDo(o.a,o.b)}$('bCraft').dataset.k='';refresh()};lotInit();$('bMyth').onclick=()=>openSheet('myth');$('bGam').onclick=()=>openSheet('gam');$('bUp').onclick=()=>openSheet('up');
+$('mLog').onclick=()=>logbook();$('bAll').onclick=mergeAll;$('bBty').onclick=bounty;$('bSnd').onclick=e=>{SND.cycle();sndBtn();toast(['🔊 소리 켜짐','🎵 배경음악 끔 (효과음만)','🔇 소리 끔'][SND.mode()])};sndBtn();$('rcp').onclick=()=>openSheet('myth');$('bCraft').onclick=e=>{const B=$('bCraft'),ac=e.target.closest('[data-a]');if(ac){const a=ac.dataset.a;if(a==='open')B.__open=1;else if(a==='close')B.__open=0;else if(a==='hide'){B.__hid=1;B.__open=0}B.dataset.k='';refresh();return}const bt=e.target.closest('.cOpt');if(!bt)return;const o=($('bCraft').__L||[])[+bt.dataset.j];if(!o)return;if(o.t==='m'){if(canCraft(o.id))craft(o.id)}else if(o.t==='f'){if(canFuse(o.id))fuse(o.id)}else{const A=G.cells[o.a],B=G.cells[o.b];if(A&&B&&A.u===o.id&&B.u===o.id)concDo(o.a,o.b)}$('bCraft').dataset.k='';refresh()};lotInit();$('bMyth').onclick=()=>openSheet('myth');$('bGam').onclick=()=>openSheet('gam');$('bUp').onclick=()=>openSheet('up');
 $('summon').onclick=summon;$('bMenu').onclick=()=>{if(!G||G.over)return;G.menu=true;$('gmenu').style.display='flex'};$('gmGo').onclick=()=>{G.menu=false;$('gmenu').style.display='none'};
 $('gmRe').onclick=()=>{$('gmenu').style.display='none';if(G)G.menu=false;start()};$('gmHome').onclick=()=>{$('gmenu').style.display='none';if(G){G.menu=false;G.over=true}running=false;$('boon').style.display='none';$('lot').style.display='none';showMain('home')};$('skA').onclick=()=>{SAVE.skAuto=!SAVE.skAuto;saveAll();skAutoBtn();toast(SAVE.skAuto?'🤖 스킬 자동 발사 ON':'스킬 자동 발사 OFF')};$('sk0').onclick=()=>useSk(0);$('sk1').onclick=()=>useSk(1);$('augS').onclick=()=>{$('augL').style.display='block'};$('synS').onclick=()=>{synList();$('synL').style.display='block'};$('synL').onclick=()=>{$('synL').style.display='none'};$('augL').onclick=()=>{$('augL').style.display='none'};
 $('speed').onclick=()=>{speed=speed%5+1;$('speed').textContent='x'+speed};
@@ -2020,8 +2202,8 @@ function acPush(now){if(!AC.s)return;clearTimeout(acTm);const go=async()=>{try{a
 function acMerge(a,b){const o=Object.assign({},b,a),mx=k=>Math.max(a[k]||0,b[k]||0);['best','games','boxes','skPity'].forEach(k=>o[k]=mx(k));
   o.lv={};o.frag={};for(const k of new Set([...Object.keys(a.lv||{}),...Object.keys(b.lv||{}),...Object.keys(a.frag||{}),...Object.keys(b.frag||{})])){const la=(a.lv||{})[k]||1,lb=(b.lv||{})[k]||1,fa=(a.frag||{})[k]||0,fb=(b.frag||{})[k]||0,useA=la>lb||(la===lb&&fa>=fb);o.lv[k]=useA?la:lb;o.frag[k]=useA?fa:fb}
   o.kills={};for(const k of new Set([...Object.keys(a.kills||{}),...Object.keys(b.kills||{})]))o.kills[k]=Math.max((a.kills||{})[k]||0,(b.kills||{})[k]||0);
-  o.sk=Object.assign({},b.sk||{},a.sk||{});o.skEq=(a.skEq&&a.skEq.length?a.skEq:b.skEq)||['meteor'];o.pl=a.pl||b.pl;o.nick=a.nick||b.nick;return o}
-const AC_PROG=['lv','kills','frag','boxes','games','best','sk','skEq','skPity','pl','plNew','nick','acct'];
+  o.sk=Object.assign({},b.sk||{},a.sk||{});o.skEq=(a.skEq&&a.skEq.length?a.skEq:b.skEq)||['meteor'];o.pl=a.pl||b.pl;o.nick=a.nick||b.nick;o.story=storyMerge(a.story,b.story);return o}
+const AC_PROG=['lv','kills','frag','boxes','games','best','sk','skEq','skPity','pl','plNew','nick','acct','story'];
 function acReplace(d){const keep={};for(const k of Object.keys(SAVE))if(!AC_PROG.includes(k))keep[k]=SAVE[k];for(const k of Object.keys(SAVE))delete SAVE[k];Object.assign(SAVE,keep,{lv:{},kills:{},frag:{},boxes:0,games:0,best:0},d||{});SAVE.sk=SAVE.sk||{meteor:1};SAVE.skEq=(SAVE.skEq||['meteor']).filter(k=>USK[k]&&SAVE.sk[k]).slice(0,2);SAVE.skPity=SAVE.skPity||0;saveClean()}
 function acErr(e,su){const c=e&&(e.error_code||e.code||''),m=String(e&&(e.msg||e.message||e.error_description||e.error)||'');
   if(c==='user_already_exists'||/already/i.test(m))return '이미 있는 아이디예요';if(c==='invalid_credentials'||/invalid login/i.test(m))return '아이디나 비밀번호가 틀렸어요';if(c==='weak_password'||/password/i.test(m))return '비밀번호가 너무 약해요 (6자 이상)';if(c==='email_not_confirmed')return '계정 확인 설정이 켜져 있어요 (게임 주인이 꺼야 해요)';if(c==='over_request_rate_limit'||/rate/i.test(m))return '잠시 후 다시 시도해 주세요';if(/signup.*disabled/i.test(m))return '지금은 가입이 막혀 있어요';return (su?'가입':'로그인')+'하지 못했어요'+(m?' ('+m.slice(0,60)+')':'')}
@@ -2057,7 +2239,7 @@ function rkNick(){return cleanNick((SAVE.nick||RK.name||'').slice(0,12))||'이�
 function rkBetter(a,b){return !b||a.w>b.w||(a.w===b.w&&a.k>b.k)}
 async function sbRun(w,k,t){const r=await fetch(SB_URL+'/rest/v1/runs?select=id',{method:'POST',keepalive:true,headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=representation'},body:JSON.stringify({pid:RK.uid,nick:rkNick(),w:w|0,k:k|0,t:Math.round(t||0)})});if(!r.ok)throw {status:r.status};const a=await r.json();return a&&a[0]&&a[0].id}
 async function rkSubmit(w,k,t){if(RK.sb){try{const prev=RK.bestW||0;const id=await sbRun(w,k,t);RK.last=id;const L=await rkFetch(),i=L.findIndex(r=>r.id===id);RK.bestW=Math.max(prev,w);return {rec:w>prev,rank:i<0?null:i+1}}catch(e){return null}}
-  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:300};
+  if(!RK.db||!RK.uid||RK.canW===false)return null;const cur={w,k,t,nick:rkNick(),at:Date.now(),v:301};
   const b=RK.best&&(RK.best.at||0)>=RK_SEASON_MS?RK.best:null,nb=rkBetter(cur,b)?cur:Object.assign({},b,{nick:rkNick()});nb.g=((b&&b.g)||0)+1;
   try{await RK.db.doc('rank/'+RK.uid).set(nb);RK.best=nb;RK.canW=true;return {rec:nb===cur&&(!b||cur.w>b.w||cur.k>b.k),rank:await rkMyRank()}}catch(e){if(e&&e.code==='invalid_argument')RK.canW=false;return null}}
 // 랭킹 시즌: 규칙이 크게 바뀐 v299부터 새로 시작 — 그 전 기록은 지우지 않고 화면에서만 뺌
