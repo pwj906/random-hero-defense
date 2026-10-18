@@ -11,7 +11,7 @@
   --text:#eef0ff; --muted:#a4aad8;
   --water:#4cc3ff; --elec:#ffd23f; --fire:#ff7a45; --sup:#7fe0c0; --foe:#c46ce2;
   --good:#5be3a1; --bad:#ff5d73; --gold:#ffcf5a;
-  --c1:#9aa4b8; --c2:#3fbf7f;
+  --c1:#9aa4b8; --c2:#3fbf7f; --c3:#4f8ef7; --c4:#b16cf0; --c5:#f0b43c;
   --display:'Do Hyeon','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
   --body:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
   color-scheme:dark;
@@ -94,14 +94,16 @@ canvas{position:absolute;inset:0;width:960px;height:540px;touch-action:none}
 button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 .cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:7px;max-width:520px;margin:0 auto;width:100%;min-height:0;height:100%}
 .card{position:relative;min-width:0;min-height:0;height:100%;border-radius:8px;border:2px solid var(--c1);background-color:var(--panel2);background-image:var(--img);background-size:cover;background-position:center 20%;color:var(--text);cursor:pointer;padding:0;overflow:hidden;font-family:var(--body);text-align:left}
-.card.c2{border-color:var(--c2)}
+.card.c2{border-color:var(--c2)}.card.c3{border-color:var(--c3)}.card.c4{border-color:var(--c4)}.card.c5{border-color:var(--c5);box-shadow:0 0 10px rgba(240,180,60,.45)}
+.card.c1 .cost{color:var(--c1)}.card.c2 .cost{color:var(--c2)}.card.c3 .cost{color:var(--c3)}.card.c4 .cost{color:var(--c4)}.card.c5 .cost{color:var(--c5)}
+.cbar{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 7px;border-radius:7px;font-size:11px;font-weight:800;color:#0a0e1f;background:var(--cc);white-space:nowrap}.cbar span{font-weight:700;opacity:.85}
 .card .meta{position:absolute;left:0;right:0;bottom:0;padding:12px 6px 4px;background:linear-gradient(180deg,transparent,rgba(8,10,28,.94) 40%);display:flex;justify-content:space-between;align-items:flex-end;gap:4px}
 .card .nm{font-family:var(--display);font-size:16px;line-height:1}
 .card .tr{display:flex;gap:5px;flex-wrap:nowrap;margin-bottom:3px}
 .card .tr span{display:flex;gap:3px;align-items:center;font-size:9.5px;font-weight:700;color:#d6d9f2;white-space:nowrap}
 .card .ty{font-style:normal;font-family:var(--body);font-size:10px;font-weight:700;margin-left:6px;vertical-align:2px}
 .card .tr i{width:9px;height:10px;display:inline-block;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
-.card .cost{position:absolute;left:6px;top:6px;padding:1px 6px;border-radius:6px;background:rgba(8,10,28,.85);font-family:var(--display);font-size:14px;color:var(--gold);line-height:1}
+.card .cost{position:absolute;left:6px;top:6px;padding:2px 7px;border-radius:6px;background:rgba(8,10,28,.9);border:1.5px solid currentColor;font-family:var(--display);font-size:14px;color:var(--gold);line-height:1}
 .card .rg{position:absolute;left:6px;top:30px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;background:rgba(8,10,28,.8);color:#9fe8e0}
 .card .own{position:absolute;top:6px;right:6px;font-size:11px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(8,10,28,.85);color:var(--gold)}
 .card.up{box-shadow:0 0 0 2px var(--gold) inset}
@@ -948,7 +950,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v4</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v5</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1043,7 +1045,8 @@ function infoHtml() {
   if (has('oil') && h.el === 'fire') eff.push(['증강', `화상 <i class="up">+40%</i>`]);
   const effHtml = eff.length ? `<div class="effs">${eff.map(([src, t]) => `<div><em>${src}</em><span>${t}</span></div>`).join('')}</div>` : '';
   return `<div class="box info"><div class="nm">${h.name}<span class="stars">${'★'.repeat(lv)}</span></div>
-    <div class="el" style="color:${C[h.el]}">${h.origin} · ${h.cls} · ${EL[h.el]} · ${h.cost}코스트</div>
+    <div class="cbar" style="--cc:var(--c${h.cost})"><b>${h.cost}코스트</b><span>판매 +${h.cost * [1, 3, 9][lv - 1]}G</span></div>
+    <div class="el" style="color:${C[h.el]}">${h.origin} · ${h.cls} · ${EL[h.el]}</div>
     <div class="match"><span><b style="color:var(--good)">강함 ×${MATCH_UP}</b> ${(BEATS[h.el] || []).map(e => EL[e]).join(', ') || '-'}</span><span><b style="color:var(--bad)">약함 ×${MATCH_DOWN}</b> ${Object.keys(BEATS).filter(e => BEATS[e].includes(h.el)).map(e => EL[e]).join(', ') || '-'}</span></div>
     <div class="kv"><span>체력</span><b>${live ? `${Math.max(0, Math.ceil(live.hp))} / ` : ''}${hpBase}${up(hpBonus)}</b><span>공격력</span><b>${atkBase}</b><span>사거리</span><b>${h.range}칸${up(rangeBonus)}</b><span>공속</span><b>${h.as.toFixed(2)}${up(asBonus)}</b><span>마나</span><b>${h.mana0 ?? 0}${up(manaBonus)} / ${h.manaMax || 100}</b></div>${effHtml}
     <div class="skl">${[...new Set(h.skills)].map((sk, i) => { const first = h.skills.indexOf(sk); return `<div class="${first < lv ? '' : 'lock'}"><span><b>${SK[sk][0]}</b>${skMul > 1 ? ` <i class="up">+${Math.round((skMul - 1) * 100)}%</i>` : ''} ${SK[sk][1].replace(/(\d+)\/(\d+)\/(\d+)/g, (m0, a, b, c) => `<b>${[a, b, c][lv - 1]}</b>`)}</span></div>`; }).join('')}</div></div>`;
@@ -1176,7 +1179,9 @@ function bar(x, y, w, h, frac, col, shieldFrac = 0) {
   ctx.fillStyle = col; ctx.fillRect(x - w / 2, y, w * Math.max(0, Math.min(1, frac)), h);
   if (shieldFrac > 0) { ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.fillRect(x - w / 2, y, w * Math.min(1, shieldFrac), Math.max(2, h / 2)); }
 }
-function drawStars(x, y, n, s = 1) {
+const COSTC = ['', '#9aa4b8', '#3fbf7f', '#4f8ef7', '#b16cf0', '#f0b43c'];
+function drawStars(x, y, n, s = 1, cost = 0) {
+  if (cost) { const cx = x - n * 5.5 * s - 9 * s; ctx.fillStyle = COSTC[cost]; ctx.beginPath(); ctx.arc(cx, y, 6.2 * s, 0, 6.283); ctx.fill(); ctx.lineWidth = 1.2; ctx.strokeStyle = C.ink; ctx.stroke(); ctx.font = `800 ${9 * s}px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.ink; ctx.fillText(cost, cx, y + .5); }
   ctx.font = `${11 * s}px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.lineWidth = 3; ctx.strokeStyle = C.ink; const t = '★'.repeat(n); ctx.strokeText(t, x, y);
   ctx.fillStyle = n === 3 ? C.gold : n === 2 ? '#dfe3f2' : '#c58b55'; ctx.fillText(t, x, y);
@@ -1224,7 +1229,7 @@ function drawAlly(u) {
   const bt = HEROES[u.key].sprite ? u.y + 12 - 130 * SPR_SC * scAtY(u.y) - 12 : u.y - 58;
   bar(u.x, bt, 36, 4, u.hp / u.maxHp, C.good, u.shield / u.maxHp);
   bar(u.x, bt + 6, 36, 2.5, u.mana / (u.maxMana || 100), C.mana);
-  drawStars(u.x, u.y + 16, u.lv, .9);
+  drawStars(u.x, u.y + 16, u.lv, .9, HEROES[u.key].cost);
   if (u.stun > 0) for (let i = 0; i < 3; i++) { const a = S.t * 4 + i * 2.1; ctx.fillStyle = C.elec; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 12, y - 40 + Math.sin(a) * 3, 2.5, 0, 6.283); ctx.fill(); }
 }
 function drawOwned(k) {
@@ -1232,7 +1237,7 @@ function drawOwned(k) {
   const u = S.units[k], [x, y] = unitPos(k), onBoard = u.slot.t === 'board', s = onBoard ? .62 : .55, lv = u.star;
   if (S.sel && S.sel.t === 'hero' && S.sel.k === k && !S.sel.u) { ctx.strokeStyle = C.gold; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y + 8, 22, 7, 0, 0, 6.283); ctx.stroke(); }
   drawUnit(ctx, u.key, x, onBoard ? y - 6 : y - 2, s, S.t);
-  drawStars(x, onBoard ? y + 16 : y + 14, lv, .9);
+  drawStars(x, onBoard ? y + 16 : y + 14, lv, .9, HEROES[u.key].cost);
   if (onBoard && S.phase === 'prep') { const R = HEROES[u.key].range; ctx.font = `700 9px ${FONT_B}`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(238,240,255,.55)'; ctx.fillText(`${R}`, x + 18, y - 34); }
 }
 function drawFx() {
