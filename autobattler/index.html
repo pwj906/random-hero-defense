@@ -163,7 +163,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </style>
 
 </head><body>
-<script src="assets.js?v=fd0168f3"></script>
+<script src="assets.js?v=20985f30"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -206,6 +206,7 @@ const FONT_B = "'IBM Plex Sans KR',system-ui,sans-serif", FONT_D = "'Do Hyeon',s
 
 const HEROES = {
   'VAR-1a': { name:'데렉', el:'earth', origin:'바라크', cls:'투사', cost:1, hp:650, atk:55, range:1, as:.70, mana0:30, manaMax:90, sprite:'VAR', skills:['varsk','varsk','varsk'] },
+  'NOX-2a': { name:'오르비', el:'grass', origin:'녹스', cls:'지휘관', cost:2, hp:580, atk:44, range:3, as:.65, mana0:40, manaMax:90, sprite:'ORV', muzzle:[187,156], skills:['orvsk','orvsk','orvsk'] },
   'SER-5a': { name:'벨리스', el:'ice', origin:'세라딘', cls:'주술사', cost:5, hp:760, atk:64, range:4, as:.65, mana0:30, manaMax:110, sprite:'BLS', muzzle:[182,160], skills:['blssk','blssk','blssk'] },
   'SER-4a': { name:'이그나', el:'fire', origin:'세라딘', cls:'수호술사', cost:4, hp:900, atk:63, range:1, as:.60, mana0:40, manaMax:110, sprite:'IGN', skills:['ignsk','ignsk','ignsk'] },
   'SER-3a': { name:'묵탄', el:'earth', origin:'세라딘', cls:'투사', cost:3, hp:840, atk:69, range:1, as:.70, mana0:30, manaMax:100, sprite:'MUK', skills:['muksk','muksk','muksk'] },
@@ -230,6 +231,7 @@ const HEROES = {
 };
 const SK = {
   varsk:['흡혈 난타','대상과 주변 1칸 200/300/480 + 균열 2중첩, 준 피해의 20% 회복'],
+  orvsk:['치료','체력이 낮은 아군 2명을 즉시 265/398/636 회복하고 3초 동안 그 절반을 더 회복'],
   blssk:['제어','대상 적 1명을 2초 기절시키고 350/525/2800 피해 + 냉기 2초'],
   ignsk:['약한 아군 보호','체력이 가장 낮은 아군 2명에게 보호막 520/780/2080, 그 아군의 다음 공격에 화상 2중첩'],
   muksk:['후방 도약','가장 먼 적 옆으로 뛰어들어 착지 지점 주변 1칸의 적에게 340/510/816 피해 + 균열 2중첩'],
@@ -263,6 +265,7 @@ const SK = {
 const SYN = {
   earth:{ need:2, name:'대지', text:'아군 받는 피해 -13% (방어 +15)' },
   varak:{ origin:'바라크', needs:[3,6], need:3, name:'바라크', text:'체력 50% 아래에서 공속 +40/100%, 흡혈 15/30%. 3명: 바라크만 · 6명: 아군 전체' },
+  nox:{ origin:'녹스', needs:[2,4], need:2, name:'녹스', text:'아군이 받는 회복 +25/50% (임시값)' },
   seradin:{ origin:'세라딘', needs:[2,4], need:2, name:'세라딘', text:'세라딘 영웅이 받는 피해의 20/35%를 인접 세라딘이 나눠 받음 (한 단계만), 방어 +30/60' },
   artillery:{ cls:'포병', needs:[2,4], need:2, name:'포병', text:'포병 스킬 범위 +1칸 (2명) / 범위 피해 +30% (4명) (임시값)' },
   horizon:{ origin:'호라이즌', needs:[2,3,4], need:2, name:'호라이즌', text:'보드의 서로 다른 출신 수 × 1.5/2.5/3.5% 만큼 아군 전체 공격력·체력 증가' },
@@ -430,7 +433,7 @@ function kill(t) {
   burst(t.x, t.y - 10, t.side === 'foe' ? C.foe : C[t.el], t.big ? 40 : 14, t.big ? 220 : 130);
   if (t.side === 'foe') S.stats.kills++;
 }
-function heal(t, amt) { if (t.dead) return; amt = Math.round(Math.min(amt, t.maxHp - t.hp)); if (amt <= 0) return; t.hp += amt; float(t.x, topY(t), '+' + amt, C.good, 13); }
+function heal(t, amt) { if (t.dead) return; if (t.side === 'ally') amt *= [1, 1.25, 1.5][synLv('nox')]; amt = Math.round(Math.min(amt, t.maxHp - t.hp)); if (amt <= 0) return; t.hp += amt; float(t.x, topY(t), '+' + amt, C.good, 13); }
 function stunUnit(t, s) { if (t.dead) return; t.stun = Math.max(t.stun, s); float(t.x, topY(t) - 12, '기절!', t.side === 'ally' ? C.bad : C.elec, 14); }
 function wet(f, n) { f.wet = Math.min(6, f.wet + n); f.wetT = 4; }
 function burn(f, n) { f.burn = Math.min(has('oil') ? 15 : 10, f.burn + n); f.burnDecay = 2.5; }
@@ -460,7 +463,7 @@ const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], wal
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -617,6 +620,11 @@ function castSkill(u, key, echo) {
     u.pend = { at:3 / 12, fn:() => { for (const a of S.cu) if (a.side === 'ally' && !a.dead && hexDist(a, u) <= 1) { a.shield = Math.max(a.shield, sh); let cl = null; if (a.stun > 0) { a.stun = 0; cl = '기절'; } else if (a.root > 0) { a.root = 0; cl = '덩굴'; } else if (a.slow > 0) { a.slow = 0; cl = '둔화'; } else if (a.shock > 0) { a.shock = 0; cl = '감전'; } float(a.x, topY(a) - 6, cl ? `보호막 · ${cl} 해제` : '보호막', C.water, 12); S.fx.push({ type:'sprfx', set:'SEI', x:a.x, y:a.y, t:0, life:8 / 12 }); }
       for (const f of foesAlive()) if (hexDist(f, u) <= 1) { wet(f, 2); float(f.x, topY(f) - 14, '젖음 +2', C.water, 11); } S.hitstop = Math.max(S.hitstop, .04); } };
     return true; }
+  if (key === 'orvsk') { u.anim = 'skill_6'; u.animT = 0; float(u.x, u.y - 90, SK[key][0], C[u.el], 15, 1.1);
+    const amt = Math.round([265, 398, 636][u.lv - 1] * skillMul(u)), dur = 3 * (HEROES[u.key].cls === '지휘관' ? [1, 1.4, 1.8][synLv('commander')] : 1);
+    u.pend = { at:3 / 12, fn:() => { const list = S.cu.filter(a => a.side === 'ally' && !a.dead).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || a.hp - b.hp).slice(0, 2);
+      for (const a of list) { heal(a, amt); a.hot = { t:dur, tick:.5, amt:amt * .5 / dur * .5 }; S.fx.push({ type:'sprfx', set:'ORV', x:a.x, y:a.y, t:0, life:8 / 12 }); } } };
+    return true; }
   if (key === 'blssk') { const t0 = u.target && !u.target.dead ? u.target : closest(u, foes); u.anim = 'skill_6'; u.animT = 0; u.face = t0.x >= u.x ? 1 : -1; float(u.x, u.y - 110, SK[key][0], C[u.el], 15, 1.1);
     const dmg = Math.round([350, 525, 2800][u.lv - 1] * skillMul(u)), cc = 2 * (HEROES[u.key].cls === '주술사' ? [1, 1.3, 1.6][synLv('shaman')] : 1);
     u.pend = { at:3 / 12, fn:() => { const t = t0.dead ? closest(u, foesAlive()) : t0; if (!t) return; stunUnit(t, cc); hit(t, dmg, C.ice, u); if (!t.dead) t.chill = Math.max(t.chill || 0, cc); S.fx.push({ type:'sprfx', set:'BLS', x:t.x, y:t.y, t:0, life:8 / 12 }); S.hitstop = Math.max(S.hitstop, .08); } };
@@ -750,6 +758,7 @@ function stepToward(u, t) {
 function tickStatus(u, dt) {
   u.hit = Math.max(0, u.hit - dt); u.lunge = Math.max(0, u.lunge - dt); u.slow = Math.max(0, u.slow - dt); u.root = Math.max(0, (u.root || 0) - dt); u.shock = Math.max(0, (u.shock || 0) - dt); u.chill = Math.max(0, (u.chill || 0) - dt); u.blind = Math.max(0, (u.blind || 0) - dt);
   if (u.side === 'ally') {
+    if (u.hot && u.hot.t > 0) { u.hot.t -= dt; u.hot.tick -= dt; if (u.hot.tick <= 0) { u.hot.tick = .5; heal(u, u.hot.amt); } }
     u.fast = Math.max(0, u.fast - dt); u.over = Math.max(0, u.over - dt); u.atkUp = Math.max(0, (u.atkUp || 0) - dt); u.barrage = Math.max(0, u.barrage - dt);
     if (u.fieldT > 0) { u.fieldT -= dt; u.fieldTick -= dt; if (u.fieldTick <= 0) { u.fieldTick = .5; for (const f of foesAlive()) if (f.wet > 0) hit(f, u.atk * .25 * f.wet, C.elec, u); } }
   } else {
@@ -947,7 +956,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v6</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v7</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1022,6 +1031,7 @@ function infoHtml() {
   if (h.origin === '미라벨' && L('mirabel')) eff.push(['미라벨 ' + ['', 'Ⅰ', 'Ⅱ'][L('mirabel')], `치명타 <i class="up">${[0, 15, 35][L('mirabel')]}%</i> (1.5배)`]);
   if (h.el === 'ice' && L('ice')) eff.push(['얼음', `냉기 적에게 피해 <i class="up">+15%</i>`]);
   if (L('horizon')) { const o = new Set(board().map(k => HEROES[S.units[k].key].origin)).size; eff.push(['호라이즌 ' + ['', 'Ⅰ', 'Ⅱ', 'Ⅲ'][L('horizon')], `출신 ${o}종 → 공격력·체력 <i class="up">+${(o * [0, 1.5, 2.5, 3.5][L('horizon')]).toFixed(1)}%</i>`]); }
+  if (L('nox')) eff.push(['녹스 ' + ['', 'Ⅰ', 'Ⅱ'][L('nox')], `받는 회복 <i class="up">+${[0, 25, 50][L('nox')]}%</i>`]);
   if (h.origin === '세라딘' && L('seradin')) eff.push(['세라딘 ' + ['', 'Ⅰ', 'Ⅱ'][L('seradin')], `방어 <i class="up">+${[0, 30, 60][L('seradin')]}</i>, 인접 세라딘과 피해 <i class="up">${[0, 20, 35][L('seradin')]}%</i> 분담`]);
   if (h.cls === '포병' && L('artillery')) eff.push(['포병', `스킬 범위 <i class="up">+1칸</i>${L('artillery') >= 2 ? ', 피해 <i class="up">+30%</i>' : ''}`]);
   if (h.cls === '검사' && L('swordsman')) eff.push(['검사', `${L('swordsman') >= 2 ? 2 : 3}번째 공격 <i class="up">2배</i>`]);
