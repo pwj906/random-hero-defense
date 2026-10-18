@@ -163,7 +163,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </style>
 
 </head><body>
-<script src="assets.js?v=266e08ab"></script>
+<script src="assets.js?v=cc757001"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -206,6 +206,8 @@ const FONT_B = "'IBM Plex Sans KR',system-ui,sans-serif", FONT_D = "'Do Hyeon',s
 
 const HEROES = {
   'VAR-1a': { name:'데렉', el:'earth', origin:'바라크', cls:'투사', cost:1, hp:650, atk:55, range:1, as:.70, mana0:30, manaMax:90, sprite:'VAR', skills:['varsk','varsk','varsk'] },
+  'PAG-2a': { name:'피나', el:'ice', origin:'페이지아', cls:'마법사', cost:2, hp:520, atk:44, range:4, as:.65, mana0:30, manaMax:80, sprite:'FIN', muzzle:[185,157], skills:['finsk','finsk','finsk'] },
+  'PAG-1b': { name:'사일', el:'dark', origin:'페이지아', cls:'주술사', cost:1, hp:450, atk:40, range:4, as:.65, mana0:30, manaMax:80, sprite:'SAI', muzzle:[189,159], skills:['saisk','saisk','saisk'] },
   'PAG-1a': { name:'모루', el:'fire', origin:'페이지아', cls:'포병', cost:1, hp:450, atk:50, range:3, as:.65, mana0:0, manaMax:80, sprite:'MRU', muzzle:[189,151], skills:['mrusk','mrusk','mrusk'] },
   'NOX-4a': { name:'니르', el:'dark', origin:'녹스', cls:'암살자', cost:4, hp:750, atk:84, range:1, as:.80, mana0:10, manaMax:80, sprite:'NIR', skills:['nirsk','nirsk','nirsk'] },
   'NOX-3a': { name:'칼릭', el:'grass', origin:'녹스', cls:'검사', cost:3, hp:720, atk:69, range:1, as:.75, mana0:0, manaMax:70, sprite:'KAL', skills:['kalsk','kalsk','kalsk'] },
@@ -234,6 +236,8 @@ const HEROES = {
 };
 const SK = {
   varsk:['흡혈 난타','대상과 주변 1칸 200/300/480 + 균열 2중첩, 준 피해의 20% 회복'],
+  finsk:['연쇄','얼음이 적 사이를 4번 튕기며 105/158/252 피해 + 냉기 2초'],
+  saisk:['약화','적 2명에게 120/180/288 피해 + 4초간 받는 피해 +20% + 실명 2초'],
   mrusk:['범위 포격','대상과 주변 1칸의 적에게 200/300/480 피해 + 화상'],
   nirsk:['연쇄 처형','체력이 가장 낮은 적에게 이동해 570/855/2280 피해 + 실명 2초. 처치하면 다음으로 낮은 적에게 한 번 더'],
   kalsk:['마무리','체력 50% 이하인 적에게 돌진해 455/683/1092 피해 + 덩굴 1초. 처치하면 마나 50% 회복 (대상이 없으면 마나를 모아 둠)'],
@@ -420,6 +424,7 @@ function combo(f, label, col) { S.stats.combos++; float(f.x, topY(f) - 14, label
 function hit(t, d, col, src) {
   if (!t || t.dead || d <= 0) return;
   if (t.side === 'foe' && t.crack > 0) d *= 1 + .05 * t.crack;
+  if (t.vul > 0) d *= 1.2;
   if (src && src.side === 'ally' && t.side === 'foe') { if (t.chill > 0 && src.el === 'ice' && synOn('ice')) d *= 1.15; const cr = HEROES[src.key] && HEROES[src.key].origin === '미라벨' ? [0, .15, .35][synLv('mirabel')] : 0; if (cr && Math.random() < cr) { d *= 1.5; float(t.x, topY(t) - 24, '치명타!', C.gold, 13); } }
   if (src && src.el && t.el && BEATS[src.el]) { if (BEATS[src.el].includes(t.el)) d *= MATCH_UP; else if (BEATS[t.el] && BEATS[t.el].includes(src.el)) d *= MATCH_DOWN; }
   if (t.side === 'ally' && synOn('earth')) d *= 100 / 115;
@@ -471,7 +476,7 @@ const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], wal
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -627,6 +632,18 @@ function castSkill(u, key, echo) {
     const sh = Math.round([540, 810, 4320][u.lv - 1] * (HEROES[u.key].cls === '수호술사' ? [1, 1.2, 1.4][synLv('guardian')] : 1));
     u.pend = { at:3 / 12, fn:() => { for (const a of S.cu) if (a.side === 'ally' && !a.dead && hexDist(a, u) <= 1) { a.shield = Math.max(a.shield, sh); let cl = null; if (a.stun > 0) { a.stun = 0; cl = '기절'; } else if (a.root > 0) { a.root = 0; cl = '덩굴'; } else if (a.slow > 0) { a.slow = 0; cl = '둔화'; } else if (a.shock > 0) { a.shock = 0; cl = '감전'; } float(a.x, topY(a) - 6, cl ? `보호막 · ${cl} 해제` : '보호막', C.water, 12); S.fx.push({ type:'sprfx', set:'SEI', x:a.x, y:a.y, t:0, life:8 / 12 }); }
       for (const f of foesAlive()) if (hexDist(f, u) <= 1) { wet(f, 2); float(f.x, topY(f) - 14, '젖음 +2', C.water, 11); } S.hitstop = Math.max(S.hitstop, .04); } };
+    return true; }
+  if (key === 'saisk') { const t0 = u.target && !u.target.dead ? u.target : closest(u, foes); u.anim = 'skill_6'; u.animT = 0; u.face = t0.x >= u.x ? 1 : -1; float(u.x, u.y - 96, SK[key][0], C[u.el], 15, 1.1);
+    const dmg = Math.round([120, 180, 288][u.lv - 1] * skillMul(u)), bd = 2 * (HEROES[u.key].cls === '주술사' ? [1, 1.3, 1.6][synLv('shaman')] : 1), vd = 4 * (HEROES[u.key].cls === '주술사' ? [1, 1.3, 1.6][synLv('shaman')] : 1);
+    u.pend = { at:3 / 12, fn:() => { const t = t0.dead ? closest(u, foesAlive()) : t0; if (!t) return; const list = [t, ...foesAlive().filter(f => f !== t).sort((p, q) => Math.hypot(p.x - t.x, p.y - t.y) - Math.hypot(q.x - t.x, q.y - t.y)).slice(0, 1)];
+      for (const f of list) { S.fx.push({ type:'sprfx', set:'SAI', x:f.x, y:f.y, t:0, life:8 / 12 }); f.vul = Math.max(f.vul || 0, vd); hit(f, dmg, C.dark, u); if (!f.dead) { f.blind = Math.max(f.blind || 0, bd); float(f.x, topY(f) - 14, '약화 +20%', C.bad, 11); } } S.hitstop = Math.max(S.hitstop, .05); } };
+    return true; }
+  if (key === 'finsk') { u.anim = 'skill_6'; u.animT = 0; const t0 = u.target && !u.target.dead ? u.target : closest(u, foes); u.face = t0.x >= u.x ? 1 : -1; float(u.x, u.y - 96, SK[key][0], C[u.el], 15, 1.1);
+    const dmg = Math.round([105, 158, 252][u.lv - 1] * skillMul(u));
+    u.pend = { at:3 / 12, fn:() => { const t = t0.dead ? closest(u, foesAlive()) : t0; if (!t) return; const picked = [t, ...foesAlive().filter(f => f !== t).sort((p, q) => Math.hypot(p.x - t.x, p.y - t.y) - Math.hypot(q.x - t.x, q.y - t.y)).slice(0, 3)];
+      const mz = HEROES[u.key].muzzle, ps = scAtY(u.y), ox = u.x + (mz[0] - 128) * SPR_SC * ps * u.face, oy = u.y + 12 - (240 - mz[1]) * SPR_SC * ps;
+      u.pendQ = picked.map((f, i) => ({ at:i * .09, fn:() => { if (f.dead) return; const from = i ? picked[i - 1] : null; S.fx.push({ type:'bolt', pts:[from ? [from.x, from.y - 8] : [ox, oy], [f.x, f.y - 8]], t:0, life:.3, col:C.ice }); hit(f, dmg, C.ice, u); if (!f.dead) f.chill = Math.max(f.chill || 0, 2); S.fx.push({ type:'sprfx', set:'FIN', x:f.x, y:f.y, t:0, life:8 / 12 }); S.hitstop = Math.max(S.hitstop, .03); } }));
+      u.pendQ[0].fn(); u.pendQ.shift(); if (!u.pendQ.length) u.pendQ = null; } };
     return true; }
   if (key === 'mrusk') { const t0 = u.target && !u.target.dead ? u.target : closest(u, foes); u.anim = 'skill_6'; u.animT = 0; u.face = t0.x >= u.x ? 1 : -1; float(u.x, u.y - 80, SK[key][0], C[u.el], 15, 1.1);
     const dmg = Math.round([200, 300, 480][u.lv - 1] * skillMul(u) * (HEROES[u.key].cls === '포병' && synLv('artillery') >= 2 ? 1.3 : 1)), rad = 1 + (HEROES[u.key].cls === '포병' && synLv('artillery') ? 1 : 0);
@@ -786,7 +803,7 @@ function stepToward(u, t) {
   S.occ.delete(ckey(u.col, u.row)); u.col = best.col; u.row = best.row; S.occ.set(ckey(u.col, u.row), u); u.moving = true;
 }
 function tickStatus(u, dt) {
-  u.hit = Math.max(0, u.hit - dt); u.lunge = Math.max(0, u.lunge - dt); u.slow = Math.max(0, u.slow - dt); u.root = Math.max(0, (u.root || 0) - dt); u.shock = Math.max(0, (u.shock || 0) - dt); u.chill = Math.max(0, (u.chill || 0) - dt); u.blind = Math.max(0, (u.blind || 0) - dt);
+  u.vul = Math.max(0, (u.vul || 0) - dt); u.hit = Math.max(0, u.hit - dt); u.lunge = Math.max(0, u.lunge - dt); u.slow = Math.max(0, u.slow - dt); u.root = Math.max(0, (u.root || 0) - dt); u.shock = Math.max(0, (u.shock || 0) - dt); u.chill = Math.max(0, (u.chill || 0) - dt); u.blind = Math.max(0, (u.blind || 0) - dt);
   if (u.side === 'ally') {
     if (u.hot && u.hot.t > 0) { u.hot.t -= dt; u.hot.tick -= dt; if (u.hot.tick <= 0) { u.hot.tick = .5; heal(u, u.hot.amt); } }
     u.fast = Math.max(0, u.fast - dt); u.over = Math.max(0, u.over - dt); u.atkUp = Math.max(0, (u.atkUp || 0) - dt); u.barrage = Math.max(0, u.barrage - dt);
@@ -986,7 +1003,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v10</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v11</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1247,6 +1264,7 @@ function drawFoe(f) {
   ctx.font = `700 9.5px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (f.wet > 0) { ctx.fillStyle = C.water; ctx.beginPath(); ctx.arc(sx, y + r + 8, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = C.ink; ctx.fillText(f.wet, sx, y + r + 8.5); sx += 20; }
   if (f.el) { ctx.save(); ctx.translate(x + r * .78, y - r * .78); ctx.fillStyle = C[f.el]; ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 2; ctx.lineTo(Math.cos(a) * 8, Math.sin(a) * 8); } ctx.closePath(); ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = C.ink; ctx.font = `700 9px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(EL[f.el][0], 0, .5); ctx.restore(); }
+  if (f.vul > 0) { ctx.fillStyle = C.bad; ctx.beginPath(); ctx.arc(x - 14, y - r - 2, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('약', x - 14, y - r - 1.5); }
   if (f.blind > 0) { ctx.fillStyle = C.dark; ctx.beginPath(); ctx.arc(x, y - r - 16, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('실', x, y - r - 15.5); }
   if (f.taunt) { ctx.fillStyle = C.bad; ctx.beginPath(); ctx.arc(x, y - r - 16, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('!', x, y - r - 15.5); }
   if (f.chill > 0) { ctx.fillStyle = C.ice; ctx.beginPath(); ctx.arc(x + 14, y - r - 16, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = C.ink; ctx.fillText('냉', x + 14, y - r - 15.5); }
