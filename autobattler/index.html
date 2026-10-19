@@ -167,7 +167,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </head><body>
 <script src="assets-1.js?v=064c2c45"></script>
 <script src="assets-2.js?v=4d6a1686"></script>
-<script src="assets-3.js?v=6bfaccde"></script>
+<script src="assets-3.js?v=f015bff4"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -384,7 +384,7 @@ const FOES = {
   bomber:  { name:'폭탄병', hp:260, atk:90, range:1, as:.8, rad:15, spd:2.4, sprite:'ZBM', ht:115, desc:'영웅에게 닿으면 자폭해 주변 1칸에 범위 피해와 화상을 줘요. 먼저 잡으면 터지지 않아요.' },
   healer:  { name:'치유사', hp:340, atk:18, range:3, as:.6, rad:17, spd:2, sprite:'ZHL', ht:130, desc:'3초마다 가장 다친 아군을 회복해요.' },
   shaman:  { name:'주술사', hp:320, atk:22, range:3, as:.6, rad:16, spd:2, sprite:'ZSM', ht:135, muzzle:[205,210], desc:'6초마다 영웅 1명에게 약화 표식(받는 피해 +20%, 4초)을 걸고 마나 20을 태워요.' },
-  shielder:{ name:'방패병', hp:820, atk:28, range:1, as:.6, rad:18, spd:1.8, desc:'5초마다 아군에게 보호막을 씌워요.' },
+  shielder:{ name:'방패병', hp:820, atk:28, range:1, as:.6, rad:18, spd:1.8, sprite:'ZSH', ht:150, desc:'5초마다 아군(장교 우선)에게 보호막을 씌워요.' },
   general: { name:'제륵 장군', hp:1900, atk:66, range:1, as:.7, rad:26, spd:1.8, big:true, sprite:'ZGN', ht:190, desc:'6초마다 내려찍어 대상 주변 영웅을 기절시켜요.' },
   boss2:   { name:'사령관 벨제나', hp:3000, atk:70, range:3, as:.6, rad:30, spd:1.8, big:true, sprite:'ZBB', ht:202, sc:1.08, muzzle:[208,150], desc:'암흑 장판(반경 1칸, 4초), 마나 저주(영웅 전체 마나 -30·약화), 그림자 도약(뒷줄로 순간이동)을 번갈아 써요.' },
   boss3:   { name:'황제 바르고스', hp:5000, atk:95, range:1, as:.6, rad:34, spd:1.6, big:true, sprite:'ZBC', ht:220, sc:1.15, desc:'포효(영웅 2명 기절), 소환(돌격병+폭탄병), 황제의 포격(영웅 2명 주변 1칸). 체력 50% 이하면 광폭화해 더 빨라지고 포격이 3명으로 늘어요. 기절 면역.' },
@@ -549,7 +549,7 @@ const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], wal
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM, ZGN:SPR_ZGN, ZBA:SPR_ZBA, ZBB:SPR_ZBB, ZBC:SPR_ZBC };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM, ZGN:SPR_ZGN, ZBA:SPR_ZBA, ZBB:SPR_ZBB, ZBC:SPR_ZBC, ZSH:SPR_ZSH };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -1021,7 +1021,11 @@ function foeAbility(u, dt) {
     case 'healer': { const lo = foes.filter(o => o.hp < o.maxHp && o !== u || (o === u && o.hp < o.maxHp * .5)).sort((p, q) => p.hp / p.maxHp - q.hp / q.maxHp)[0]; if (!lo) { u.cd = .5; break; } u.cd = 3;
       if (FOES[u.type].sprite && !u.anim) { u.anim = 'skill_6'; u.animT = 0; u.face = lo.x >= u.x ? 1 : -1; u.pend = { at:3 / 12, fn:() => { if (lo.dead) return; heal(lo, 110 * u.sc); S.fx.push({ type:'sprfx', set:'ZHL', x:lo.x, y:lo.y, t:0, life:8 / 12 }); } }; }
       else { heal(lo, 110 * u.sc); S.fx.push({ type:'link', x:u.x, y:u.y - 8, tx:lo.x, ty:lo.y - 8, t:0, life:.4, col:C.good }); } break; }
-    case 'shielder': { u.cd = 5; const tg = foes.slice().sort((p, q) => (q.big - p.big) || (p.hp / p.maxHp - q.hp / q.maxHp))[0]; if (tg) { tg.shield += Math.round(150 * u.sc); S.fx.push({ type:'link', x:u.x, y:u.y - 8, tx:tg.x, ty:tg.y - 8, t:0, life:.4, col:'#9fe8ff' }); } break; }
+    case 'shielder': { const tg = foes.slice().sort((p, q) => (q.big - p.big) || (p.hp / p.maxHp - q.hp / q.maxHp))[0]; if (!tg) { u.cd = .5; break; } if (u.anim) { u.cd = .3; break; } u.cd = 5;
+      const give = () => { if (tg.dead) return; tg.shield += Math.round(150 * u.sc); float(tg.x, topY(tg) - 6, '보호막', '#9fe8ff', 12); };
+      if (FOES[u.type].sprite) { u.anim = 'skill_6'; u.animT = 0; u.face = tg.x >= u.x ? 1 : -1; u.pend = { at:3 / 12, fn:() => { give(); S.fx.push({ type:'sprfx', set:'ZSH', x:tg.x, y:tg.y, t:0, life:8 / 12, sc:tg.big ? 1.4 : 1 }); } }; }
+      else { give(); S.fx.push({ type:'link', x:u.x, y:u.y - 8, tx:tg.x, ty:tg.y - 8, t:0, life:.4, col:'#9fe8ff' }); }
+      break; }
     case 'shaman': { const tg = allies.slice().sort((p, q) => (q.mana || 0) - (p.mana || 0))[0]; if (!tg) { u.cd = .5; break; } u.cd = 6;
       if (u.anim) { u.cd = .3; break; } u.anim = 'skill_6'; u.animT = 0; u.face = tg.x >= u.x ? 1 : -1;
       u.pend = { at:3 / 12, fn:() => { if (tg.dead) return; tg.vul = Math.max(tg.vul || 0, 4); tg.mana = Math.max(0, (tg.mana || 0) - 20); S.fx.push({ type:'sprfx', set:'ZSM', x:tg.x, y:tg.y - 30, t:0, life:8 / 12 }); float(tg.x, topY(tg) - 6, '약화 · 마나 -20', C.dark, 12); } }; break; }
@@ -1278,7 +1282,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v34</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v35</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
