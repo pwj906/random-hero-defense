@@ -168,9 +168,10 @@
 - v22: 디자인 3 그림 적용 — GPT zip을 `python3 tools/survivor_d3.py <zip>`로 assets.js 끝에 `RH_ASSETS.d3`(player 168px 칸·발 240/256, boss 효과, ui 아이콘 96·체력바 틀)로, 코드에선 `FXA`에 합쳐 `spr`/`drawLoop`/`drawFrame`으로 씀. 위원: 대기·달리기·피격(`p.hurtT`)·만세(`G.cheerT`: 4단계↑ 뽑기·영토 해방)·쓰러짐(`G.overT`) 시트, 시작 화면 초상화(`#stPort`). 보스: 페이즈 전환 `b_phase_burst`, 분노·광폭화 오라 루프, 철벽 돔, 돌진 예고선(tline을 `b_dash_line`으로)·잔상 `b_dash_trail`, 탄환 `b_bullet`, 소환문, 대지 강타 경고 원 `b_warn_circle`·충격 `b_slam_impact`, 침묵 사슬, 초침 시계. 결계 벽은 `b_arena_wall` 조각을 원 둘레에 회전해 이어 붙임, 둥지 `b_lair`, 해방 깃발 `b_liberated_flag`, 보스 체력바에 보스 얼굴(`#bossIco`)·장식 틀(`.bfr`), 큰 지도 둥지에 보스 얼굴. assets.js 약 9.4MB.
 
 ## 랜덤 히어로 오토배틀러 (autobattler/)
-- 같은 IP의 롤토체스식 1인용 디펜스. 원본 `src/autobattler.html`(아티팩트 본문 형식, 그림 data URI 포함) → `python3 tools/build_autobattler.py` → `autobattler/index.html` + `autobattler/assets.js`(SPR_* 스프라이트·BG_SRC 맵, `?v=해시`).
+- 같은 IP의 롤토체스식 1인용 디펜스. 원본 `src/autobattler.html`(아티팩트 본문 형식, 그림 data URI 포함) → `python3 tools/build_autobattler.py` → `autobattler/index.html` + `autobattler/assets-1.js, assets-2.js…`(SPR_* 스프라이트·BG_SRC 맵, 12MB씩 나눔, `?v=해시`). 스프라이트 상수 이름은 `SPR_[A-Z]+`만 분리됨(숫자 금지).
+- v18부터 원본 HTML이 16MB를 넘어 claude.ai 아티팩트도 `autobattler/index.html` + files {assets-1.js, assets-2.js…}로 게시한다(원본 그대로 게시 금지).
 - 공개 주소 https://pwj906.github.io/random-hero-defense/autobattler/ · claude.ai 아티팩트 https://claude.ai/artifact/918uoDqJippJYwrMkYy9A8 (원본 그대로 게시).
-- 배포: 원본 수정 → 시작 화면 `오토배틀러 · vN` 올리기 → build → `git add src/autobattler.html autobattler/` → 커밋·push(main). Pages 1~2분.
+- 배포: 원본 수정 → 시작 화면 `오토배틀러 · vN` 올리기 → build → `git add src/autobattler.html autobattler/` → 커밋·push(main). Pages 1~2분. 아티팩트는 빌드 결과(index.html + assets-N.js)로 게시.
 - 구조: 960×540 가로 스테이지(세로 폰은 90° 회전), 50° 카메라 육각 보드 7×8(위 4줄 적·아래 4줄 내 진영, 뒷줄 70% 원근), 대기석 18칸 2줄, 상점 5장(코스트 1~5 확률표 `ODDS`, 레벨 최대 9 `XP_NEED`), 라운드 20(`ROUNDS`, 보스 9·15·20, 적 강화 체력 ×1.12^라운드·공격 ×1.08^라운드), 증강 2·5·9·14라운드.
 - 영웅: `HEROES[id]`(el 타입·origin 출신·cls 전투유형·cost·hp·atk·range·as·mana0/manaMax·sprite 세트·muzzle 발사점·nearFar 총검사·skills), 스킬 설명 `SK`, 시너지 `SYN`(origin/cls/el 축, needs 단계), 스프라이트 세트 `SPR`(attack_6/walk_4/skill_6/fx_8/portrait/proj, 총검사는 attack_near_6/attack_far_6). 새 영웅은 GPT zip → WebP → `const SPR_XXX={…}` 한 줄 `<script>`을 원본 상단에 추가 + HEROES/SK/castSkill 분기.
 - 전투: 유닛 1장=1개체, 같은 ★ 3개 합치면 승급(`mergeUnits`), 같은 영웅은 시너지 1명으로 셈. 상태: 균열·덩굴·냉기·감전·실명·도발·젖음·화상·밀침. 상성 `BEATS` ×1.3/×0.75(적에도 타입 `roundTypes`). 관통 `lineFoes`, 장판 `type:'field'` fx, 도약 `u.leap`, 발사체 `shoot`(spr proj 회전 +35°).

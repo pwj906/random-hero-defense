@@ -8,10 +8,20 @@ for l in lines:
     if re.match(r'^<script>const (SPR_[A-Z]+|BG_SRC)=',l) and l.endswith('</script>'):
         assets.append(l[len('<script>'):-len('</script>')])
     else: keep.append(l)
-js='\n'.join(assets)+'\n'
-h=hashlib.md5(js.encode()).hexdigest()[:8]
+# 아티팩트 파일 한도(16MB) 때문에 12MB씩 나눠 assets-1.js, assets-2.js… 로 저장
+LIM=12*1024*1024
+chunks=[[]]; size=0
+for a in assets:
+    if size+len(a)>LIM and chunks[-1]: chunks.append([]); size=0
+    chunks[-1].append(a); size+=len(a)+1
 os.makedirs(os.path.join(ROOT,'autobattler'),exist_ok=True)
-open(os.path.join(ROOT,'autobattler','assets.js'),'w',encoding='utf8').write(js)
+for f in os.listdir(os.path.join(ROOT,'autobattler')):
+    if re.match(r'^assets(-\d+)?\.js$',f): os.remove(os.path.join(ROOT,'autobattler',f))
+tags=[]; total=0
+for i,c in enumerate(chunks,1):
+    js='\n'.join(c)+'\n'; h=hashlib.md5(js.encode()).hexdigest()[:8]; total+=len(js)
+    open(os.path.join(ROOT,'autobattler','assets-%d.js'%i),'w',encoding='utf8').write(js)
+    tags.append('<script src="assets-%d.js?v=%s"></script>'%(i,h))
 body='\n'.join(keep)
 head='''<!doctype html>
 <html lang="ko"><head>
@@ -26,6 +36,6 @@ head='''<!doctype html>
 <style>*,*::before,*::after{box-sizing:border-box}html,body{height:100%}body{margin:0;background:#0a0e1f}[hidden]{display:none!important}</style>
 '''
 i=body.index('<div class="app">')
-out=head+body[:i]+'</head><body>\n<script src="assets.js?v=%s"></script>\n'%h+body[i:]+'\n</body></html>\n'
+out=head+body[:i]+'</head><body>\n'+'\n'.join(tags)+'\n'+body[i:]+'\n</body></html>\n'
 open(os.path.join(ROOT,'autobattler','index.html'),'w',encoding='utf8').write(out)
-print('autobattler/index.html',len(out),'assets.js',len(js),'hash',h)
+print('autobattler/index.html',len(out),'assets',[f.split('"')[1] for f in tags],'total',total)
