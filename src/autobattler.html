@@ -24,7 +24,7 @@ body{background:var(--ink);color:var(--text);font-family:var(--body);-webkit-use
 canvas{position:absolute;inset:0;width:960px;height:540px;touch-action:none}
 
 .tracker{position:absolute;left:330px;top:6px;width:300px;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
-.stages{display:flex;gap:3px;align-items:center}
+.stages{display:flex;gap:3px;align-items:center}.stages small{font-size:9.5px;font-weight:700;color:var(--brass);margin:0 3px;white-space:nowrap}
 .stages i{width:8px;height:8px;border-radius:50%;background:var(--panel2);border:2px solid var(--rule);display:block}
 .stages i.done{background:var(--brassDim);border-color:var(--brassDim)}
 .stages i.lost{background:var(--bad);border-color:var(--bad);opacity:.7}
@@ -439,6 +439,12 @@ const AUGS = {
   recruit:['특별 징집','무작위 2코스트 영웅 카드 2장.'],
   skin:   ['강철 피부','모든 영웅 체력 +20%.'],
   lucky:  ['행운의 손','복권의 꽝 확률이 크게 줄어요.'],
+  power:  ['전력 증강','모든 영웅 공격력 +12%. (중복 선택 가능)'],
+  tough:  ['강화 장갑','모든 영웅 체력 +12%. (중복 선택 가능)'],
+  haste:  ['가속 회로','모든 영웅 공격 속도 +8%. (중복 선택 가능)'],
+  spell:  ['스킬 증폭','모든 스킬 피해 +15%. (중복 선택 가능)'],
+  wealth: ['보급 계약','매 라운드 수입 +3골드. (중복 선택 가능)'],
+  xp:     ['속성 훈련','즉시 경험치 8.'],
 };
 const FOES = {
   runner:  { name:'돌격병', hp:380, atk:36, range:1, as:.9, rad:16, spd:2.6, sprite:'ZRN', ht:125, desc:'빠르게 달려드는 근접병.' },
@@ -448,11 +454,11 @@ const FOES = {
   shaman:  { name:'주술사', hp:320, atk:22, range:3, as:.6, rad:16, spd:2, sprite:'ZSM', ht:135, muzzle:[205,210], desc:'6초마다 영웅 1명에게 약화 표식(받는 피해 +20%, 4초)을 걸고 마나 20을 태워요.' },
   shielder:{ name:'방패병', hp:820, atk:28, range:1, as:.6, rad:18, spd:1.8, sprite:'ZSH', ht:150, desc:'5초마다 아군(장교 우선)에게 보호막을 씌워요.' },
   general: { name:'제륵 장군', hp:1900, atk:66, range:1, as:.7, rad:26, spd:1.8, big:true, sprite:'ZGN', ht:190, desc:'6초마다 내려찍어 대상 주변 영웅을 기절시켜요.' },
-  boss2:   { name:'사령관 벨제나', hp:3000, atk:70, range:3, as:.6, rad:30, spd:1.8, big:true, sprite:'ZBB', ht:202, sc:1.08, muzzle:[208,150], desc:'암흑 장판(반경 1칸, 4초), 마나 저주(영웅 전체 마나 -30·약화), 그림자 도약(뒷줄로 순간이동)을 번갈아 써요.' },
-  boss3:   { name:'황제 바르고스', hp:5000, atk:95, range:1, as:.6, rad:34, spd:1.6, big:true, sprite:'ZBC', ht:220, sc:1.15, desc:'포효(영웅 2명 기절), 소환(돌격병+폭탄병), 황제의 포격(영웅 2명 주변 1칸). 체력 50% 이하면 광폭화해 더 빨라지고 포격이 3명으로 늘어요. 기절 면역.' },
+  boss2:   { name:'사령관 벨제나', hp:2700, atk:68, range:3, as:.6, rad:30, spd:1.8, big:true, sprite:'ZBB', ht:202, sc:1.08, muzzle:[208,150], desc:'암흑 장판(반경 1칸, 4초), 마나 저주(영웅 전체 마나 -30·약화), 그림자 도약(뒷줄로 순간이동)을 번갈아 써요.' },
+  boss3:   { name:'황제 바르고스', hp:3800, atk:86, range:1, as:.6, rad:34, spd:1.6, big:true, sprite:'ZBC', ht:220, sc:1.15, desc:'포효(영웅 2명 기절), 소환(돌격병+폭탄병), 황제의 포격(영웅 2명 주변 1칸). 체력 50% 이하면 광폭화해 더 빨라지고 포격이 3명으로 늘어요. 기절 면역.' },
   boss:    { name:'사령관 쿠르가', hp:3600, atk:88, range:1, as:.6, rad:33, spd:1.6, big:true, sprite:'ZBA', ht:220, sc:1.12, muzzle:[196,150], desc:'포효(영웅 2명 기절), 군단 소환, 철퇴 투척(주변 1칸 피해)을 번갈아 써요.' },
 };
-const ROUNDS = [
+const ROUNDS0 = [
   { kind:'일반', time:35, foes:[['runner',2,3],['runner',4,3]] },
   { kind:'일반', time:35, foes:[['runner',2,3],['runner',4,3],['archer',3,1]] },
   { kind:'일반', time:35, foes:[['runner',1,3],['runner',3,3],['runner',5,3],['healer',3,0]] },
@@ -472,14 +478,37 @@ const ROUNDS = [
   { kind:'정예', time:50, foes:[['general',2,2],['general',4,2],['runner',0,3],['runner',6,3],['shielder',3,3],['archer',1,0],['archer',5,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
   { kind:'일반', time:45, foes:[['shielder',0,3],['shielder',2,3],['shielder',4,3],['shielder',6,3],['runner',1,2],['bomber',3,2],['bomber',5,2],['archer',2,0],['archer',4,0],['healer',3,0],['shaman',1,0]] },
   { kind:'정예', time:50, foes:[['general',1,2],['general',3,2],['general',5,2],['runner',0,3],['runner',6,3],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0]] },
-  { kind:'보스', time:70, foes:[['boss3',3,2],['general',1,2],['general',5,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
+  { kind:'보스', time:70, foes:[['boss3',3,2],['general',1,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
 ];
-const BAL = Object.assign({ hp:1.05, atk:1.03, hp0:.85, atk0:.85, loss:2 }, window.BAL || {});
+const BAL = Object.assign({ hp:1.045, atk:1.03, hp0:.85, atk0:.85, loss:2, hpL:1.045, atkL:1.03, pw:1.035 }, window.BAL || {});
+const MAX_R = 100;
+// 21~100라운드는 생성: 10라운드마다 정예 x5·x8, 보스 x0. 같은 라운드는 항상 같은 편성(라운드 번호 시드).
+function genRound(ri) {
+  const r = ri + 1, d = Math.floor((r - 1) / 10); let sd = r * 7919 + 13;
+  const rnd = () => { sd = (sd * 1103515245 + 12345) & 0x7fffffff; return sd / 0x7fffffff; };
+  const kind = r % 10 === 0 ? '보스' : (r % 10 === 5 || r % 10 === 8) ? '정예' : '일반';
+  const w = { runner:3, shielder:1.5 + .12 * d, archer:2, healer:1 + .1 * d, bomber:.9 + .18 * d, shaman:.5 + .18 * d };
+  const pickT = () => { let t = rnd() * Object.values(w).reduce((a, b) => a + b, 0); for (const k of Object.keys(w)) { t -= w[k]; if (t <= 0) return k; } return 'runner'; };
+  let n = Math.min(15, 8 + Math.floor((r - 20) / 8)); const big = [];
+  if (kind === '정예') big.push(...Array(1 + Math.floor(d / 3)).fill('general'));
+  if (kind === '보스') { const bs = { 3:'boss', 4:'boss2', 5:'boss3', 6:'boss', 7:'boss2', 8:'boss3', 9:'boss2', 10:'boss3' }[r / 10]; big.push(bs); big.push(...Array(Math.max(0, Math.floor(d / 3) - 1)).fill('general')); if (r === 100) big.push('general', 'general'); }
+  n -= big.length * 2;
+  const rows = { 3:[], 2:[], 1:[], 0:[] }, FRONT = ['runner', 'bomber', 'shielder'];
+  for (const b of big) rows[2].push(b);
+  for (let i = 0; i < n; i++) { const t = pickT(); const pref = FRONT.includes(t) ? [3, 2] : [0, 1]; let put = false; for (const rw of pref) if (rows[rw].length < 7) { rows[rw].push(t); put = true; break; } if (!put) for (const rw of [1, 0, 2, 3]) if (rows[rw].length < 7) { rows[rw].push(t); break; } }
+  const foes = [], order = [3, 2, 4, 1, 5, 0, 6];
+  for (const rw of [0, 1, 2, 3]) { const list = rows[rw]; const bi = list.filter(t => FOES[t].big), sm = list.filter(t => !FOES[t].big); const seq = [...bi, ...sm.sort(() => rnd() - .5)]; seq.forEach((t, i) => foes.push([t, order[i], rw])); }
+  return { kind, time: kind === '보스' ? 75 : kind === '정예' ? 55 : 45, foes, gen:true };
+}
+const ROUNDS = ROUNDS0.concat(Array.from({ length: MAX_R - ROUNDS0.length }, (_, i) => genRound(ROUNDS0.length + i)));
+// 20라운드 뒤 성장: 적은 BAL.hpL/atkL, 아군은 BAL.pw(라운드마다 복리)
+const lateN = () => Math.max(0, S.ri - 19);
+const pwK = () => Math.pow(BAL.pw, lateN());
 const LV_AT = [1, 2, 4], STAR_MUL = [1, 1.8, 3.2], STAR_SK = [1, 1.5, 2.4];
 const XP_NEED = { 3:4, 4:8, 5:12, 6:20, 7:28, 8:36 }, MAX_LVL = 9;
 const ODDS = { 3:[75,25,0,0,0], 4:[55,30,15,0,0], 5:[45,33,20,2,0], 6:[30,40,25,5,0], 7:[19,30,35,15,1], 8:[18,25,32,22,3], 9:[10,20,25,35,10] };
 function rollCard() { const o = ODDS[S.lvl] || ODDS[3]; let r = Math.random() * 100, c = 1; for (let i = 0; i < 5; i++) { r -= o[i]; if (r < 0) { c = i + 1; break; } } for (let k = c; k >= 1; k--) { const pool = Object.keys(HEROES).filter(h => HEROES[h].cost === k); if (pool.length) return pick(pool); } return pick(Object.keys(HEROES)); }
-const PREP_TIME = 30, AUG_AT = [2, 5, 9, 14];
+const PREP_TIME = 30, AUG_AT = [2, 5, 9, 14, 19].concat(Array.from({ length:16 }, (_, i) => 24 + i * 5));
 
 // ---------- state ----------
 let S;
@@ -493,6 +522,8 @@ function fresh() {
   };
 }
 const has = a => S.augs.includes(a);
+const augN = a => S.augs.filter(x => x === a).length;
+const AUG_STACK = ['power', 'tough', 'haste', 'spell', 'wealth', 'rich', 'xp'];
 
 // ---------- view: fit + rotate for portrait ----------
 const wrap = document.getElementById('wrap'), stage = document.getElementById('stage');
@@ -538,8 +569,8 @@ function horizonPct() { const lv = synLv('horizon'); if (!lv) return 0; const o 
 function synLv(id) { const d = SYN[id]; if (!S.syn || !d) return 0; const n = S.syn[id] || 0; if (d.needs) { let lv = 0; for (const x of d.needs) if (n >= x) lv++; return lv; } return n >= d.need ? 1 : 0; }
 function varakOn(u) { const lv = synLv('varak'); if (!lv || u.side !== 'ally' || u.hp > u.maxHp * .5) return 0; if (lv >= 2) return 2; return HEROES[u.key] && HEROES[u.key].origin === '바라크' ? 1 : 0; }
 const elecMul = () => (synOn('elec') ? 3 : 2) + (has('volt') ? 1 : 0);
-const asMul = u => (u.el === 'wind' && synOn('wind') ? 1.15 : 1) * (HEROES[u.key] && HEROES[u.key].origin === '벨칸' ? [1, 1.12, 1.25, 1.4][synLv('belkan')] : 1) * [1, 1.4, 2][varakOn(u)] * (HEROES[u.key] && HEROES[u.key].cls === '궁수' ? [1, 1.1, 1.25][synLv('archer')] : 1);
-const skillMul = u => (HEROES[u.key] && HEROES[u.key].cls === '암살자' ? [1, 1.25, 1.5][synLv('assassin')] : 1) * (u.el === 'elec' && synOn('elec') ? 1.15 : 1);
+const asMul = u => (1 + .08 * augN('haste')) * (u.el === 'wind' && synOn('wind') ? 1.15 : 1) * (HEROES[u.key] && HEROES[u.key].origin === '벨칸' ? [1, 1.12, 1.25, 1.4][synLv('belkan')] : 1) * [1, 1.4, 2][varakOn(u)] * (HEROES[u.key] && HEROES[u.key].cls === '궁수' ? [1, 1.1, 1.25][synLv('archer')] : 1);
+const skillMul = u => (1 + .15 * augN('spell')) * (HEROES[u.key] && HEROES[u.key].cls === '암살자' ? [1, 1.25, 1.5][synLv('assassin')] : 1) * (u.el === 'elec' && synOn('elec') ? 1.15 : 1);
 const burnMul = () => (synOn('fire') ? 1.5 : 1) * (has('oil') ? 1.4 : 1);
 const manaMul = () => (synOn('sup') ? 1.3 : 1) * (has('charge') ? 1.3 : 1);
 const manaMulU = u => manaMul() * (HEROES[u.key] && HEROES[u.key].origin === '페이지아' ? [1, 1.3, 1.6, 2][synLv('pagia')] : 1);
@@ -652,13 +683,13 @@ const status = () => ({ crack:0, crackT:0, stun:0, slow:0, wet:0, wetT:0, burn:0
 const TYPES = ['water', 'fire', 'grass', 'earth', 'elec', 'wind', 'ice', 'light', 'dark'];
 function roundTypes(ri) { const a = TYPES[(ri * 4 + S.seed) % 9]; let b = TYPES[(ri * 7 + S.seed * 3 + 2) % 9]; if (b === a) b = TYPES[(TYPES.indexOf(a) + 1) % 9]; return [a, b]; }
 function makeFoe([type, col, row]) {
-  const d = FOES[type], hm = Math.pow(BAL.hp, S.ri) * BAL.hp0, am = Math.pow(BAL.atk, S.ri) * BAL.atk0, [x, y] = cellXY(col, row);
+  const d = FOES[type], hm = Math.pow(BAL.hp, Math.min(S.ri, 19)) * Math.pow(BAL.hpL, lateN()) * BAL.hp0, am = Math.pow(BAL.atk, Math.min(S.ri, 19)) * Math.pow(BAL.atkL, lateN()) * BAL.atk0, [x, y] = cellXY(col, row);
   const el = type.startsWith('boss') ? 'dark' : type === 'general' ? pick(['dark', 'light']) : pick(roundTypes(S.ri));
   return { side:'foe', type, el, name:d.name, big:!!d.big, rad:d.rad, col, row, x, y, hp:d.hp * hm, maxHp:d.hp * hm, atk:d.atk * am, range:d.range, as:d.as, spd:d.spd, sc:hm, atkCd:rand(.2, .7), cd:rand(1.5, 3), pattern:0, mana:0, ...status() };
 }
 function makeAlly(k) {
-  const u = S.units[k], h = HEROES[u.key], lv = u.star, m = STAR_MUL[lv - 1], hp = h.hp * m * (has('skin') ? 1.2 : 1) * (h.cls === '투사' ? [1, 1.2, 1.4][synLv('fighter')] : 1) * (1 + horizonPct()), [x, y] = cellXY(u.slot.col, u.slot.row);
-  return { side:'ally', key:u.key, id:k, name:h.name, el:h.el, lv, skills:h.skills, col:u.slot.col, row:u.slot.row, x, y, hp, maxHp:hp, atk:h.atk * m * (1 + horizonPct()), range:h.range + (h.cls === '궁수' && synLv('archer') ? 1 : 0), as:h.as, spd:2.2, atkCd:rand(.1, .6), mana:(h.mana0 ?? rand(0, 20)) + (h.cls === '마법사' ? [0, 20, 40][synLv('mage')] : 0), maxMana:h.manaMax || 100, anim:null, animT:0, face:1, ...status() };
+  const u = S.units[k], h = HEROES[u.key], lv = u.star, m = STAR_MUL[lv - 1], hp = h.hp * m * (has('skin') ? 1.2 : 1) * (1 + .12 * augN('tough')) * pwK() * (h.cls === '투사' ? [1, 1.2, 1.4][synLv('fighter')] : 1) * (1 + horizonPct()), [x, y] = cellXY(u.slot.col, u.slot.row);
+  return { side:'ally', key:u.key, id:k, name:h.name, el:h.el, lv, skills:h.skills, col:u.slot.col, row:u.slot.row, x, y, hp, maxHp:hp, atk:h.atk * m * (1 + .12 * augN('power')) * pwK() * (1 + horizonPct()), range:h.range + (h.cls === '궁수' && synLv('archer') ? 1 : 0), as:h.as, spd:2.2, atkCd:rand(.1, .6), mana:(h.mana0 ?? rand(0, 20)) + (h.cls === '마법사' ? [0, 20, 40][synLv('mage')] : 0), maxMana:h.manaMax || 100, anim:null, animT:0, face:1, ...status() };
 }
 
 // ---------- combat ----------
@@ -1316,7 +1347,7 @@ function afterResult() {
   const R = ROUNDS[S.ri], win = S.lastWin;
   if (S.life <= 0) return finish(false);
   if (win && S.ri === ROUNDS.length - 1) return finish(true);
-  const inc = 5 + interestNow() + (win ? 1 : 0);
+  const inc = 5 + interestNow() + (win ? 1 : 0) + 3 * augN('wealth');
   S.gold += inc; gainXp(2);
   if (win || R.kind !== '보스') S.ri++; if (R.kind === '보스' && win) banner(`${S.ri}라운드 보스 격파!`, 2, C.gold);
   else S.hist[S.ri] = undefined;
@@ -1326,8 +1357,8 @@ function afterResult() {
 function finish(win) {
   S.phase = 'over';
   const st = S.stats;
-  overlay.innerHTML = `<div class="sheet"><h2>${win ? '쿠르가 격파!' : '생명력이 바닥났어요'}</h2>
-    <p>${win ? '제륵 군단을 막아냈어요.' : `${S.ri + 1}라운드에서 무너졌어요.`}</p>
+  overlay.innerHTML = `<div class="sheet"><h2>${win ? '제륵 황제 격파!' : '생명력이 바닥났어요'}</h2>
+    <p>${win ? `${MAX_R}라운드를 모두 막아냈어요.` : `${S.ri + 1}라운드에서 무너졌어요.`}</p>
     <div class="stats"><div><b>${st.wins}</b><span>승리</span></div><div><b>${st.maxHit}</b><span>최고 한 방</span></div><div><b>${st.combos}</b><span>연계 발동</span></div><div><b>${st.kills}</b><span>처치</span></div></div>
     <button class="big" id="again" style="align-self:flex-start">다시 하기</button></div>`;
   overlay.hidden = false; renderAll();
@@ -1344,7 +1375,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v36</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v37</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1364,13 +1395,14 @@ function showTitle() {
 }
 function showAugments(inc) {
   S.phase = 'augment'; renderAll();
-  const pool = Object.keys(AUGS).filter(a => !S.augs.includes(a)).sort(() => Math.random() - .5).slice(0, 3);
+  const pool = Object.keys(AUGS).filter(a => AUG_STACK.includes(a) || !S.augs.includes(a)).sort(() => Math.random() - .5).slice(0, 3);
   overlay.innerHTML = `<div style="display:flex;flex-direction:column;gap:14px;align-items:center"><div class="panelTitle" style="font-size:13px">증강 선택 · 수입 +${inc}G</div>
     <div class="augPick">${pool.map(a => `<button class="augC" data-a="${a}"><b>${AUGS[a][0]}</b><span>${AUGS[a][1]}</span></button>`).join('')}</div></div>`;
   overlay.hidden = false;
   overlay.querySelectorAll('.augC').forEach(b => b.onclick = () => {
     const a = b.dataset.a; S.augs.push(a);
     if (a === 'rich') S.gold += 12;
+    if (a === 'xp') gainXp(8);
     toPrep();
     if (a === 'recruit') { const c2 = Object.keys(HEROES); addCard(pick(c2), 2); refreshSyn(); renderAll(); }
   });
@@ -1384,7 +1416,7 @@ function renderTraits() {
     const d = SYN[el], on = c[el] >= d.need, needs = d.needs || [d.need], next = needs.find(x => c[el] < x), lv = needs.filter(x => c[el] >= x).length;
     return `<div class="trait ${on ? 'on' : 'off'}${S.traitOpen === el ? ' open' : ''}" data-trait="${el}"><div class="hx" style="background:${C[el]}">${d.name.slice(0, 1)}</div>
       <div><div class="tn"><span>${d.name}${lv > 0 && needs.length > 1 ? `<span style="color:var(--brass);margin-left:3px">${['', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'][lv]}</span>` : ''}<small style="color:var(--muted);font-weight:600;margin-left:4px">${d.origin ? '출신' : d.cls ? '유형' : '타입'}</small></span><b>${c[el]}/${next || needs[needs.length - 1]}</b></div><div class="td">${d.text}</div></div></div>`;
-  }).join('') + (S.augs.length ? `<div class="augs"><div class="panelTitle">증강</div>${S.augs.map(a => `<div class="aug"><b>${AUGS[a][0]}</b>${AUGS[a][1]}</div>`).join('')}</div>` : '');
+  }).join('') + (S.augs.length ? `<div class="augs"><div class="panelTitle">증강</div>${[...new Set(S.augs)].map(a => `<div class="aug"><b>${AUGS[a][0]}${augN(a) > 1 ? ` ×${augN(a)}` : ''}</b>${AUGS[a][1]}</div>`).join('')}</div>` : '');
   $('traits').querySelectorAll('[data-trait]').forEach(el => el.onclick = () => { const id = el.dataset.trait; S.traitOpen = S.traitOpen === id ? null : id; S.sel = S.traitOpen ? { t:'syn', id } : null; renderTraits(); renderSide(); });
 }
 function infoHtml() {
@@ -1487,7 +1519,8 @@ function renderShop() {
   const rd = $('ready'); rd.disabled = S.phase !== 'prep' && S.phase !== 'fight'; rd.textContent = S.phase === 'fight' ? `${S.speed}배속 ▸` : S.phase === 'result' ? '결과' : '준비 완료';
 }
 function renderTracker() {
-  $('stages').innerHTML = ROUNDS.map((r, i) => `<i class="${S.hist[i] === 'lost' && i !== S.ri ? 'lost' : i < S.ri ? 'done' : i === S.ri ? 'now' : ''} ${r.kind === '정예' ? 'elite' : ''} ${r.kind === '보스' ? 'boss' : ''}"></i>`).join('');
+  const d0 = Math.floor(S.ri / 10) * 10;
+  $('stages').innerHTML = `<small>${d0 + 1}~${d0 + 10}</small>` + ROUNDS.slice(d0, d0 + 10).map((r, j) => { const i = d0 + j; return `<i class="${S.hist[i] === 'lost' && i !== S.ri ? 'lost' : i < S.ri ? 'done' : i === S.ri ? 'now' : ''} ${r.kind === '정예' ? 'elite' : ''} ${r.kind === '보스' ? 'boss' : ''}"></i>`; }).join('') + `<small>/${MAX_R}</small>`;
   tickTracker();
 }
 function tickTracker() {
