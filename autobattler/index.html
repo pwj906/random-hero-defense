@@ -167,7 +167,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </head><body>
 <script src="assets-1.js?v=064c2c45"></script>
 <script src="assets-2.js?v=4d6a1686"></script>
-<script src="assets-3.js?v=187c6ca7"></script>
+<script src="assets-3.js?v=6bfaccde"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -386,6 +386,8 @@ const FOES = {
   shaman:  { name:'주술사', hp:320, atk:22, range:3, as:.6, rad:16, spd:2, sprite:'ZSM', ht:135, muzzle:[205,210], desc:'6초마다 영웅 1명에게 약화 표식(받는 피해 +20%, 4초)을 걸고 마나 20을 태워요.' },
   shielder:{ name:'방패병', hp:820, atk:28, range:1, as:.6, rad:18, spd:1.8, desc:'5초마다 아군에게 보호막을 씌워요.' },
   general: { name:'제륵 장군', hp:1900, atk:66, range:1, as:.7, rad:26, spd:1.8, big:true, sprite:'ZGN', ht:190, desc:'6초마다 내려찍어 대상 주변 영웅을 기절시켜요.' },
+  boss2:   { name:'사령관 벨제나', hp:3000, atk:70, range:3, as:.6, rad:30, spd:1.8, big:true, sprite:'ZBB', ht:202, sc:1.08, muzzle:[208,150], desc:'암흑 장판(반경 1칸, 4초), 마나 저주(영웅 전체 마나 -30·약화), 그림자 도약(뒷줄로 순간이동)을 번갈아 써요.' },
+  boss3:   { name:'황제 바르고스', hp:5000, atk:95, range:1, as:.6, rad:34, spd:1.6, big:true, sprite:'ZBC', ht:220, sc:1.15, desc:'포효(영웅 2명 기절), 소환(돌격병+폭탄병), 황제의 포격(영웅 2명 주변 1칸). 체력 50% 이하면 광폭화해 더 빨라지고 포격이 3명으로 늘어요. 기절 면역.' },
   boss:    { name:'사령관 쿠르가', hp:3600, atk:88, range:1, as:.6, rad:33, spd:1.6, big:true, sprite:'ZBA', ht:220, sc:1.12, muzzle:[196,150], desc:'포효(영웅 2명 기절), 군단 소환, 철퇴 투척(주변 1칸 피해)을 번갈아 써요.' },
 };
 const ROUNDS = [
@@ -403,12 +405,12 @@ const ROUNDS = [
   { kind:'정예', time:45, foes:[['general',3,2],['shielder',1,3],['shielder',5,3],['bomber',2,3],['bomber',4,3],['archer',0,0],['archer',6,0],['healer',3,0],['shaman',2,0]] },
   { kind:'일반', time:40, foes:[['shielder',1,3],['shielder',3,3],['shielder',5,3],['runner',0,2],['runner',6,2],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0],['shaman',3,0]] },
   { kind:'일반', time:45, foes:[['runner',0,3],['runner',1,3],['runner',5,3],['bomber',6,3],['bomber',2,2],['shielder',3,3],['archer',1,1],['archer',5,1],['archer',3,0],['healer',2,0],['healer',4,0]] },
-  { kind:'보스', time:60, foes:[['boss',3,2],['general',1,2],['shielder',2,3],['shielder',4,3],['runner',5,3],['healer',1,0],['healer',5,0],['shaman',3,0]] },
+  { kind:'보스', time:60, foes:[['boss2',3,1],['general',1,2],['shielder',2,3],['shielder',4,3],['runner',5,3],['healer',1,0],['healer',5,0],['shaman',3,0]] },
   { kind:'일반', time:45, foes:[['runner',0,3],['runner',2,3],['runner',4,3],['runner',6,3],['shielder',1,2],['shielder',5,2],['archer',2,0],['archer',4,0],['healer',3,0],['healer',1,0]] },
   { kind:'정예', time:50, foes:[['general',2,2],['general',4,2],['runner',0,3],['runner',6,3],['shielder',3,3],['archer',1,0],['archer',5,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
   { kind:'일반', time:45, foes:[['shielder',0,3],['shielder',2,3],['shielder',4,3],['shielder',6,3],['runner',1,2],['bomber',3,2],['bomber',5,2],['archer',2,0],['archer',4,0],['healer',3,0],['shaman',1,0]] },
   { kind:'정예', time:50, foes:[['general',1,2],['general',3,2],['general',5,2],['runner',0,3],['runner',6,3],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0]] },
-  { kind:'보스', time:70, foes:[['boss',3,2],['general',1,2],['general',5,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
+  { kind:'보스', time:70, foes:[['boss3',3,2],['general',1,2],['general',5,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
 ];
 const BAL = Object.assign({ hp:1.05, atk:1.03, hp0:.85, atk0:.85, loss:2 }, window.BAL || {});
 const LV_AT = [1, 2, 4], STAR_MUL = [1, 1.8, 3.2], STAR_SK = [1, 1.5, 2.4];
@@ -487,7 +489,7 @@ function float(x, y, txt, col, size = 13, life = .9) { S.text.push({ x, y, txt, 
 function burst(x, y, col, n = 10, sp = 120) { for (let i = 0; i < n; i++) { const a = rand(0, 6.283), v = rand(sp * .3, sp); S.parts.push({ x, y, vx:Math.cos(a) * v, vy:Math.sin(a) * v, t:0, life:rand(.3, .7), col, r:rand(1.5, 3.5) }); } }
 function ring(x, y, col, r1 = 40, life = .4) { S.fx.push({ type:'ring', x, y, r0:6, r1, t:0, life, col }); }
 function banner(txt, life = 1.4, col = C.text) { S.banner = { txt, t:0, life, col }; }
-const topY = u => u.side === 'ally' ? u.y - 50 : (u.side === 'foe' && FOES[u.type] && FOES[u.type].sprite ? u.y + 12 - FOES[u.type].ht * (FOES[u.type].sc || 1) * SPR_SC * scAtY(u.y) - 6 : u.y - u.rad - 16);
+const topY = u => u.side === 'ally' ? u.y - 50 : (u.side === 'foe' && FOES[u.type] && FOES[u.type].sprite ? u.y + 12 - FOES[u.type].ht * (FOES[u.type].sc || 1) * (FOES[u.type].big ? .86 : 1) * SPR_SC * scAtY(u.y) - 6 : u.y - u.rad - 16);
 function combo(f, label, col) { S.stats.combos++; float(f.x, topY(f) - 14, label, col, 21, 1.1); }
 
 // ---------- damage & status ----------
@@ -518,7 +520,7 @@ function kill(t) {
   if (t.side === 'foe') S.stats.kills++;
 }
 function heal(t, amt) { if (t.dead) return; if (t.side === 'ally') amt *= [1, 1.3, 1.6][synLv('nox')]; amt = Math.round(Math.min(amt, t.maxHp - t.hp)); if (amt <= 0) return; t.hp += amt; float(t.x, topY(t), '+' + amt, C.good, 13); }
-function stunUnit(t, s) { if (t.dead) return; t.stun = Math.max(t.stun, s); float(t.x, topY(t) - 12, '기절!', t.side === 'ally' ? C.bad : C.elec, 14); }
+function stunUnit(t, s) { if (t.dead) return; if (t.type === 'boss3') { float(t.x, topY(t) - 12, '면역', C.muted, 12); return; } t.stun = Math.max(t.stun, s); float(t.x, topY(t) - 12, '기절!', t.side === 'ally' ? C.bad : C.elec, 14); }
 function wet(f, n) { f.wet = Math.min(6, f.wet + n); f.wetT = 4; }
 function burn(f, n) { f.burn = Math.min(has('oil') ? 15 : 10, f.burn + n); f.burnDecay = 2.5; }
 function fireHit(f, d, n, src) { hit(f, d, C.fire, src); if (f.dead) return; if (f.wet > 0) steam(f, src); else burn(f, n); }
@@ -543,11 +545,11 @@ function headgear(g, key, t) {
     case 'medic': g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, -25, 15, Math.PI, 0); g.fill(); g.stroke(); g.fillStyle = C.bad; g.fillRect(-2, -37, 4, 10); g.fillRect(-5, -34, 10, 4); break;
   }
 }
-const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], walk_4:[4,8], skill_6:[6,12], fx_8:[8,12] };
+const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], walk_4:[4,8], skill_6:[6,12], skill2_6:[6,12], fx_8:[8,12] };
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM, ZGN:SPR_ZGN, ZBA:SPR_ZBA };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM, ZGN:SPR_ZGN, ZBA:SPR_ZBA, ZBB:SPR_ZBB, ZBC:SPR_ZBC };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -589,7 +591,7 @@ const TYPES = ['water', 'fire', 'grass', 'earth', 'elec', 'wind', 'ice', 'light'
 function roundTypes(ri) { const a = TYPES[(ri * 4 + S.seed) % 9]; let b = TYPES[(ri * 7 + S.seed * 3 + 2) % 9]; if (b === a) b = TYPES[(TYPES.indexOf(a) + 1) % 9]; return [a, b]; }
 function makeFoe([type, col, row]) {
   const d = FOES[type], hm = Math.pow(BAL.hp, S.ri) * BAL.hp0, am = Math.pow(BAL.atk, S.ri) * BAL.atk0, [x, y] = cellXY(col, row);
-  const el = type === 'boss' ? 'dark' : type === 'general' ? pick(['dark', 'light']) : pick(roundTypes(S.ri));
+  const el = type.startsWith('boss') ? 'dark' : type === 'general' ? pick(['dark', 'light']) : pick(roundTypes(S.ri));
   return { side:'foe', type, el, name:d.name, big:!!d.big, rad:d.rad, col, row, x, y, hp:d.hp * hm, maxHp:d.hp * hm, atk:d.atk * am, range:d.range, as:d.as, spd:d.spd, sc:hm, atkCd:rand(.2, .7), cd:rand(1.5, 3), pattern:0, mana:0, ...status() };
 }
 function makeAlly(k) {
@@ -1005,11 +1007,11 @@ function castSkill(u, key, echo) {
   if (!echo && key !== 'encore') S.lastSkill = { u, key };
   return true;
 }
-function summonNear(u) {
+function summonNear(u, kind = 'runner') {
   const free = []; for (let row = 0; row < 4; row++) for (let col = 0; col < COLS; col++) if (!S.occ.has(ckey(col, row))) free.push({ col, row });
   free.sort((p, q) => hexDist(p, u) - hexDist(q, u));
   const p = free[0]; if (!p) return;
-  const f = makeFoe(['runner', p.col, p.row]); f.y -= 40; f.moving = true;
+  const f = makeFoe([kind, p.col, p.row]); f.y -= 40; f.moving = true;
   S.cu.push(f); S.occ.set(ckey(p.col, p.row), f); ring(f.x, f.y + 40, C.foe, 30);
 }
 function foeAbility(u, dt) {
@@ -1023,6 +1025,25 @@ function foeAbility(u, dt) {
     case 'shaman': { const tg = allies.slice().sort((p, q) => (q.mana || 0) - (p.mana || 0))[0]; if (!tg) { u.cd = .5; break; } u.cd = 6;
       if (u.anim) { u.cd = .3; break; } u.anim = 'skill_6'; u.animT = 0; u.face = tg.x >= u.x ? 1 : -1;
       u.pend = { at:3 / 12, fn:() => { if (tg.dead) return; tg.vul = Math.max(tg.vul || 0, 4); tg.mana = Math.max(0, (tg.mana || 0) - 20); S.fx.push({ type:'sprfx', set:'ZSM', x:tg.x, y:tg.y - 30, t:0, life:8 / 12 }); float(tg.x, topY(tg) - 6, '약화 · 마나 -20', C.dark, 12); } }; break; }
+    case 'boss2': {
+      if (u.anim) { u.cd = .3; break; }
+      u.cd = 4.5; const p = ['field', 'curse', 'blink'][u.pattern++ % 3];
+      if (p === 'field') { let best = null, bn = -1; for (const a of allies) { const n = allies.filter(o => hexDist(o, a) <= 1).length; if (n > bn) { bn = n; best = a; } } if (!best) break; const [fx, fy] = cellXY(best.col, best.row); float(u.x, topY(u) - 14, '암흑 장판', C.foe, 17); u.anim = 'skill_6'; u.animT = 0; u.face = fx >= u.x ? 1 : -1;
+        u.pend = { at:3 / 12, fn:() => { S.fx.push({ type:'sprloop', set:'ZBB', x:fx, y:fy, t:0, hold:4, life:4.5 }); (S.dz = S.dz || []).push({ x:fx, y:fy, col:best.col, row:best.row, t:4, tick:.5, dmg:u.atk * .5 * .5, src:u }); } }; }
+      if (p === 'curse') { float(u.x, topY(u) - 14, '마나 저주', C.foe, 17); u.anim = 'skill_6'; u.animT = 0; u.pend = { at:3 / 12, fn:() => { for (const a of alliesAlive()) { a.mana = Math.max(0, (a.mana || 0) - 30); a.vul = Math.max(a.vul || 0, 2); float(a.x, topY(a) - 6, '약화 · 마나 -30', C.dark, 12); } ring(u.x, u.y, C.dark, 170, .6); if (!RM) S.shake = 5; } }; }
+      if (p === 'blink') { const free = []; for (let col = 0; col < COLS; col++) if (!S.occ.has(ckey(col, 0))) free.push(col); if (!free.length) { u.cd = 1; break; } const col = free.sort((a, b) => Math.abs(a - 3) - Math.abs(b - 3))[0]; float(u.x, topY(u) - 14, '그림자 도약', C.foe, 17); u.anim = 'skill_6'; u.animT = 0;
+        u.pend = { at:3 / 12, fn:() => { burst(u.x, u.y - 20, C.dark, 18, 140); S.occ.delete(ckey(u.col, u.row)); u.col = col; u.row = 0; [u.x, u.y] = cellXY(col, 0); u.moving = false; S.occ.set(ckey(col, 0), u); burst(u.x, u.y - 20, C.dark, 18, 140); u.target = null; } }; }
+      break;
+    }
+    case 'boss3': {
+      if (u.anim) { u.cd = .3; break; }
+      if (!u.p2 && u.hp <= u.maxHp * .5) { u.p2 = true; u.anim = 'skill2_6'; u.animT = 0; u.cd = .6; u.as *= 1.4; u.pend = { at:3 / 12, fn:() => { float(u.x, topY(u) - 14, '광폭화!', C.gold, 20, 1.2); ring(u.x, u.y, C.foe, 200, .7); burst(u.x, u.y - 30, C.foe, 30, 220); if (!RM) S.shake = 10; } }; break; }
+      u.cd = u.p2 ? 3.5 : 4.5; const p = ['roar', 'summon', 'blast'][u.pattern++ % 3];
+      if (p === 'roar') { float(u.x, topY(u) - 14, '황제의 포효', C.foe, 17); u.anim = 'skill_6'; u.animT = 0; u.pend = { at:3 / 12, fn:() => { alliesAlive().sort(() => Math.random() - .5).slice(0, 2).forEach(a => stunUnit(a, 2)); ring(u.x, u.y, C.foe, 170, .6); if (!RM) S.shake = 6; } }; }
+      if (p === 'summon') { float(u.x, topY(u) - 14, '근위대 소환', C.foe, 17); u.anim = 'skill_6'; u.animT = 0; u.pend = { at:3 / 12, fn:() => { summonNear(u, 'runner'); summonNear(u, 'bomber'); } }; }
+      if (p === 'blast') { const ts = allies.slice().sort(() => Math.random() - .5).slice(0, u.p2 ? 3 : 2); if (!ts.length) break; float(u.x, topY(u) - 14, '황제의 포격', C.foe, 17); u.anim = 'skill_6'; u.animT = 0; u.pend = { at:3 / 12, fn:() => { for (const t of ts) { S.fx.push({ type:'sprfx', set:'ZBC', x:t.x, y:t.y, t:0, life:8 / 12, sc:1.25 }); for (const a of near(t, 1, 'ally')) hit(a, u.atk * 1.8, C.bad, u); } if (!RM) S.shake = 8; } }; }
+      break;
+    }
     case 'general': {
       const t = u.target && !u.target.dead ? u.target : null;
       if (!t || hexDist(u, t) > 1) { u.cd = .5; break; }
@@ -1094,6 +1115,7 @@ function combatUpdate(dt) {
   }
   for (const s of S.shots) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; if (!s.tgt.dead) s.cb(s.tgt); } }
   S.shots = S.shots.filter(s => !s.done);
+  if (S.dz) { for (const z of S.dz) { z.t -= dt; z.tick -= dt; if (z.tick <= 0) { z.tick = .5; for (const a of alliesAlive()) if (hexDist(a, z) <= 1) hit(a, z.dmg, C.dark, z.src); } } S.dz = S.dz.filter(z => z.t > 0); }
   const fa = foesAlive().length, aa = alliesAlive().length;
   if (!fa) return endCombat(true);
   if (!aa) return endCombat(false);
@@ -1183,7 +1205,7 @@ function lottery() {
 // ---------- flow ----------
 function refreshSyn() { if (S.phase === 'prep') S.syn = synCount(); }
 function toPrep() {
-  S.phase = 'prep'; S.prepT = PREP_TIME; S.shots = []; S.fx = []; S.corpses = []; S.hitstop = 0; S.lastSkill = null;
+  S.phase = 'prep'; S.prepT = PREP_TIME; S.shots = []; S.fx = []; S.dz = []; S.corpses = []; S.hitstop = 0; S.lastSkill = null;
   S.cu = ROUNDS[S.ri].foes.map(makeFoe);
   if (S.sel && S.sel.t !== 'hero') S.sel = null;
   rollShop(); refreshSyn(); hideOverlay(); renderAll();
@@ -1256,7 +1278,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v33</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v34</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1558,6 +1580,7 @@ function drawOwned(k) {
   if (onBoard && S.phase === 'prep') { const R = HEROES[u.key].range; ctx.font = `700 9px ${FONT_B}`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(238,240,255,.55)'; ctx.fillText(`${R}`, x + 18, y - 34); }
 }
 function drawFx() {
+  for (const e of S.fx) if (e.type === 'sprloop') { const fr = e.t < .25 ? Math.floor(e.t * 12) : e.t < .25 + e.hold ? 2 + Math.floor(((e.t - .25) * 6) % 3) : Math.min(7, 5 + Math.floor((e.t - .25 - e.hold) * 12)); drawSprite(ctx, e.set, 'fx_8', fr, e.x, e.y + 12, SPR_SC * 1.1 * scAtY(e.y), 1, 1); }
   for (const e of S.fx) if (e.type === 'sprfx') drawSprite(ctx, e.set, 'fx_8', sprFrame('fx_8', e.t, false), e.x, e.y + (e.rot != null ? -14 : 12), SPR_SC * 1.1 * (e.sc || 1) * scAtY(e.y), 1, 1, false, e.rot || 0);
   for (const e of S.fx) if (e.type === 'field') { const rem = e.life - e.t; const f = e.t < 2 / 12 ? Math.floor(e.t * 12) : rem < 2 / 12 ? 7 - Math.floor(rem * 12) : 2 + Math.floor(e.t * 6) % 4; drawSprite(ctx, e.set, 'fx_8', f, e.x, e.y + 12, SPR_SC * 1.25 * scAtY(e.y), 1, .9); }
   for (const c of S.corpses) { const k = Math.min(1, c.t / .45), e = 1 - (1 - k) * (1 - k); ctx.__foot = true; drawSprite(ctx, HEROES[c.key].sprite, 'attack_6', 0, c.x, c.y + 12 + 10 * e, SPR_SC * scAtY(c.y) * (1 - .15 * e), c.face || 1, c.t < .12 ? 1 : Math.max(0, 1 - (c.t - .45) / .55), c.t < .12, (c.face || 1) * 1.35 * e); } ctx.__foot = false;
