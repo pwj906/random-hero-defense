@@ -167,7 +167,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </head><body>
 <script src="assets-1.js?v=064c2c45"></script>
 <script src="assets-2.js?v=4d6a1686"></script>
-<script src="assets-3.js?v=ad95712a"></script>
+<script src="assets-3.js?v=ebd4ba6d"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -379,8 +379,9 @@ const AUGS = {
   lucky:  ['행운의 손','복권의 꽝 확률이 크게 줄어요.'],
 };
 const FOES = {
-  runner:  { name:'돌격병', hp:380, atk:36, range:1, as:.9, rad:16, spd:2.6, desc:'빠르게 달려드는 근접병.' },
-  archer:  { name:'사수',   hp:300, atk:40, range:3, as:.7, rad:16, spd:2,   desc:'뒤에서 쏘는 원거리병.' },
+  runner:  { name:'돌격병', hp:380, atk:36, range:1, as:.9, rad:16, spd:2.6, sprite:'ZRN', ht:125, desc:'빠르게 달려드는 근접병.' },
+  archer:  { name:'가시 사수', hp:300, atk:40, range:3, as:.7, rad:16, spd:2, sprite:'ZAR', ht:130, muzzle:[203,194], desc:'뒤에서 가시를 쏘는 원거리병.' },
+  bomber:  { name:'폭탄병', hp:260, atk:90, range:1, as:.8, rad:15, spd:2.4, sprite:'ZBM', ht:115, desc:'영웅에게 닿으면 자폭해 주변 1칸에 범위 피해와 화상을 줘요. 먼저 잡으면 터지지 않아요.' },
   healer:  { name:'치유사', hp:340, atk:18, range:3, as:.6, rad:17, spd:2,   desc:'3초마다 가장 다친 아군을 회복해요.' },
   shielder:{ name:'방패병', hp:820, atk:28, range:1, as:.6, rad:18, spd:1.8, desc:'5초마다 아군에게 보호막을 씌워요.' },
   general: { name:'제륵 장군', hp:1900, atk:66, range:1, as:.7, rad:26, spd:1.8, big:true, desc:'6초마다 내려찍어 대상 주변 영웅을 기절시켜요.' },
@@ -392,19 +393,19 @@ const ROUNDS = [
   { kind:'일반', time:35, foes:[['runner',1,3],['runner',3,3],['runner',5,3],['healer',3,0]] },
   { kind:'일반', time:40, foes:[['shielder',3,3],['runner',1,3],['runner',5,3],['archer',2,1],['archer',4,1]] },
   { kind:'정예', time:45, foes:[['general',3,2],['runner',1,3],['runner',5,3],['healer',3,0]] },
-  { kind:'일반', time:40, foes:[['runner',1,3],['runner',3,3],['runner',5,3],['archer',2,1],['archer',4,1],['healer',3,0]] },
+  { kind:'일반', time:40, foes:[['runner',1,3],['runner',5,3],['bomber',2,3],['bomber',4,3],['archer',2,1],['archer',4,1],['healer',3,0]] },
   { kind:'일반', time:40, foes:[['shielder',2,3],['shielder',4,3],['runner',0,3],['runner',6,3],['archer',1,1],['archer',5,1],['healer',3,0]] },
   { kind:'정예', time:45, foes:[['general',2,2],['general',4,2],['archer',3,0],['healer',1,0],['healer',5,0]] },
   { kind:'보스', time:60, foes:[['boss',3,2],['shielder',1,3],['shielder',5,3],['healer',2,0],['healer',4,0]] },
   { kind:'일반', time:40, foes:[['runner',1,3],['runner',3,3],['runner',5,3],['shielder',2,2],['shielder',4,2],['archer',1,0],['archer',5,0],['healer',3,0]] },
   { kind:'일반', time:40, foes:[['runner',0,3],['runner',2,3],['runner',4,3],['runner',6,3],['archer',1,1],['archer',3,1],['archer',5,1],['healer',2,0],['healer',4,0]] },
-  { kind:'정예', time:45, foes:[['general',3,2],['shielder',1,3],['shielder',5,3],['runner',2,3],['runner',4,3],['archer',0,0],['archer',6,0],['healer',3,0]] },
+  { kind:'정예', time:45, foes:[['general',3,2],['shielder',1,3],['shielder',5,3],['bomber',2,3],['bomber',4,3],['archer',0,0],['archer',6,0],['healer',3,0]] },
   { kind:'일반', time:40, foes:[['shielder',1,3],['shielder',3,3],['shielder',5,3],['runner',0,2],['runner',6,2],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0]] },
-  { kind:'일반', time:45, foes:[['runner',0,3],['runner',1,3],['runner',5,3],['runner',6,3],['shielder',3,3],['archer',1,1],['archer',5,1],['archer',3,0],['healer',2,0],['healer',4,0]] },
+  { kind:'일반', time:45, foes:[['runner',0,3],['runner',1,3],['runner',5,3],['bomber',6,3],['bomber',2,2],['shielder',3,3],['archer',1,1],['archer',5,1],['archer',3,0],['healer',2,0],['healer',4,0]] },
   { kind:'보스', time:60, foes:[['boss',3,2],['general',1,2],['shielder',2,3],['shielder',4,3],['runner',5,3],['healer',1,0],['healer',5,0]] },
   { kind:'일반', time:45, foes:[['runner',0,3],['runner',2,3],['runner',4,3],['runner',6,3],['shielder',1,2],['shielder',5,2],['archer',2,0],['archer',4,0],['healer',3,0],['healer',1,0]] },
   { kind:'정예', time:50, foes:[['general',2,2],['general',4,2],['runner',0,3],['runner',6,3],['shielder',3,3],['archer',1,0],['archer',5,0],['healer',2,0],['healer',4,0]] },
-  { kind:'일반', time:45, foes:[['shielder',0,3],['shielder',2,3],['shielder',4,3],['shielder',6,3],['runner',1,2],['runner',3,2],['runner',5,2],['archer',2,0],['archer',4,0],['healer',3,0]] },
+  { kind:'일반', time:45, foes:[['shielder',0,3],['shielder',2,3],['shielder',4,3],['shielder',6,3],['runner',1,2],['bomber',3,2],['bomber',5,2],['archer',2,0],['archer',4,0],['healer',3,0]] },
   { kind:'정예', time:50, foes:[['general',1,2],['general',3,2],['general',5,2],['runner',0,3],['runner',6,3],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0]] },
   { kind:'보스', time:70, foes:[['boss',3,2],['general',1,2],['general',5,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0]] },
 ];
@@ -485,7 +486,7 @@ function float(x, y, txt, col, size = 13, life = .9) { S.text.push({ x, y, txt, 
 function burst(x, y, col, n = 10, sp = 120) { for (let i = 0; i < n; i++) { const a = rand(0, 6.283), v = rand(sp * .3, sp); S.parts.push({ x, y, vx:Math.cos(a) * v, vy:Math.sin(a) * v, t:0, life:rand(.3, .7), col, r:rand(1.5, 3.5) }); } }
 function ring(x, y, col, r1 = 40, life = .4) { S.fx.push({ type:'ring', x, y, r0:6, r1, t:0, life, col }); }
 function banner(txt, life = 1.4, col = C.text) { S.banner = { txt, t:0, life, col }; }
-const topY = u => u.side === 'ally' ? u.y - 50 : u.y - u.rad - 16;
+const topY = u => u.side === 'ally' ? u.y - 50 : (u.side === 'foe' && FOES[u.type] && FOES[u.type].sprite ? u.y + 12 - FOES[u.type].ht * SPR_SC * scAtY(u.y) - 6 : u.y - u.rad - 16);
 function combo(f, label, col) { S.stats.combos++; float(f.x, topY(f) - 14, label, col, 21, 1.1); }
 
 // ---------- damage & status ----------
@@ -545,7 +546,7 @@ const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], wal
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -596,11 +597,15 @@ function makeAlly(k) {
 }
 
 // ---------- combat ----------
-function shoot(u, t, cb, col) { const spr = u.side === 'ally' && HEROES[u.key] && HEROES[u.key].sprite && SPR[HEROES[u.key].sprite].proj ? HEROES[u.key].sprite : null; const ps = spr ? scAtY(u.y) : 1, face = u.face || 1; const mz = spr && HEROES[u.key].muzzle || [187, 154]; const sx = spr ? u.x + (mz[0] - 128) * SPR_SC * ps * face : u.x, sy = spr ? u.y + 12 - (240 - mz[1]) * SPR_SC * ps : u.y - 22; const d = Math.hypot(t.x - sx, t.y - sy); S.shots.push({ x:sx, y:sy, t:0, dur:Math.max(.12, d / 650), tgt:t, col:col || (u.side === 'ally' ? C[u.el] : C.foe), cb, spr }); }
+function shoot(u, t, cb, col) { const def = u.side === 'ally' ? HEROES[u.key] : FOES[u.type]; const spr = def && def.sprite && SPR[def.sprite].proj ? def.sprite : null; const ps = spr ? scAtY(u.y) : 1, face = u.face || 1; const mz = spr && def.muzzle || [187, 154]; const sx = spr ? u.x + (mz[0] - 128) * SPR_SC * ps * face : u.x, sy = spr ? u.y + 12 - (240 - mz[1]) * SPR_SC * ps : u.y - 22; const d = Math.hypot(t.x - sx, t.y - sy); S.shots.push({ x:sx, y:sy, t:0, dur:Math.max(.12, d / 650), tgt:t, col:col || (u.side === 'ally' ? C[u.el] : C.foe), cb, spr }); }
 function attack(u, t) {
   if (u.side === 'ally') u.mana = Math.min(u.maxMana || 100, u.mana + 10 * manaMulU(u));
   const cb = tt => u.side === 'ally' ? allyBasic(u, tt) : (u.blind > 0 && Math.random() < .5 ? float(tt.x, topY(tt), '빗나감', C.muted, 12) : hit(tt, u.atk, C.foe, u));
   if (u.side === 'ally' && HEROES[u.key].sprite) { const h = HEROES[u.key], near = hexDist(u, t) <= 1; u.anim = h.nearFar ? (near ? 'attack_near_6' : 'attack_far_6') : 'attack_6'; u.animT = 0; u.face = t.x >= u.x ? 1 : -1; const gb = h.cls === '총검사' && near ? [1, 1.25, 1.5][synLv('gunblade')] : 1; u.pend = { at:3 / 12, fn:() => { if (t.dead) return; if (u.range > 1 && !(h.nearFar && near)) { shoot(u, t, tt => { cb(tt); impactFx(tt, u); }); return; } if (hexDist(u, t) <= u.range + 1) { let sm = 1; if (h.cls === '검사' && synLv('swordsman')) { u.swN = (u.swN || 0) + 1; const every = synLv('swordsman') >= 2 ? 2 : 3; if (u.swN % every === 0) { sm = 2; float(u.x, u.y - 60, '강타!', C.gold, 12); } } const m0 = gb * sm; if (m0 > 1) { const a0 = u.atk; u.atk *= m0; cb(t); u.atk = a0; } else cb(t); impactFx(t, u); if (u.el === 'grass' && synOn('grass')) { u.hitN = (u.hitN || 0) + 1; if (u.hitN % 4 === 0) { t.root = Math.max(t.root || 0, .6); float(t.x, t.y - 30, '덩굴', C.grass, 11); } } } } }; }
+  else if (u.side === 'foe' && FOES[u.type].sprite) { u.anim = 'attack_6'; u.animT = 0; u.face = t.x >= u.x ? 1 : -1;
+    if (u.type === 'bomber') { u.pend = { at:3 / 12, fn:() => { if (u.dead) return; const dmg = u.atk; float(u.x, topY(u) - 10, '자폭!', C.foe, 14); for (const a of near(t, 1, 'ally')) { hit(a, dmg, C.fire, u); a.burn = Math.max(a.burn || 0, 1); a.burnDecay = 2; a.burnTick = a.burnTick || .5; } for (const a of near(t, 1, 'ally')) if (hexDist(a, t) === 0 && !a.dead) impactFx(a, u); S.fx.push({ type:'sprfx', set:'ZBM', x:t.x, y:t.y, t:0, life:8 / 12 }); if (!RM) S.shake = 5; u.anim = null; kill(u); } }; }
+    else u.pend = { at:3 / 12, fn:() => { if (t.dead) return; if (u.range > 1) { shoot(u, t, tt => { cb(tt); impactFx(tt, u); }); return; } if (hexDist(u, t) <= u.range + 1) { cb(t); impactFx(t, u); } } };
+  }
   else if (u.range === 1) { u.lunge = .15; u.lx = t.x - u.x; u.ly = t.y - u.y; cb(t); }
   else shoot(u, t, cb);
 }
@@ -1057,7 +1062,7 @@ function combatUpdate(dt) {
   if (S.hitstop > 0) { S.hitstop -= dt; return; }
   S.fightT += dt;
   for (const u of S.cu) if (u.side === 'ally' && u.pendQ) { for (const q of u.pendQ) q.at -= dt; while (u.pendQ.length && u.pendQ[0].at <= 0) u.pendQ.shift().fn(); if (!u.pendQ.length) u.pendQ = null; }
-  for (const u of S.cu) if (u.side === 'ally' && u.anim) { u.animT += dt; if (u.leap) { const k = Math.min(1, u.animT / u.leap.dur); u.x = u.leap.x0 + (u.leap.x1 - u.leap.x0) * k; u.y = u.leap.y0 + (u.leap.y1 - u.leap.y0) * k; if (k >= 1) u.leap = null; } if (u.pend && u.animT >= u.pend.at) { const p = u.pend; u.pend = null; p.fn(); } const [n, fps] = SPR_FR[u.anim]; if (u.animT >= n / fps) { u.anim = null; u.animT = 0; } }
+  for (const u of S.cu) if (u.anim && !u.dead) { u.animT += dt; if (u.leap) { const k = Math.min(1, u.animT / u.leap.dur); u.x = u.leap.x0 + (u.leap.x1 - u.leap.x0) * k; u.y = u.leap.y0 + (u.leap.y1 - u.leap.y0) * k; if (k >= 1) u.leap = null; } if (u.pend && u.animT >= u.pend.at) { const p = u.pend; u.pend = null; p.fn(); } if (u.anim) { const [n, fps] = SPR_FR[u.anim]; if (u.animT >= n / fps) { u.anim = null; u.animT = 0; } } }
   for (const u of S.cu) if (!u.dead) tickStatus(u, dt);
   for (const u of S.cu) {
     if (u.dead) continue;
@@ -1075,7 +1080,7 @@ function combatUpdate(dt) {
     const t = u.target;
     if (hexDist(u, t) <= u.range) {
       if (!u.moving && !u.anim) { u.atkCd -= dt * (u.fast > 0 ? 1.4 : 1) * (u.shock > 0 ? .7 : 1) * (u.chill > 0 ? .55 : 1); if (u.atkCd <= 0) { u.atkCd = 1 / (u.as * asMul(u)); attack(u, t); } }
-    } else if (!u.moving) { u.target = closest(u, enemies); if (hexDist(u, u.target) > u.range) stepToward(u, u.target); }
+    } else if (!u.moving) { u.target = closest(u, enemies); if (hexDist(u, u.target) > u.range) { stepToward(u, u.target); if (u.side === 'foe') u.face = u.target.x >= u.x ? 1 : -1; } }
   }
   for (const s of S.shots) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; if (!s.tgt.dead) s.cb(s.tgt); } }
   S.shots = S.shots.filter(s => !s.done);
@@ -1241,7 +1246,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v30</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v31</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1488,6 +1493,9 @@ function drawFoe(f) {
   ctx.save();
   ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, r * 1.1, r * .35, 0, 0, 6.283); ctx.fill();
   if (f.shield > 0) { ctx.strokeStyle = '#9fe8ff'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y, r + 6, 0, 6.283); ctx.stroke(); }
+  const fd = FOES[f.type];
+  if (fd.sprite) { const ps = scAtY(f.y); let anim = f.anim || (f.moving ? 'walk_4' : 'idle'), fr = 0, by = 0; if (anim === 'idle') { anim = 'attack_6'; by = idleBob(S.t + f.col); } else fr = sprFrame(anim, f.anim ? f.animT : S.t + f.col * .37, !f.anim); if (f.el && f.el !== 'dark') { ctx.strokeStyle = C[f.el]; ctx.lineWidth = 2; ctx.globalAlpha = .55; ctx.beginPath(); ctx.ellipse(f.x, f.y + 6, r * 1.15, r * .4, 0, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1; } drawSprite(ctx, fd.sprite, anim, fr, x, y + 8 + by, SPR_SC * ps, f.face || 1, f.stun > 0 ? .55 : 1, f.hit > 0); }
+  else {
   ctx.fillStyle = f.hit > 0 ? '#ffffff' : C.foe; ctx.strokeStyle = f.el ? C[f.el] : C.foeDark; ctx.lineWidth = 3;
   if (f.type === 'shielder') rr(ctx, x - r, y - r, r * 2, r * 2, 5); else { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); }
   ctx.fill(); ctx.stroke();
@@ -1498,13 +1506,14 @@ function drawFoe(f) {
   if (f.type === 'healer') { ctx.fillStyle = C.good; ctx.fillRect(x - 2.5, y + 2, 5, 10); ctx.fillRect(x - 5, y + 4.5, 10, 5); }
   if (f.type === 'shielder') { ctx.fillStyle = '#9fe8ff'; ctx.fillRect(x - 8, y + 5, 16, 3); }
   if (f.type === 'archer') { ctx.strokeStyle = C.foeDark; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x + r + 2, y + 2, 9, Math.PI * .6, Math.PI * 1.4, true); ctx.stroke(); }
-  if (f.stun > 0) for (let i = 0; i < 3; i++) { const a = S.t * 4 + i * 2.1; ctx.fillStyle = C.elec; ctx.beginPath(); ctx.arc(x + Math.cos(a) * r * .8, y - r - 6 + Math.sin(a) * 3, 2.5, 0, 6.283); ctx.fill(); }
+  }
+  if (f.stun > 0) for (let i = 0; i < 3; i++) { const a = S.t * 4 + i * 2.1; ctx.fillStyle = C.elec; ctx.beginPath(); ctx.arc(x + Math.cos(a) * r * .8, (fd.sprite ? topY(f) + 10 : y - r - 6) + Math.sin(a) * 3, 2.5, 0, 6.283); ctx.fill(); }
   const bw = f.big ? r * 2 + 16 : 32;
   bar(f.x, topY(f) + 2, bw, f.big ? 5 : 4, f.hp / f.maxHp, C.bad, f.shield / f.maxHp);
   let sx = x - (f.wet && f.burn ? 10 : 0);
   ctx.font = `700 9.5px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   if (f.wet > 0) { ctx.fillStyle = C.water; ctx.beginPath(); ctx.arc(sx, y + r + 8, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = C.ink; ctx.fillText(f.wet, sx, y + r + 8.5); sx += 20; }
-  if (f.el) { ctx.save(); ctx.translate(x + r * .78, y - r * .78); ctx.fillStyle = C[f.el]; ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 2; ctx.lineTo(Math.cos(a) * 8, Math.sin(a) * 8); } ctx.closePath(); ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = C.ink; ctx.font = `700 9px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(EL[f.el][0], 0, .5); ctx.restore(); }
+  if (f.el) { ctx.save(); if (fd.sprite) ctx.translate(f.x + 24, topY(f) + 4); else ctx.translate(x + r * .78, y - r * .78); ctx.fillStyle = C[f.el]; ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 3 * i - Math.PI / 2; ctx.lineTo(Math.cos(a) * 8, Math.sin(a) * 8); } ctx.closePath(); ctx.fill(); ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = C.ink; ctx.font = `700 9px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(EL[f.el][0], 0, .5); ctx.restore(); }
   if (f.vul > 0) { ctx.fillStyle = C.bad; ctx.beginPath(); ctx.arc(x - 14, y - r - 2, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('약', x - 14, y - r - 1.5); }
   if (f.blind > 0) { ctx.fillStyle = C.dark; ctx.beginPath(); ctx.arc(x, y - r - 16, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('실', x, y - r - 15.5); }
   if (f.taunt) { ctx.fillStyle = C.bad; ctx.beginPath(); ctx.arc(x, y - r - 16, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('!', x, y - r - 15.5); }
