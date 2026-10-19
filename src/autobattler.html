@@ -44,6 +44,14 @@ canvas{position:absolute;inset:0;width:960px;height:540px;touch-action:none}
 .trait .td{display:none;margin-top:2px}.trait.open .td{display:block}.trait{cursor:pointer}.trait .hx{width:19px;height:21px;font-size:10px}.trait.open{padding:4px 6px 5px 4px}.trait:hover{border-color:rgba(238,240,255,.25)}
 .trait.on{border-color:var(--brassDim)}
 .trait.off{opacity:.5}
+.smg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.sm{position:relative;border-radius:7px;overflow:hidden;border:2px solid var(--cc);background:#0d1024;aspect-ratio:1/1.25;display:flex;flex-direction:column;cursor:pointer}
+.sm img{width:100%;flex:1;object-fit:cover;object-position:50% 15%;min-height:0}
+.sm span{font-size:9px;font-weight:700;text-align:center;padding:1px 2px;background:rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sm i{position:absolute;left:2px;top:2px;font-style:normal;font-size:9px;font-weight:800;color:#fff;background:var(--cc);border-radius:4px;padding:0 3px;line-height:12px}
+.sm.bench img{filter:saturate(.5) brightness(.75)}
+.sm.no{opacity:.38}.sm.no img{filter:grayscale(1) brightness(.6)}
+.sm.on{box-shadow:0 0 0 1px #fff6,0 0 8px var(--cc)}
 .hx{width:28px;height:30px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:grid;place-items:center;font-family:var(--display);font-size:13px;color:var(--ink)}
 .trait.off .hx{background:#3a4170!important;color:var(--muted)}
 .trait .tn{font-size:11.5px;font-weight:700;display:flex;justify-content:space-between;gap:4px;white-space:nowrap;min-width:0}
@@ -1336,7 +1344,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v35</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v36</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1377,10 +1385,21 @@ function renderTraits() {
     return `<div class="trait ${on ? 'on' : 'off'}${S.traitOpen === el ? ' open' : ''}" data-trait="${el}"><div class="hx" style="background:${C[el]}">${d.name.slice(0, 1)}</div>
       <div><div class="tn"><span>${d.name}${lv > 0 && needs.length > 1 ? `<span style="color:var(--brass);margin-left:3px">${['', 'Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ'][lv]}</span>` : ''}<small style="color:var(--muted);font-weight:600;margin-left:4px">${d.origin ? '출신' : d.cls ? '유형' : '타입'}</small></span><b>${c[el]}/${next || needs[needs.length - 1]}</b></div><div class="td">${d.text}</div></div></div>`;
   }).join('') + (S.augs.length ? `<div class="augs"><div class="panelTitle">증강</div>${S.augs.map(a => `<div class="aug"><b>${AUGS[a][0]}</b>${AUGS[a][1]}</div>`).join('')}</div>` : '');
-  $('traits').querySelectorAll('[data-trait]').forEach(el => el.onclick = () => { S.traitOpen = S.traitOpen === el.dataset.trait ? null : el.dataset.trait; renderTraits(); });
+  $('traits').querySelectorAll('[data-trait]').forEach(el => el.onclick = () => { const id = el.dataset.trait; S.traitOpen = S.traitOpen === id ? null : id; S.sel = S.traitOpen ? { t:'syn', id } : null; renderTraits(); renderSide(); });
 }
 function infoHtml() {
   const s = S.sel; if (!s) return `<div class="box"><div class="desc" style="font-size:11.5px;color:var(--muted);line-height:1.45">영웅이나 적을 누르면 정보가 보여요. 적 위 작은 육각형이 타입이에요.</div></div>`;
+  if (s.t === 'syn') {
+    const d = SYN[s.id], c = synCount(), n = c[s.id] || 0, needs = d.needs || [d.need], lv = needs.filter(x => n >= x).length;
+    const members = Object.keys(HEROES).filter(k => d.origin ? HEROES[k].origin === d.origin : d.cls ? HEROES[k].cls === d.cls : HEROES[k].el === s.id).sort((a, b) => HEROES[a].cost - HEROES[b].cost || a.localeCompare(b));
+    const onB = new Set(board().map(k => S.units[k].key)), owned = new Set(Object.values(S.units).map(u => u.key));
+    const cards = members.map(k => { const h = HEROES[k], st = onB.has(k) ? 'on' : owned.has(k) ? 'bench' : 'no'; return `<div class="sm ${st}" data-smk="${k}" style="--cc:var(--c${h.cost})"><img src="${PORTRAIT[k] || ''}"><i>${h.cost}</i><span>${h.name}</span></div>`; }).join('');
+    return `<div class="box info"><div class="nm">${d.name}<small style="font-size:11px;color:var(--muted)">${d.origin ? '출신' : d.cls ? '유형' : '타입'} · ${members.length}명</small></div>
+      <div class="el" style="color:${C[s.id] || 'var(--brass)'}">${needs.map((x, i) => `<span style="${i < lv ? '' : 'opacity:.45'}">${x}</span>`).join(' / ')} <small style="color:var(--muted)">· 출전 ${n}</small></div>
+      <div class="desc" style="font-size:11px;line-height:1.4">${d.text}</div>
+      <div class="smg">${cards}</div>
+      <div class="desc" style="font-size:10px;color:var(--muted)">밝음 = 출전 중 · 테두리만 = 대기석 · 흐림 = 없음</div></div>`;
+  }
   if (s.t === 'foe') {
     const f = s.u, d = FOES[f.type];
     const strong = Object.keys(BEATS).filter(e => BEATS[e].includes(f.el)).map(e => EL[e]).join(', ') || '-', weak = (BEATS[f.el] || []).map(e => EL[e]).join(', ') || '-';
@@ -1446,6 +1465,7 @@ function renderSide() {
   $('side').innerHTML = `<div class="box"><div class="hpRow"><span>생명력</span><b>${Math.max(0, S.life)}<span> / 100</span></b></div>
       <div class="hpbar"><i style="width:${Math.max(0, S.life)}%;background:${S.life <= 30 ? C.bad : C.good}"></i></div>
       <div class="kv kv4"><span>승리</span><b>${S.stats.wins}</b><span>처치</span><b>${S.stats.kills}</b><span>한 방</span><b>${S.stats.maxHit}</b><span>연계</span><b>${S.stats.combos}</b></div></div>${infoHtml()}`;
+  $('side').querySelectorAll('[data-smk]').forEach(el => el.onclick = () => { const k = el.dataset.smk, id = Object.keys(S.units).find(i => S.units[i].key === k); if (id) { S.sel = { t:'hero', k:id }; renderSide(); } });
 }
 function renderShop() {
   $('cards').innerHTML = S.shop.map((k, i) => {
