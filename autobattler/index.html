@@ -165,7 +165,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </style>
 
 </head><body>
-<script src="assets.js?v=9fb67ff7"></script>
+<script src="assets.js?v=3ee25b44"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -208,6 +208,8 @@ const FONT_B = "'IBM Plex Sans KR',system-ui,sans-serif", FONT_D = "'Do Hyeon',s
 
 const HEROES = {
   'VAR-1a': { name:'데렉', el:'earth', origin:'바라크', cls:'투사', cost:1, hp:650, atk:55, range:1, as:.70, mana0:30, manaMax:90, sprite:'VAR', skills:['varsk','varsk','varsk'] },
+  'BEL-2b': { name:'시르크', el:'ice', origin:'벨칸', cls:'암살자', cost:2, hp:580, atk:66, range:1, as:.80, mana0:10, manaMax:60, sprite:'SIR', skills:['sirsk','sirsk','sirsk'] },
+  'BEL-2a': { name:'라샤', el:'fire', origin:'벨칸', cls:'검사', cost:2, hp:630, atk:61, range:1, as:.75, mana0:0, manaMax:60, sprite:'RAS', skills:['rassk','rassk','rassk'] },
   'BEL-1b': { name:'피오', el:'wind', origin:'벨칸', cls:'궁수', cost:1, hp:450, atk:50, range:4, as:.75, mana0:0, manaMax:70, sprite:'PIO', muzzle:[181,161], skills:['piosk','piosk','piosk'] },
   'BEL-1a': { name:'제트', el:'elec', origin:'벨칸', cls:'총검사', cost:1, hp:500, atk:55, range:3, as:.75, mana0:20, manaMax:70, sprite:'ZET', muzzle:[188,160], nearFar:true, skills:['zetsk','zetsk','zetsk'] },
   'PAG-5a': { name:'아르켈', el:'elec', origin:'페이지아', cls:'마법사', cost:5, hp:760, atk:64, range:4, as:.65, mana0:30, manaMax:110, sprite:'ARK', muzzle:[202,162], skills:['arksk','arksk','arksk'] },
@@ -246,6 +248,8 @@ const HEROES = {
 };
 const SK = {
   varsk:['흡혈 난타','대상과 주변 1칸 200/300/480 + 균열 2중첩, 준 피해의 20% 회복'],
+  sirsk:['서리 추격','체력이 가장 낮은 적에게 이동해 285/428/684 피해 + 냉기 2초. 처치하면 다음으로 낮은 적에게 한 번 더'],
+  rassk:['열단 부채베기','대상 방향 전방 부채꼴(2칸, ±60°)의 모든 적에게 260/390/624 피해 + 화상'],
   piosk:['풍절 관통','대상 방향 일직선 4칸의 모든 적에게 200/300/480 피해 + 1칸 밀침'],
   zetsk:['전광 전환','멀면 번개 사격 220/330/528, 가까우면 총검 3연타 각 80/120/192 + 감전. 이후 4초 동안 자신 공속 +40%'],
   arksk:['계승의 전광','적 전원에게 420/630/3360 번개 피해 + 감전'],
@@ -495,7 +499,7 @@ const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], wal
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -651,6 +655,22 @@ function castSkill(u, key, echo) {
     const sh = Math.round([540, 810, 4320][u.lv - 1] * (HEROES[u.key].cls === '수호술사' ? [1, 1.2, 1.4][synLv('guardian')] : 1));
     u.pend = { at:3 / 12, fn:() => { for (const a of S.cu) if (a.side === 'ally' && !a.dead && hexDist(a, u) <= 1) { a.shield = Math.max(a.shield, sh); let cl = null; if (a.stun > 0) { a.stun = 0; cl = '기절'; } else if (a.root > 0) { a.root = 0; cl = '덩굴'; } else if (a.slow > 0) { a.slow = 0; cl = '둔화'; } else if (a.shock > 0) { a.shock = 0; cl = '감전'; } float(a.x, topY(a) - 6, cl ? `보호막 · ${cl} 해제` : '보호막', C.water, 12); S.fx.push({ type:'sprfx', set:'SEI', x:a.x, y:a.y, t:0, life:8 / 12 }); }
       for (const f of foesAlive()) if (hexDist(f, u) <= 1) { wet(f, 2); float(f.x, topY(f) - 14, '젖음 +2', C.water, 11); } S.hitstop = Math.max(S.hitstop, .04); } };
+    return true; }
+  if (key === 'rassk') { const t0 = u.target && !u.target.dead ? u.target : closest(u, foes); u.anim = 'skill_6'; u.animT = 0; u.face = t0.x >= u.x ? 1 : -1; float(u.x, u.y - 96, SK[key][0], C[u.el], 15, 1.1);
+    const dmg = Math.round([260, 390, 624][u.lv - 1] * skillMul(u)), tx = t0.x, ty = t0.y;
+    u.pend = { at:3 / 12, fn:() => { const ang = Math.atan2(ty - u.y, tx - u.x); S.fx.push({ type:'cone', x:u.x, y:u.y - 20, tx:u.x + Math.cos(ang) * CW * 2, ty:u.y + Math.sin(ang) * CW * 2, t:0, life:.35 }); let k = 0;
+      for (const f of foesAlive()) { if (hexDist(f, u) > 2) continue; const a = Math.atan2(f.y - u.y, f.x - u.x); let d = Math.abs(a - ang); if (d > Math.PI) d = 2 * Math.PI - d; if (d <= Math.PI / 3 || hexDist(f, u) <= 1 && f === t0) { fireHit(f, dmg, 1, u); S.fx.push({ type:'sprfx', set:'RAS', x:f.x, y:f.y, t:0, life:8 / 12 }); k++; } }
+      S.hitstop = Math.max(S.hitstop, k ? .08 : .03); if (!RM && k) S.shake = 4; } };
+    return true; }
+  if (key === 'sirsk') { float(u.x, u.y - 96, SK[key][0], C[u.el], 15, 1.1);
+    const dmg = Math.round([285, 428, 684][u.lv - 1] * skillMul(u));
+    const strike = n => { const tg = foesAlive().sort((a, b) => a.hp - b.hp || hexDist(a, u) - hexDist(b, u))[0]; if (!tg) return;
+      u.anim = 'skill_6'; u.animT = 0; let lx = u.x, ly = u.y;
+      if (hexDist(tg, u) > 1) { const cands = neighbors(tg.col, tg.row).filter(c => !S.occ.has(ckey(c.col, c.row))).sort((a, b) => hexDist(a, u) - hexDist(b, u)); const land = cands[0]; if (land) { [lx, ly] = cellXY(land.col, land.row); S.occ.delete(ckey(u.col, u.row)); u.col = land.col; u.row = land.row; S.occ.set(ckey(u.col, u.row), u); u.leap = { x0:u.x, y0:u.y, x1:lx, y1:ly, dur:3 / 12 }; } }
+      u.face = tg.x >= lx ? 1 : -1; u.target = tg;
+      u.pend = { at:3 / 12, fn:() => { u.x = lx; u.y = ly; u.leap = null; if (tg.dead) return; S.fx.push({ type:'sprfx', set:'SIR', x:tg.x, y:tg.y, t:0, life:8 / 12 }); hit(tg, dmg, C.ice, u); if (!tg.dead) tg.chill = Math.max(tg.chill || 0, 2); S.hitstop = Math.max(S.hitstop, .08);
+        if (tg.dead && n === 0 && foesAlive().length) { float(u.x, topY(u) - 6, '한 번 더!', C.ice, 12); u.pendQ = [{ at:4 / 12, fn:() => { if (!u.dead) strike(1); } }]; } } }; };
+    strike(0);
     return true; }
   if (key === 'zetsk') { const t0 = u.target && !u.target.dead ? u.target : closest(u, foes); const near = hexDist(u, t0) <= 1; u.anim = 'skill_6'; u.animT = 0; u.face = t0.x >= u.x ? 1 : -1; float(u.x, u.y - 96, SK[key][0] + (near ? ' · 연타' : ' · 사격'), C[u.el], 15, 1.1);
     const far = Math.round([220, 330, 528][u.lv - 1] * skillMul(u)), nr = Math.round([80, 120, 192][u.lv - 1] * skillMul(u));
@@ -1061,7 +1081,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v16</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v17</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
