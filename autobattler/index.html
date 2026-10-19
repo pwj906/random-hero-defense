@@ -104,19 +104,21 @@ canvas{position:absolute;inset:0;width:960px;height:540px;touch-action:none}
 .act:disabled,.card:disabled{opacity:.4;cursor:not-allowed}
 button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 .cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:7px;max-width:520px;margin:0 auto;width:100%;min-height:0;height:100%}
-.card{position:relative;min-width:0;min-height:0;height:100%;border-radius:8px;border:2px solid var(--c1);background-color:var(--panel2);background-image:var(--img);background-size:cover;background-position:center 20%;color:var(--text);cursor:pointer;padding:0;overflow:hidden;font-family:var(--body);text-align:left}
-.card.c2{border-color:var(--c2)}.card.c3{border-color:var(--c3)}.card.c4{border-color:var(--c4)}.card.c5{border-color:var(--c5);box-shadow:0 0 10px rgba(240,180,60,.45)}
-.card.c1 .cost{color:var(--c1)}.card.c2 .cost{color:var(--c2)}.card.c3 .cost{color:var(--c3)}.card.c4 .cost{color:var(--c4)}.card.c5 .cost{color:var(--c5)}
+.card{--cc:var(--c1);--cd:rgba(40,46,66,.96);position:relative;min-width:0;min-height:0;height:100%;border-radius:9px;border:3px solid var(--cc);background-color:var(--panel2);background-image:var(--img);background-size:cover;background-position:center 20%;color:var(--text);cursor:pointer;padding:0;overflow:hidden;font-family:var(--body);text-align:left}
+.card.c2{--cc:var(--c2);--cd:rgba(14,56,38,.96)}.card.c3{--cc:var(--c3);--cd:rgba(18,42,88,.96)}.card.c4{--cc:var(--c4);--cd:rgba(52,24,86,.96);box-shadow:0 0 10px rgba(177,108,240,.5)}.card.c5{--cc:var(--c5);--cd:rgba(78,52,10,.97);box-shadow:0 0 14px rgba(240,180,60,.7);animation:c5glow 1.6s ease-in-out infinite alternate}
+@keyframes c5glow{from{box-shadow:0 0 8px rgba(240,180,60,.5)}to{box-shadow:0 0 18px rgba(255,210,90,.95)}}
+.card::after{content:'';position:absolute;left:0;right:0;bottom:0;height:4px;background:var(--cc)}
+.card .nm{color:#f2f4ff;text-shadow:0 0 6px var(--cc)}
 .cbar{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:3px 7px;border-radius:7px;font-size:11px;font-weight:800;color:#0a0e1f;background:var(--cc);white-space:nowrap}.cbar span{font-weight:700;opacity:.85}
-.card .meta{position:absolute;left:0;right:0;bottom:0;padding:12px 6px 4px;background:linear-gradient(180deg,transparent,rgba(8,10,28,.94) 40%);display:flex;justify-content:space-between;align-items:flex-end;gap:4px}
+.card .meta{position:absolute;left:0;right:0;bottom:4px;padding:14px 6px 4px;background:linear-gradient(180deg,transparent,var(--cd) 48%);display:flex;justify-content:space-between;align-items:flex-end;gap:4px}
 .card .nm{font-family:var(--display);font-size:16px;line-height:1}
 .card .tr{display:flex;gap:5px;flex-wrap:nowrap;margin-bottom:3px}
 .card .tr span{display:flex;gap:3px;align-items:center;font-size:9.5px;font-weight:700;color:#d6d9f2;white-space:nowrap}
 .card .ty{font-style:normal;font-family:var(--body);font-size:10px;font-weight:700;margin-left:6px;vertical-align:2px}
 .card .tr i{width:9px;height:10px;display:inline-block;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
-.card .cost{position:absolute;left:6px;top:6px;padding:2px 7px;border-radius:6px;background:rgba(8,10,28,.9);border:1.5px solid currentColor;font-family:var(--display);font-size:14px;color:var(--gold);line-height:1}
+.card .cost{position:absolute;left:5px;top:5px;padding:3px 8px;border-radius:6px;background:var(--cc);border:1.5px solid rgba(8,10,28,.7);font-family:var(--display);font-size:15px;color:#0a0e1f;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .card .rg{position:absolute;left:6px;top:30px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;background:rgba(8,10,28,.8);color:#9fe8e0}
-.card .own{position:absolute;top:6px;right:6px;font-size:11px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(8,10,28,.85);color:var(--gold)}
+.card .own{position:absolute;top:7px;right:5px;font-size:10px;font-weight:700;padding:2px 5px;border-radius:999px;background:rgba(8,10,28,.85);color:var(--gold)}
 .card.up{box-shadow:0 0 0 2px var(--gold) inset}
 .card.sold{visibility:hidden}
 .right{display:flex;flex-direction:column;gap:6px;min-height:0}
@@ -1059,7 +1061,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v15</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v16</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
