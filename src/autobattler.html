@@ -430,8 +430,8 @@ const SYN = {
   grass:{ need:2, name:'풀', text:'풀 영웅의 기본 공격이 4번째마다 덩굴 0.6초' },
 };
 const AUGS = {
-  soak:   ['흠뻑 젖은 전장','전투 시작 시 모든 적에게 젖음 2중첩. 젖은 적은 전기 공격에 감전(피해 2배), 불 공격에 증발 폭발.'],
-  volt:   ['고압 전류','감전 피해 배율 +1 (젖은 적을 전기로 치면 2배 → 3배).'],
+  soak:   ['흠뻑 젖은 전장','전투 시작 시 모든 적에게 젖음 1중첩. 젖은 적은 전기 공격에 감전(피해 1.6배), 불 공격에 증발 폭발.'],
+  volt:   ['고압 전류','감전 피해 배율 +0.6 (젖은 적을 전기로 치면 1.6배 → 2.2배).'],
   oil:    ['기름 붓기','불 공격의 화상(지속 피해) +40%, 최대 15중첩.'],
   charge: ['마나 충전기','모든 영웅 마나 획득 +30% → 스킬을 더 자주 써요.'],
   bank:   ['이자 왕','이자 최대치 3 → 5 (25골드부터 +5).'],
@@ -480,7 +480,7 @@ const ROUNDS0 = [
   { kind:'정예', time:50, foes:[['general',1,2],['general',3,2],['general',5,2],['runner',0,3],['runner',6,3],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0]] },
   { kind:'보스', time:70, foes:[['boss3',3,2],['general',1,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
 ];
-const BAL = Object.assign({ hp:1.045, atk:1.03, hp0:.85, atk0:.85, loss:2, hpL:1.045, atkL:1.03, pw:1.035 }, window.BAL || {});
+const BAL = Object.assign({ hp:1.05, atk:1.03, hp0:.85, atk0:.85, loss:2, hpL:1.05, atkL:1.035, pw:1.03 }, window.BAL || {});
 const MAX_R = 100;
 // 21~100라운드는 생성: 10라운드마다 정예 x5·x8, 보스 x0. 같은 라운드는 항상 같은 편성(라운드 번호 시드).
 function genRound(ri) {
@@ -568,7 +568,7 @@ function synOn(el) { return !!(S.syn && SYN[el] && S.syn[el] >= SYN[el].need); }
 function horizonPct() { const lv = synLv('horizon'); if (!lv) return 0; const o = new Set(board().map(k => HEROES[S.units[k].key].origin)); return o.size * [0, .015, .025, .035][lv]; }
 function synLv(id) { const d = SYN[id]; if (!S.syn || !d) return 0; const n = S.syn[id] || 0; if (d.needs) { let lv = 0; for (const x of d.needs) if (n >= x) lv++; return lv; } return n >= d.need ? 1 : 0; }
 function varakOn(u) { const lv = synLv('varak'); if (!lv || u.side !== 'ally' || u.hp > u.maxHp * .5) return 0; if (lv >= 2) return 2; return HEROES[u.key] && HEROES[u.key].origin === '바라크' ? 1 : 0; }
-const elecMul = () => (synOn('elec') ? 3 : 2) + (has('volt') ? 1 : 0);
+const elecMul = () => (synOn('elec') ? 2.2 : 1.6) + (has('volt') ? .6 : 0);
 const asMul = u => (1 + .08 * augN('haste')) * (u.el === 'wind' && synOn('wind') ? 1.15 : 1) * (HEROES[u.key] && HEROES[u.key].origin === '벨칸' ? [1, 1.12, 1.25, 1.4][synLv('belkan')] : 1) * [1, 1.4, 2][varakOn(u)] * (HEROES[u.key] && HEROES[u.key].cls === '궁수' ? [1, 1.1, 1.25][synLv('archer')] : 1);
 const skillMul = u => (1 + .15 * augN('spell')) * (HEROES[u.key] && HEROES[u.key].cls === '암살자' ? [1, 1.25, 1.5][synLv('assassin')] : 1) * (u.el === 'elec' && synOn('elec') ? 1.15 : 1);
 const burnMul = () => (synOn('fire') ? 1.5 : 1) * (has('oil') ? 1.4 : 1);
@@ -1323,7 +1323,7 @@ function startFight() {
   autoFill(); S.drag = null; S.syn = synCount();
   const allies = board().map(makeAlly);
   S.cu = S.cu.concat(allies);
-  if (has('soak')) for (const f of foesAlive()) wet(f, 2);
+  if (has('soak')) for (const f of foesAlive()) wet(f, 1);
   S.occ = new Map(); for (const u of S.cu) S.occ.set(ckey(u.col, u.row), u);
   S.phase = 'fight'; S.fightT = 0;
   if (S.sel && S.sel.t === 'hero') { const live = allies.find(a => a.key === S.sel.k); if (live) S.sel.u = live; }
@@ -1375,11 +1375,11 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v37</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v38</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
-      <li><span class="dot" style="background:${C.water}"></span><span><b>물</b>로 적시면 <b>전기</b>가 감전으로 2배. 젖은 적에 <b>불</b>이 닿으면 증발해서 주변이 터져요.</span></li>
+      <li><span class="dot" style="background:${C.water}"></span><span><b>물</b>로 적시면 <b>전기</b>가 감전으로 1.6배. 젖은 적에 <b>불</b>이 닿으면 증발해서 주변이 터져요.</span></li>
       <li><span class="dot" style="background:${C.brass}"></span><span>레벨만큼 출전 (3명부터). 근거리 영웅은 앞줄, 원거리는 뒷줄이 좋아요.</span></li>
       <li><span class="dot" style="background:${C.bad}"></span><span>지면 남은 적 수만큼 생명력이 깎여요. 보스는 잡을 때까지 다시 나와요.</span></li>
       <li><span class="dot" style="background:${C.muted}"></span><span>끌어서 배치, 상점 위로 끌면 판매, 누르면 정보. 적도 눌러서 볼 수 있어요.</span></li>
