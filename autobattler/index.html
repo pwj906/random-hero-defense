@@ -167,7 +167,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </head><body>
 <script src="assets-1.js?v=064c2c45"></script>
 <script src="assets-2.js?v=4d6a1686"></script>
-<script src="assets-3.js?v=ebd4ba6d"></script>
+<script src="assets-3.js?v=8798a153"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -382,7 +382,8 @@ const FOES = {
   runner:  { name:'돌격병', hp:380, atk:36, range:1, as:.9, rad:16, spd:2.6, sprite:'ZRN', ht:125, desc:'빠르게 달려드는 근접병.' },
   archer:  { name:'가시 사수', hp:300, atk:40, range:3, as:.7, rad:16, spd:2, sprite:'ZAR', ht:130, muzzle:[203,194], desc:'뒤에서 가시를 쏘는 원거리병.' },
   bomber:  { name:'폭탄병', hp:260, atk:90, range:1, as:.8, rad:15, spd:2.4, sprite:'ZBM', ht:115, desc:'영웅에게 닿으면 자폭해 주변 1칸에 범위 피해와 화상을 줘요. 먼저 잡으면 터지지 않아요.' },
-  healer:  { name:'치유사', hp:340, atk:18, range:3, as:.6, rad:17, spd:2,   desc:'3초마다 가장 다친 아군을 회복해요.' },
+  healer:  { name:'치유사', hp:340, atk:18, range:3, as:.6, rad:17, spd:2, sprite:'ZHL', ht:130, desc:'3초마다 가장 다친 아군을 회복해요.' },
+  shaman:  { name:'주술사', hp:320, atk:22, range:3, as:.6, rad:16, spd:2, sprite:'ZSM', ht:135, muzzle:[205,210], desc:'6초마다 영웅 1명에게 약화 표식(받는 피해 +20%, 4초)을 걸고 마나 20을 태워요.' },
   shielder:{ name:'방패병', hp:820, atk:28, range:1, as:.6, rad:18, spd:1.8, desc:'5초마다 아군에게 보호막을 씌워요.' },
   general: { name:'제륵 장군', hp:1900, atk:66, range:1, as:.7, rad:26, spd:1.8, big:true, desc:'6초마다 내려찍어 대상 주변 영웅을 기절시켜요.' },
   boss:    { name:'제륵 대장 쿠르가', hp:3600, atk:88, range:1, as:.6, rad:33, spd:1.6, big:true, desc:'포효(영웅 2명 기절), 군단 소환, 포격을 번갈아 써요.' },
@@ -397,17 +398,17 @@ const ROUNDS = [
   { kind:'일반', time:40, foes:[['shielder',2,3],['shielder',4,3],['runner',0,3],['runner',6,3],['archer',1,1],['archer',5,1],['healer',3,0]] },
   { kind:'정예', time:45, foes:[['general',2,2],['general',4,2],['archer',3,0],['healer',1,0],['healer',5,0]] },
   { kind:'보스', time:60, foes:[['boss',3,2],['shielder',1,3],['shielder',5,3],['healer',2,0],['healer',4,0]] },
-  { kind:'일반', time:40, foes:[['runner',1,3],['runner',3,3],['runner',5,3],['shielder',2,2],['shielder',4,2],['archer',1,0],['archer',5,0],['healer',3,0]] },
-  { kind:'일반', time:40, foes:[['runner',0,3],['runner',2,3],['runner',4,3],['runner',6,3],['archer',1,1],['archer',3,1],['archer',5,1],['healer',2,0],['healer',4,0]] },
-  { kind:'정예', time:45, foes:[['general',3,2],['shielder',1,3],['shielder',5,3],['bomber',2,3],['bomber',4,3],['archer',0,0],['archer',6,0],['healer',3,0]] },
-  { kind:'일반', time:40, foes:[['shielder',1,3],['shielder',3,3],['shielder',5,3],['runner',0,2],['runner',6,2],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0]] },
+  { kind:'일반', time:40, foes:[['runner',1,3],['runner',3,3],['runner',5,3],['shielder',2,2],['shielder',4,2],['archer',1,0],['archer',5,0],['healer',3,0],['shaman',2,0]] },
+  { kind:'일반', time:40, foes:[['runner',0,3],['runner',2,3],['runner',4,3],['runner',6,3],['archer',1,1],['archer',3,1],['archer',5,1],['healer',2,0],['healer',4,0],['shaman',3,0]] },
+  { kind:'정예', time:45, foes:[['general',3,2],['shielder',1,3],['shielder',5,3],['bomber',2,3],['bomber',4,3],['archer',0,0],['archer',6,0],['healer',3,0],['shaman',2,0]] },
+  { kind:'일반', time:40, foes:[['shielder',1,3],['shielder',3,3],['shielder',5,3],['runner',0,2],['runner',6,2],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0],['shaman',3,0]] },
   { kind:'일반', time:45, foes:[['runner',0,3],['runner',1,3],['runner',5,3],['bomber',6,3],['bomber',2,2],['shielder',3,3],['archer',1,1],['archer',5,1],['archer',3,0],['healer',2,0],['healer',4,0]] },
-  { kind:'보스', time:60, foes:[['boss',3,2],['general',1,2],['shielder',2,3],['shielder',4,3],['runner',5,3],['healer',1,0],['healer',5,0]] },
+  { kind:'보스', time:60, foes:[['boss',3,2],['general',1,2],['shielder',2,3],['shielder',4,3],['runner',5,3],['healer',1,0],['healer',5,0],['shaman',3,0]] },
   { kind:'일반', time:45, foes:[['runner',0,3],['runner',2,3],['runner',4,3],['runner',6,3],['shielder',1,2],['shielder',5,2],['archer',2,0],['archer',4,0],['healer',3,0],['healer',1,0]] },
-  { kind:'정예', time:50, foes:[['general',2,2],['general',4,2],['runner',0,3],['runner',6,3],['shielder',3,3],['archer',1,0],['archer',5,0],['healer',2,0],['healer',4,0]] },
-  { kind:'일반', time:45, foes:[['shielder',0,3],['shielder',2,3],['shielder',4,3],['shielder',6,3],['runner',1,2],['bomber',3,2],['bomber',5,2],['archer',2,0],['archer',4,0],['healer',3,0]] },
+  { kind:'정예', time:50, foes:[['general',2,2],['general',4,2],['runner',0,3],['runner',6,3],['shielder',3,3],['archer',1,0],['archer',5,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
+  { kind:'일반', time:45, foes:[['shielder',0,3],['shielder',2,3],['shielder',4,3],['shielder',6,3],['runner',1,2],['bomber',3,2],['bomber',5,2],['archer',2,0],['archer',4,0],['healer',3,0],['shaman',1,0]] },
   { kind:'정예', time:50, foes:[['general',1,2],['general',3,2],['general',5,2],['runner',0,3],['runner',6,3],['archer',2,0],['archer',4,0],['healer',1,0],['healer',5,0]] },
-  { kind:'보스', time:70, foes:[['boss',3,2],['general',1,2],['general',5,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0]] },
+  { kind:'보스', time:70, foes:[['boss',3,2],['general',1,2],['general',5,2],['shielder',2,3],['shielder',4,3],['archer',0,0],['archer',6,0],['healer',2,0],['healer',4,0],['shaman',3,0]] },
 ];
 const BAL = Object.assign({ hp:1.05, atk:1.03, hp0:.85, atk0:.85, loss:2 }, window.BAL || {});
 const LV_AT = [1, 2, 4], STAR_MUL = [1, 1.8, 3.2], STAR_SK = [1, 1.5, 2.4];
@@ -546,7 +547,7 @@ const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], wal
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -1015,8 +1016,13 @@ function foeAbility(u, dt) {
   u.cd -= dt; if (u.cd > 0) return;
   const foes = foesAlive(), allies = alliesAlive();
   switch (u.type) {
-    case 'healer': { u.cd = 3; const lo = foes.filter(o => o.hp < o.maxHp).sort((p, q) => p.hp / p.maxHp - q.hp / q.maxHp)[0]; if (lo) { heal(lo, 110 * u.sc); S.fx.push({ type:'link', x:u.x, y:u.y - 8, tx:lo.x, ty:lo.y - 8, t:0, life:.4, col:C.good }); } break; }
+    case 'healer': { const lo = foes.filter(o => o.hp < o.maxHp && o !== u || (o === u && o.hp < o.maxHp * .5)).sort((p, q) => p.hp / p.maxHp - q.hp / q.maxHp)[0]; if (!lo) { u.cd = .5; break; } u.cd = 3;
+      if (FOES[u.type].sprite && !u.anim) { u.anim = 'skill_6'; u.animT = 0; u.face = lo.x >= u.x ? 1 : -1; u.pend = { at:3 / 12, fn:() => { if (lo.dead) return; heal(lo, 110 * u.sc); S.fx.push({ type:'sprfx', set:'ZHL', x:lo.x, y:lo.y, t:0, life:8 / 12 }); } }; }
+      else { heal(lo, 110 * u.sc); S.fx.push({ type:'link', x:u.x, y:u.y - 8, tx:lo.x, ty:lo.y - 8, t:0, life:.4, col:C.good }); } break; }
     case 'shielder': { u.cd = 5; const tg = foes.slice().sort((p, q) => (q.big - p.big) || (p.hp / p.maxHp - q.hp / q.maxHp))[0]; if (tg) { tg.shield += Math.round(150 * u.sc); S.fx.push({ type:'link', x:u.x, y:u.y - 8, tx:tg.x, ty:tg.y - 8, t:0, life:.4, col:'#9fe8ff' }); } break; }
+    case 'shaman': { const tg = allies.slice().sort((p, q) => (q.mana || 0) - (p.mana || 0))[0]; if (!tg) { u.cd = .5; break; } u.cd = 6;
+      if (u.anim) { u.cd = .3; break; } u.anim = 'skill_6'; u.animT = 0; u.face = tg.x >= u.x ? 1 : -1;
+      u.pend = { at:3 / 12, fn:() => { if (tg.dead) return; tg.vul = Math.max(tg.vul || 0, 4); tg.mana = Math.max(0, (tg.mana || 0) - 20); S.fx.push({ type:'sprfx', set:'ZSM', x:tg.x, y:tg.y - 30, t:0, life:8 / 12 }); float(tg.x, topY(tg) - 6, '약화 · 마나 -20', C.dark, 12); } }; break; }
     case 'general': {
       const t = u.target && !u.target.dead ? u.target : null;
       if (!t || hexDist(u, t) > 1) { u.cd = .5; break; }
@@ -1246,7 +1252,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v31</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v32</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1536,6 +1542,7 @@ function drawAlly(u) {
   bar(u.x, bt, 36, 4, u.hp / u.maxHp, C.good, u.shield / u.maxHp);
   bar(u.x, bt + 6, 36, 2.5, u.mana / (u.maxMana || 100), C.mana);
   drawStars(u.x, u.y + 16, u.lv, .9, HEROES[u.key].cost);
+  if (u.vul > 0) { ctx.font = `700 9.5px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.bad; ctx.beginPath(); ctx.arc(u.x - 24, bt + 3, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('약', u.x - 24, bt + 3.5); }
   if (u.stun > 0) for (let i = 0; i < 3; i++) { const a = S.t * 4 + i * 2.1; ctx.fillStyle = C.elec; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 12, y - 40 + Math.sin(a) * 3, 2.5, 0, 6.283); ctx.fill(); }
 }
 function drawOwned(k) {
