@@ -166,7 +166,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 
 </head><body>
 <script src="assets-1.js?v=064c2c45"></script>
-<script src="assets-2.js?v=50c52f4f"></script>
+<script src="assets-2.js?v=9a548db5"></script>
 <div class="app">
   <div class="wrap" id="wrap">
     <div id="stage">
@@ -209,6 +209,8 @@ const FONT_B = "'IBM Plex Sans KR',system-ui,sans-serif", FONT_D = "'Do Hyeon',s
 
 const HEROES = {
   'VAR-1a': { name:'데렉', el:'earth', origin:'바라크', cls:'투사', cost:1, hp:650, atk:55, range:1, as:.70, mana0:30, manaMax:90, sprite:'VAR', skills:['varsk','varsk','varsk'] },
+  'AST-1b': { name:'포론', el:'water', origin:'아스테리아', cls:'수호술사', cost:1, hp:600, atk:45, range:1, as:.60, mana0:40, manaMax:90, sprite:'POR', skills:['porsk','porsk','porsk'] },
+  'AST-1a': { name:'루엔', el:'fire', origin:'아스테리아', cls:'마법사', cost:1, hp:450, atk:40, range:4, as:.65, mana0:30, manaMax:80, sprite:'LUE', muzzle:[198,170], skills:['luesk','luesk','luesk'] },
   'TAL-5a': { name:'베르그', el:'grass', origin:'탈로스', cls:'투사', cost:5, hp:1100, atk:88, range:1, as:.70, mana0:30, manaMax:120, sprite:'BRG', skills:['brgsk','brgsk','brgsk'] },
   'TAL-4a': { name:'로칸', el:'elec', origin:'탈로스', cls:'지휘관', cost:4, hp:750, atk:56, range:3, as:.65, mana0:40, manaMax:110, sprite:'ROK', muzzle:[192,178], skills:['roksk','roksk','roksk'] },
   'TAL-3b': { name:'레카', el:'fire', origin:'탈로스', cls:'총검사', cost:3, hp:650, atk:69, range:3, as:.75, mana0:20, manaMax:80, sprite:'REK', muzzle:[192,128], nearFar:true, skills:['reksk','reksk','reksk'] },
@@ -261,6 +263,8 @@ const HEROES = {
 };
 const SK = {
   varsk:['흡혈 난타','대상과 주변 1칸 200/300/480 + 균열 2중첩, 준 피해의 20% 회복'],
+  porsk:['물결 보호','체력이 가장 낮은 아군 2명에게 보호막 200/300/480, 자기 주변 1칸 적에게 젖음'],
+  luesk:['화염 폭발','대상과 주변 1칸의 적에게 220/330/528 피해 + 화상'],
   brgsk:['암반 분쇄','대상과 주변 1칸에 700/1050/5600 피해 + 덩굴 1초, 준 피해의 20% 회복'],
   roksk:['구조 신호','체력이 낮은 아군 2명을 520/780/2080 회복, 자기 주변 1칸 적에게 감전'],
   reksk:['화염 전환','멀면 화염탄 420/630/1008 + 화상, 가까우면 총검 3연타 각 150/225/360 (마지막에 화상). 이후 4초 동안 자신 공속 +40%'],
@@ -322,6 +326,7 @@ const SK = {
 const SYN = {
   earth:{ need:2, name:'대지', text:'아군 받는 피해 -13% (방어 +15)' },
   varak:{ origin:'바라크', needs:[3,6], need:3, name:'바라크', text:'체력 50% 아래에서 공속 +40/100%, 흡혈 15/30%. 3명: 바라크만 · 6명: 아군 전체' },
+  asteria:{ origin:'아스테리아', needs:[2,4,6], need:2, name:'아스테리아', text:'아스테리아 영웅은 스킬을 쓴 뒤 마나 20/35/50% 환급 (임시값)' },
   talos:{ origin:'탈로스', needs:[3,5,7], need:3, name:'탈로스', text:'탈로스 영웅은 전투마다 한 번 쓰러져도 체력 25/45/70%로 부활 (임시값)' },
   belkan:{ origin:'벨칸', needs:[2,4,6], need:2, name:'벨칸', text:'벨칸 영웅 공격속도 +12/25/40% (임시값)' },
   pagia:{ origin:'페이지아', needs:[3,6,9], need:3, name:'페이지아', text:'페이지아 영웅 마나 획득 +30/60/100% (임시값)' },
@@ -526,7 +531,7 @@ const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], wal
 const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
-const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG };
+const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
 const BGIMG = new Image(); BGIMG.src = BG_SRC;
 const SPR_SC = .43;
@@ -597,7 +602,7 @@ function cast(u) {
   const un = u.skills.slice(0, u.lv);
   let key = pick(un);
   if ((key === 'aid' || key === 'heal') && !alliesAlive().some(a => a.stun > 0 || a.hp < a.maxHp * .75) && un.length > 1) key = pick(un.filter(k => k !== 'aid' && k !== 'heal').concat(un.length > 2 ? [] : un));
-  if (castSkill(u, key)) { u.mana = 0; return true; } return false;
+  if (castSkill(u, key)) { u.mana = HEROES[u.key] && HEROES[u.key].origin === '아스테리아' && synLv('asteria') ? Math.round((u.maxMana || 100) * [0, .2, .35, .5][synLv('asteria')]) : 0; if (u.mana > 0) float(u.x, topY(u) - 18, `마나 환급 +${u.mana}`, C.mana, 11); return true; } return false;
 }
 function lineFoes(u, t, cells, halfW) { const dx = t.x - u.x, dy = t.y - u.y, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L, len = cells * CW; return foesAlive().map(f => { const px = f.x - u.x, py = f.y - u.y, along = px * ux + py * uy, perp = Math.abs(px * uy - py * ux); return { f, along, perp }; }).filter(o => o.along > 0 && o.along <= len && o.perp <= halfW).sort((a, b) => a.along - b.along).map(o => o.f); }
 function pushBack(f, from, n) {
@@ -682,6 +687,16 @@ function castSkill(u, key, echo) {
     const sh = Math.round([540, 810, 4320][u.lv - 1] * (HEROES[u.key].cls === '수호술사' ? [1, 1.2, 1.4][synLv('guardian')] : 1));
     u.pend = { at:3 / 12, fn:() => { for (const a of S.cu) if (a.side === 'ally' && !a.dead && hexDist(a, u) <= 1) { a.shield = Math.max(a.shield, sh); let cl = null; if (a.stun > 0) { a.stun = 0; cl = '기절'; } else if (a.root > 0) { a.root = 0; cl = '덩굴'; } else if (a.slow > 0) { a.slow = 0; cl = '둔화'; } else if (a.shock > 0) { a.shock = 0; cl = '감전'; } float(a.x, topY(a) - 6, cl ? `보호막 · ${cl} 해제` : '보호막', C.water, 12); S.fx.push({ type:'sprfx', set:'SEI', x:a.x, y:a.y, t:0, life:8 / 12 }); }
       for (const f of foesAlive()) if (hexDist(f, u) <= 1) { wet(f, 2); float(f.x, topY(f) - 14, '젖음 +2', C.water, 11); } S.hitstop = Math.max(S.hitstop, .04); } };
+    return true; }
+  if (key === 'luesk') { const t0 = u.target && !u.target.dead ? u.target : closest(u, foes); u.anim = 'skill_6'; u.animT = 0; u.face = t0.x >= u.x ? 1 : -1; float(u.x, u.y - 90, SK[key][0], C[u.el], 15, 1.1);
+    const dmg = Math.round([220, 330, 528][u.lv - 1] * skillMul(u));
+    u.pend = { at:3 / 12, fn:() => { const t = t0.dead ? closest(u, foesAlive()) : t0; if (!t) return; shoot(u, t, tt => { S.fx.push({ type:'sprfx', set:'LUE', x:tt.x, y:tt.y, t:0, life:8 / 12 }); let k = 0; for (const f of foesAlive()) if (hexDist(f, tt) <= 1) { fireHit(f, dmg, 1, u); k++; } S.hitstop = Math.max(S.hitstop, k ? .08 : .03); if (!RM && k) S.shake = 4; }); } };
+    return true; }
+  if (key === 'porsk') { u.anim = 'skill_6'; u.animT = 0; float(u.x, u.y - 90, SK[key][0], C[u.el], 15, 1.1);
+    const sh = Math.round([200, 300, 480][u.lv - 1] * skillMul(u) * (HEROES[u.key].cls === '수호술사' ? [1, 1.2, 1.4][synLv('guardian')] : 1));
+    u.pend = { at:3 / 12, fn:() => { const list = S.cu.filter(a => a.side === 'ally' && !a.dead).sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || a.hp - b.hp).slice(0, 2);
+      for (const a of list) { a.shield = Math.max(a.shield, sh); float(a.x, topY(a) - 6, `보호막 ${sh}`, C.water, 12); S.fx.push({ type:'sprfx', set:'POR', x:a.x, y:a.y, t:0, life:8 / 12 }); }
+      for (const f of foesAlive()) if (hexDist(f, u) <= 1) { wet(f, synOn('water') ? 2 : 1); float(f.x, topY(f) - 14, '젖음', C.water, 11); } S.hitstop = Math.max(S.hitstop, .04); } };
     return true; }
   if (key === 'roksk') { u.anim = 'skill_6'; u.animT = 0; float(u.x, u.y - 110, SK[key][0], C[u.el], 15, 1.1);
     const amt = Math.round([520, 780, 2080][u.lv - 1] * skillMul(u));
@@ -1183,7 +1198,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v24</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v25</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1258,6 +1273,7 @@ function infoHtml() {
   if (h.origin === '미라벨' && L('mirabel')) eff.push(['미라벨 ' + ['', 'Ⅰ', 'Ⅱ'][L('mirabel')], `치명타 <i class="up">${[0, 15, 35][L('mirabel')]}%</i> (1.5배)`]);
   if (h.el === 'ice' && L('ice')) eff.push(['얼음', `냉기 적에게 피해 <i class="up">+15%</i>`]);
   if (L('horizon')) { const o = new Set(board().map(k => HEROES[S.units[k].key].origin)).size; eff.push(['호라이즌 ' + ['', 'Ⅰ', 'Ⅱ', 'Ⅲ'][L('horizon')], `출신 ${o}종 → 공격력·체력 <i class="up">+${(o * [0, 1.5, 2.5, 3.5][L('horizon')]).toFixed(1)}%</i>`]); }
+  if (h.origin === '아스테리아' && L('asteria')) eff.push(['아스테리아 ' + ['', 'Ⅰ', 'Ⅱ', 'Ⅲ'][L('asteria')], `스킬 후 마나 환급 <i class="up">${[0, 20, 35, 50][L('asteria')]}%</i>`]);
   if (h.origin === '탈로스' && L('talos')) eff.push(['탈로스 ' + ['', 'Ⅰ', 'Ⅱ', 'Ⅲ'][L('talos')], `전투당 1회 부활 체력 <i class="up">${[0, 25, 45, 70][L('talos')]}%</i>`]);
   if (h.origin === '벨칸' && L('belkan')) eff.push(['벨칸 ' + ['', 'Ⅰ', 'Ⅱ', 'Ⅲ'][L('belkan')], `공속 <i class="up">+${[0, 12, 25, 40][L('belkan')]}%</i>`]);
   if (h.origin === '페이지아' && L('pagia')) eff.push(['페이지아 ' + ['', 'Ⅰ', 'Ⅱ', 'Ⅲ'][L('pagia')], `마나 획득 <i class="up">+${[0, 30, 60, 100][L('pagia')]}%</i>`]);
