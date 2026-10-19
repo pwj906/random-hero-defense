@@ -125,7 +125,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 .card .ty{font-style:normal;font-family:var(--body);font-size:10px;font-weight:700;margin-left:6px;vertical-align:2px}
 .card .tr i{width:9px;height:10px;display:inline-block;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
 .card .cost{position:absolute;left:5px;top:5px;padding:3px 8px;border-radius:6px;background:var(--cc);border:1.5px solid rgba(8,10,28,.7);font-family:var(--display);font-size:15px;color:#0a0e1f;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.5)}
-.card .rg{position:absolute;left:6px;top:30px;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;background:rgba(8,10,28,.8);color:#9fe8e0}
+.card .rg{position:absolute;left:46px;top:8px;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(8,10,28,.8);color:#9fe8e0;line-height:1.1;white-space:nowrap}
 .card .own{position:absolute;top:7px;right:5px;font-size:10px;font-weight:700;padding:2px 5px;border-radius:999px;background:rgba(8,10,28,.85);color:var(--gold)}
 .card.up{box-shadow:0 0 0 2px var(--gold) inset}
 .card.sold{visibility:hidden}
@@ -1321,7 +1321,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v38</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v39</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
