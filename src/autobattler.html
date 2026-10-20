@@ -183,6 +183,8 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 .pt .cards{grid-area:cards;max-width:none}
 .pt .card .nm{font-size:14px}
 .pt .sheet{width:min(480px,100%)}
+.pt .augPick{grid-template-columns:1fr;width:100%;gap:8px}
+.pt .augC{padding:10px 12px;min-height:0}
 .pt .overlay{padding:10px;box-sizing:border-box}
 @media (prefers-reduced-motion:reduce){.ticket.spin .t2,.ticket.win{animation:none}.augC:hover{transform:none}}
 </style>
@@ -1272,7 +1274,7 @@ function addCard(k, n) {
     if (S.phase === 'prep' && board().length < S.lvl && !unitsOf(k).length) { const p = freeBoard(HEROES[k].range); if (p) slot = { t:'board', ...p }; }
     if (!slot) { const b = freeBench(); if (b >= 0) slot = { t:'bench', i:b }; }
     if (!slot) { if (!willMerge) break; slot = { t:'bench', i:-1 }; } // 합쳐질 때만 임시 자리
-    S.units[id] = { key:k, star:1, slot }; S.sel = { t:'hero', k:id };
+    S.units[id] = { key:k, star:1, slot }; if (!VIEW.pt) S.sel = { t:'hero', k:id };
   }
   mergeUnits(k); return true;
 }
@@ -1407,7 +1409,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v40</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v41</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1609,7 +1611,7 @@ cv.addEventListener('pointerup', () => {
   if (other && S.units[other].slot.t === 'board' && S.phase !== 'prep') return;
   if (target.t === 'board' && u.slot.t === 'bench' && !(other && S.units[other].slot.t === 'board') && board().length >= S.lvl) { banner(`출전은 레벨만큼 (${S.lvl}명)까지`); return; }
   if (other) S.units[other].slot = { ...u.slot };
-  u.slot = target; S.sel = { t:'hero', k:d.k };
+  u.slot = target; if (!VIEW.pt) S.sel = { t:'hero', k:d.k };
   refreshSyn(); renderAll();
 });
 cv.addEventListener('pointercancel', () => { S.drag = null; });
@@ -1716,12 +1718,23 @@ function drawAlly(u) {
   if (u.vul > 0) { ctx.font = `700 9.5px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = C.bad; ctx.beginPath(); ctx.arc(u.x - 24, bt + 3, 6.5, 0, 6.283); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText('약', u.x - 24, bt + 3.5); }
   if (u.stun > 0) for (let i = 0; i < 3; i++) { const a = S.t * 4 + i * 2.1; ctx.fillStyle = C.elec; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 12, y - 40 + Math.sin(a) * 3, 2.5, 0, 6.283); ctx.fill(); }
 }
+function drawTags(x, y, key) {
+  const h = HEROES[key]; if (!h) return;
+  const items = [[C[h.el] || '#999', EL[h.el] ? EL[h.el][0] : '', '#0a0e1f', 1], ['#d9a066', h.origin ? h.origin[0] : '', '#2a1d00', 0], ['#a4aad8', h.cls ? h.cls[0] : '', '#0a0e1f', 0]].filter(t => t[1]);
+  const w = 13, g = 2, x0 = x - (items.length * (w + g) - g) / 2 + w / 2;
+  ctx.font = `800 8.5px ${FONT_B}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  items.forEach((t, i) => { const cx = x0 + i * (w + g); ctx.fillStyle = t[0]; ctx.beginPath();
+    if (t[3]) { for (let j = 0; j < 6; j++) { const a = Math.PI / 3 * j - Math.PI / 2; ctx.lineTo(cx + Math.cos(a) * 7, y + Math.sin(a) * 7); } ctx.closePath(); } else ctx.arc(cx, y, 6.5, 0, 6.283);
+    ctx.fill(); ctx.strokeStyle = 'rgba(8,10,28,.8)'; ctx.lineWidth = 1; ctx.stroke(); ctx.fillStyle = t[2]; ctx.fillText(t[1], cx, y + .5); });
+  ctx.textBaseline = 'alphabetic';
+}
 function drawOwned(k) {
   if (S.drag && S.drag.moved && S.drag.k === k) return;
   const u = S.units[k], [x, y] = unitPos(k), onBoard = u.slot.t === 'board', s = onBoard ? .62 : .55, lv = u.star;
   if (S.sel && S.sel.t === 'hero' && S.sel.k === k && !S.sel.u) { ctx.strokeStyle = C.gold; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y + 8, 22, 7, 0, 0, 6.283); ctx.stroke(); }
   drawUnit(ctx, u.key, x, onBoard ? y - 6 : y - 2, s, S.t);
   drawStars(x, onBoard ? y + 16 : y + 14, lv, .9, HEROES[u.key].cost);
+  if (S.phase === 'prep') drawTags(x, onBoard ? y - 56 : y - 48, u.key);
   if (onBoard && S.phase === 'prep') { const R = HEROES[u.key].range; ctx.font = `700 9px ${FONT_B}`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(238,240,255,.55)'; ctx.fillText(`${R}`, x + 18, y - 34); }
 }
 function drawFx() {
