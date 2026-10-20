@@ -32,7 +32,7 @@ body{background:var(--ink);color:var(--text);font-family:var(--body);-webkit-use
 .app{height:100%;box-sizing:border-box;padding-block:6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex}
 .wrap{position:relative;flex:1;min-width:0;min-height:0;overflow:hidden}
 #stage{position:absolute;left:0;top:0;width:960px;height:540px;transform-origin:0 0;background:var(--navy);border-radius:12px;overflow:hidden}
-canvas{position:absolute;inset:0;width:960px;height:540px;touch-action:none}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 
 .tracker{position:absolute;left:330px;top:6px;width:300px;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none}
 .stages{display:flex;gap:3px;align-items:center}.stages small{font-size:9.5px;font-weight:700;color:var(--brass);margin:0 3px;white-space:nowrap}
@@ -169,6 +169,32 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 @keyframes spin{50%{opacity:.3;transform:translateY(-3px)}}
 .ticket.win{animation:win .5s ease-out}
 @keyframes win{0%{transform:scale(.8)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+/* ---- 세로 레이아웃 (body.pt): 540×960 스테이지, 보드는 캔버스 변환으로 위쪽, 아래는 대기석·조작·상점 ---- */
+.pt .tracker{left:0;right:0;width:auto;top:4px}
+.app.ptA{padding:0}
+.pt .tracker .phase{font-size:14px}
+.pt .traits{top:50px;left:0;right:0;width:auto;height:38px;max-height:38px;flex-direction:row;gap:4px;overflow-x:auto;overflow-y:hidden;padding:0 6px;scrollbar-width:none;align-items:center}
+.pt .traits .panelTitle,.pt .augs,.pt .trait .td,.pt .trait .tn small{display:none!important}
+.pt .trait{flex:0 0 auto;grid-template-columns:16px auto;gap:4px;padding:3px 8px 3px 5px;white-space:nowrap}
+.pt .trait .hx{width:15px;height:17px;font-size:9px}.pt .trait .tn{gap:4px;font-size:11px}
+.pt .side{top:auto;bottom:0;left:0;right:0;width:auto;max-height:50%;z-index:6;border-radius:16px 16px 0 0;background:#141a3a;padding:12px 12px 14px;border-top:2px solid var(--brass);box-shadow:0 -10px 30px rgba(0,0,0,.6);display:none}
+.pt .side.open{display:flex}
+.pt .side>.box:first-child{display:none}
+.pt .side .shX{position:absolute;right:10px;top:8px;width:34px;height:34px;border-radius:50%;border:1px solid var(--brassDim);background:var(--panel2);color:var(--text);font-size:15px;cursor:pointer}
+.pt .goldPill{display:none}
+.pt .shopbar{height:330px;grid-template-columns:1fr 150px;grid-template-rows:54px minmax(0,1fr);grid-template-areas:"lvl right" "cards cards";gap:8px 8px;padding:8px 10px 12px}
+.pt .lvl{grid-area:lvl;flex-direction:row;align-items:center;gap:8px}
+.pt .lvlTop{flex-direction:column;align-items:flex-start;gap:1px;min-width:62px}
+.pt .xp{width:36px;flex:0 0 36px}
+.pt .lvlBtns{grid-template-columns:1fr 1fr;flex:1;gap:6px}
+.pt .lvlBtns .act{padding:6px 8px;font-size:13px}
+.pt .right{grid-area:right;flex-direction:row;gap:6px}
+.pt .right .act{flex:0 0 64px;flex-direction:column;justify-content:center;font-size:13px;padding:4px}
+.pt .ready{flex:1;font-size:15px}
+.pt .cards{grid-area:cards;max-width:none}
+.pt .card .nm{font-size:14px}
+.pt .sheet{width:min(480px,100%)}
+.pt .overlay{padding:10px;box-sizing:border-box}
 @media (prefers-reduced-motion:reduce){.ticket.spin .t2,.ticket.win{animation:none}.augC:hover{transform:none}}
 </style>
 
@@ -474,22 +500,28 @@ const AUG_STACK = ['power', 'tough', 'haste', 'spell', 'wealth', 'rich', 'xp'];
 // ---------- view: fit + rotate for portrait ----------
 const wrap = document.getElementById('wrap'), stage = document.getElementById('stage');
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
-let K = 1, VIEW = { s:1, rot:false, tx:0, ty:0 };
+let K = 1, VIEW = { s:1, rot:false, tx:0, ty:0, pt:false }, WT = { k:1, ox:0, oy:0 };
+const PW = 540, PX0 = 245, PK = PW / 470, PT_TOP = 92, PT_SHOP = 330; let PH = 960, POY = PT_TOP; // 세로 레이아웃: 월드(가로 좌표계) x 245~715 → 0~540, y → ×PK + POY
 function fit() {
-  const vw = wrap.clientWidth, vh = wrap.clientHeight, rot = vh > vw * 1.05;
-  let s, tx, ty;
-  if (!rot) { s = Math.min(vw / W, vh / H); tx = (vw - W * s) / 2; ty = (vh - H * s) / 2; stage.style.transform = `translate(${tx}px,${ty}px) scale(${s})`; }
-  else { s = Math.min(vh / W, vw / H); tx = (vw + H * s) / 2; ty = (vh - W * s) / 2; stage.style.transform = `translate(${tx}px,${ty}px) rotate(90deg) scale(${s})`; }
-  VIEW = { s, rot, tx, ty };
+  const vw = wrap.clientWidth, vh = wrap.clientHeight, pt = vh > vw * 1.05, rot = false;
+  document.body.classList.toggle('pt', pt); document.querySelector('.app').classList.toggle('ptA', pt);
+  if (pt) { PH = Math.max(900, Math.min(1150, Math.round(PW * vh / Math.max(1, vw)))); POY = PT_TOP + Math.max(0, (PH - PT_TOP - PT_SHOP - 430 * PK) * .3); }
+  const SW = pt ? PW : W, SH = pt ? PH : H;
+  stage.style.width = SW + 'px'; stage.style.height = SH + 'px';
+  const s = Math.min(vw / SW, vh / SH), tx = (vw - SW * s) / 2, ty = (vh - SH * s) / 2;
+  stage.style.transform = `translate(${tx}px,${ty}px) scale(${s})`;
+  VIEW = { s, rot, tx, ty, pt };
+  WT = pt ? { k:PK, ox:-PX0 * PK, oy:POY } : { k:1, ox:0, oy:0 };
   const dpr = Math.min(2, devicePixelRatio || 1);
-  cv.width = Math.round(W * s * dpr); cv.height = Math.round(H * s * dpr); K = cv.width / W;
+  cv.width = Math.round(SW * s * dpr); cv.height = Math.round(SH * s * dpr); K = cv.width / SW;
+  if (typeof S !== 'undefined' && S && S.phase) try { renderAll(); } catch (e) {}
 }
 addEventListener('resize', fit);
 addEventListener('orientationchange', () => setTimeout(fit, 150));
 if (window.ResizeObserver) new ResizeObserver(fit).observe(wrap);
 function logical(e) {
-  const r = wrap.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, { s, rot, tx, ty } = VIEW;
-  return rot ? [(py - ty) / s, (tx - px) / s] : [(px - tx) / s, (py - ty) / s];
+  const r = wrap.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, { s, tx, ty } = VIEW;
+  return [((px - tx) / s - WT.ox) / WT.k, ((py - ty) / s - WT.oy) / WT.k];
 }
 
 // ---------- hex grid ----------
@@ -1321,7 +1353,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v39</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v40</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1443,6 +1475,8 @@ function renderSide() {
   $('side').innerHTML = `<div class="box"><div class="hpRow"><span>생명력</span><b>${Math.max(0, S.life)}<span> / 100</span></b></div>
       <div class="hpbar"><i style="width:${Math.max(0, S.life)}%;background:${S.life <= 30 ? C.bad : C.good}"></i></div>
       <div class="kv kv4"><span>승리</span><b>${S.stats.wins}</b><span>처치</span><b>${S.stats.kills}</b><span>한 방</span><b>${S.stats.maxHit}</b><span>연계</span><b>${S.stats.combos}</b></div></div>${infoHtml()}`;
+  $('side').classList.toggle('open', !!S.sel);
+  if (VIEW.pt && S.sel) { const x = document.createElement('button'); x.className = 'shX'; x.textContent = '✕'; x.onclick = () => { S.sel = null; S.traitOpen = null; renderAll(); }; $('side').appendChild(x); }
   $('side').querySelectorAll('[data-smk]').forEach(el => el.onclick = () => { const k = el.dataset.smk, id = Object.keys(S.units).find(i => S.units[i].key === k); if (id) { S.sel = { t:'hero', k:id }; renderSide(); } });
 }
 function renderShop() {
@@ -1474,7 +1508,7 @@ function tickTracker() {
   if (S.phase === 'fight') { label = `${S.ri + 1}라운드 ${R.kind} 전투 <small>${Math.max(0, Math.ceil(R.time - S.fightT))}초</small>`; frac = 1 - S.fightT / R.time; tb.classList.add('fight'); }
   else if (S.phase === 'result') { label = `${S.ri + 1}라운드 ${S.lastWin ? '승리' : '패배'}`; frac = 0; }
   else { label = `${S.ri + 1}라운드 ${R.kind} · 적 ${R.foes.length} <small>준비 ${Math.ceil(S.prepT)}초</small>`; frac = S.prepT / PREP_TIME; tb.classList.remove('fight'); }
-  $('phase').innerHTML = label; tb.firstChild.style.width = `${Math.max(0, frac) * 100}%`;
+  $('phase').innerHTML = label + (VIEW.pt ? ` <small style="color:${S.life <= 30 ? 'var(--bad)' : 'var(--good)'}">❤ ${Math.max(0, S.life)}</small> <small style="color:var(--gold)">● ${S.gold}G</small>` : ''); tb.firstChild.style.width = `${Math.max(0, frac) * 100}%`;
 }
 function renderAll() { renderTraits(); renderSide(); renderShop(); renderTracker(); }
 
@@ -1670,7 +1704,8 @@ function drawFx() {
   }
 }
 function draw() {
-  ctx.setTransform(K, 0, 0, K, 0, 0);
+  if (VIEW.pt) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#0a0e1f'; ctx.fillRect(0, 0, cv.width, cv.height); }
+  ctx.setTransform(K * WT.k, 0, 0, K * WT.k, K * WT.ox, K * WT.oy);
   if (S.shake > 0) ctx.translate(rand(-S.shake, S.shake) * .4, rand(-S.shake, S.shake) * .4);
   drawBoard();
   const combat = S.phase === 'fight' || S.phase === 'result';
@@ -1695,7 +1730,7 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 S = fresh(); fit(); makePortraits(); renderAll(); showTitle();
-window.__G = { get S() { return S; }, set S(v) { S = v; }, addCard, startFight, renderAll, refreshSyn, HEROES, SYN, rollCard, update, buy, buyXp, reroll, sell, afterResult, toPrep, fresh, synLv, interestNow, ROUNDS, FOES, copiesOf, unitsOf };
+window.__G = { get VIEW() { return VIEW; }, get WT() { return WT; }, cellXY, get S() { return S; }, set S(v) { S = v; }, addCard, startFight, renderAll, refreshSyn, HEROES, SYN, rollCard, update, buy, buyXp, reroll, sell, afterResult, toPrep, fresh, synLv, interestNow, ROUNDS, FOES, copiesOf, unitsOf };
 requestAnimationFrame(loop);
 })();
 </script>
