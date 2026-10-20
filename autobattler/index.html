@@ -653,7 +653,7 @@ const ROW_SC = r => .7 + .3 * r / 7;
 const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / (238 * YS)));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
 const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM, ZGN:SPR_ZGN, ZBA:SPR_ZBA, ZBB:SPR_ZBB, ZBC:SPR_ZBC, ZSH:SPR_ZSH };
-const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
+const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } if (!SIMG[set].attack_6 && SIMG[set].attack_near_6) SIMG[set].attack_6 = SIMG[set].attack_near_6; } // 총검사 세트(근접/원거리만 있음)는 대기 동작으로 근접 시트를 씀 — 없으면 준비 단계에 안 보였음
 const BGIMG = new Image(); BGIMG.src = BG_SRC; const BGPIMG = new Image(); BGPIMG.src = BGP_SRC; // 세로 전용 배경(1120×1480 = 월드 x 210~770, y -100~640)
 const SPR_SC = .43;
 function sprFrame(anim, t, loop) { const [n, fps] = SPR_FR[anim]; const f = Math.floor(t * fps); return loop ? f % n : Math.min(f, n - 1); }
@@ -1386,7 +1386,7 @@ const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle(rulesOnly) {
   if (VIEW.pt && !rulesOnly) { // 세로: 키아트 타이틀(제목은 그림에 있음) + 아래 버튼
-    overlay.innerHTML = `<div class="titleArt" style="background-image:url(${TITLE_SRC})"><div class="titleBtns"><div class="titleSub">나만의 조합으로 군단을 막아라!</div><button class="big" id="go">게임 시작</button><div style="display:flex;gap:8px;justify-content:center"><button class="big alt tsm" id="fs">전체 화면</button><button class="big alt tsm" id="rules">📖 규칙</button></div><div class="titleVer">히어로 믹스 디펜스 · v45</div></div></div>`;
+    overlay.innerHTML = `<div class="titleArt" style="background-image:url(${TITLE_SRC})"><div class="titleBtns"><div class="titleSub">나만의 조합으로 군단을 막아라!</div><button class="big" id="go">게임 시작</button><div style="display:flex;gap:8px;justify-content:center"><button class="big alt tsm" id="fs">전체 화면</button><button class="big alt tsm" id="rules">📖 규칙</button></div><div class="titleVer">히어로 믹스 디펜스 · v46</div></div></div>`;
     overlay.hidden = false; overlay.classList.add('title');
     document.getElementById('go').onclick = () => { overlay.classList.remove('title'); newGame(); };
     document.getElementById('fs').onclick = () => { const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen() : null; if (p && p.then) p.then(() => setTimeout(fit, 200)).catch(() => {}); overlay.classList.remove('title'); newGame(); };
@@ -1394,7 +1394,7 @@ function showTitle(rulesOnly) {
     return;
   }
   overlay.classList.remove('title');
-  overlay.innerHTML = `<div class="sheet"><h1>히어로 믹스 디펜스 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">v45</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>히어로 믹스 디펜스 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">v46</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
