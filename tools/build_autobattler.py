@@ -5,7 +5,7 @@ ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src=open(os.path.join(ROOT,'src','autobattler.html'),encoding='utf8').read()
 lines=src.split('\n'); assets=[]; keep=[]
 for l in lines:
-    if re.match(r'^<script>const (SPR_[A-Z]+|BG_SRC)=',l) and l.endswith('</script>'):
+    if re.match(r'^<script>const (SPR_[A-Z]+|BG_SRC|BGP_SRC)=',l) and l.endswith('</script>'):
         assets.append(l[len('<script>'):-len('</script>')])
     else: keep.append(l)
 # 아티팩트 파일 한도(16MB) 때문에 12MB씩 나눠 assets-1.js, assets-2.js… 로 저장

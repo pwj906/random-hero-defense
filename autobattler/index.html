@@ -201,7 +201,7 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 </style>
 
 </head><body>
-<script src="assets-1.js?v=064c2c45"></script>
+<script src="assets-1.js?v=71e17b06"></script>
 <script src="assets-2.js?v=4d6a1686"></script>
 <script src="assets-3.js?v=f015bff4"></script>
 <div class="app">
@@ -625,7 +625,7 @@ const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
 const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM, ZGN:SPR_ZGN, ZBA:SPR_ZBA, ZBB:SPR_ZBB, ZBC:SPR_ZBC, ZSH:SPR_ZSH };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
-const BGIMG = new Image(); BGIMG.src = BG_SRC;
+const BGIMG = new Image(); BGIMG.src = BG_SRC; const BGPIMG = new Image(); BGPIMG.src = BGP_SRC; // 세로 전용 배경(1120×1480 = 월드 x 210~770, y -100~640)
 const SPR_SC = .43;
 function sprFrame(anim, t, loop) { const [n, fps] = SPR_FR[anim]; const f = Math.floor(t * fps); return loop ? f % n : Math.min(f, n - 1); }
 function drawSprite(g, set, anim, f, x, y, s, face = 1, alpha = 1, flash = false, rot = 0) {
@@ -1356,7 +1356,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v42</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v43</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1586,7 +1586,8 @@ function update(dt) {
 // ---------- draw ----------
 function hexPath(x, y, sc = 1) { const hw = 33 * sc, hh = 29 * sc; ctx.beginPath(); ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y - hh / 2); ctx.lineTo(x + hw, y + hh / 2); ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y + hh / 2); ctx.lineTo(x - hw, y - hh / 2); ctx.closePath(); }
 function drawBoard() {
-  if (BGIMG.complete && BGIMG.naturalWidth) ctx.drawImage(BGIMG, 0, 0, W, H); else { ctx.fillStyle = '#11163a'; ctx.fillRect(0, 0, W, H); }
+  if (VIEW.pt && BGPIMG.complete && BGPIMG.naturalWidth) ctx.drawImage(BGPIMG, PX0, -100, 560, 740);
+  else if (BGIMG.complete && BGIMG.naturalWidth) ctx.drawImage(BGIMG, 0, 0, W, H); else { ctx.fillStyle = '#11163a'; ctx.fillRect(0, 0, W, H); }
   const dragging = S.drag && S.drag.moved && S.phase === 'prep';
   for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLS; col++) {
     const [x, y] = cellXY(col, row), mine = row >= 4;
