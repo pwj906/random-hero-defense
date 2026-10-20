@@ -557,11 +557,12 @@ const AUG_STACK = ['power', 'tough', 'haste', 'spell', 'wealth', 'rich', 'xp'];
 const wrap = document.getElementById('wrap'), stage = document.getElementById('stage');
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let K = 1, VIEW = { s:1, rot:false, tx:0, ty:0, pt:false }, WT = { k:1, ox:0, oy:0 };
-const PW = 540, PX0 = 245, PK = PW / 470, PT_TOP = 92, PT_SHOP = 330; let PH = 960, POY = PT_TOP; // 세로 레이아웃: 월드(가로 좌표계) x 245~715 → 0~540, y → ×PK + POY
+const PW = 540, PX0 = 210, PK = PW / 560, PT_TOP = 92, PT_SHOP = 330; let PH = 960, POY = PT_TOP; // 세로 레이아웃: 월드(가로 좌표계) x 245~715 → 0~540, y → ×PK + POY
 function fit() {
   const vw = wrap.clientWidth, vh = wrap.clientHeight, pt = vh > vw * 1.05, rot = false;
   document.body.classList.toggle('pt', pt); document.querySelector('.app').classList.toggle('ptA', pt);
-  if (pt) { PH = Math.max(900, Math.min(1150, Math.round(PW * vh / Math.max(1, vw)))); POY = PT_TOP + Math.max(0, (PH - PT_TOP - PT_SHOP - 430 * PK) * .3); }
+  if (pt) { PH = Math.max(900, Math.min(1150, Math.round(PW * vh / Math.max(1, vw)))); const slack = Math.max(0, PH - PT_TOP - PT_SHOP - 430 * PK); POY = PT_TOP + slack * .3; }
+  const sb = document.querySelector('.shopbar'); if (sb) sb.style.height = pt ? Math.max(PT_SHOP, PH - (POY + 430 * PK) - 6) + 'px' : '';
   const SW = pt ? PW : W, SH = pt ? PH : H;
   stage.style.width = SW + 'px'; stage.style.height = SH + 'px';
   const s = Math.min(vw / SW, vh / SH), tx = (vw - SW * s) / 2, ty = (vh - SH * s) / 2;
@@ -1409,7 +1410,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v41</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v42</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
