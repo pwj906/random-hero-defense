@@ -123,7 +123,8 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 .card .tr{display:flex;gap:5px;flex-wrap:nowrap;margin-bottom:3px}
 .card .tr span{display:flex;gap:3px;align-items:center;font-size:9.5px;font-weight:700;color:#d6d9f2;white-space:nowrap}
 .card .ty{font-style:normal;font-family:var(--body);font-size:10px;font-weight:700;margin-left:6px;vertical-align:2px}
-.card .tr i{width:9px;height:10px;display:inline-block;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.card .tr i{width:9px;height:10px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;font-style:normal;font-size:0;color:#0a0e1f;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.card .tr .te{display:none}
 .card .cost{position:absolute;left:5px;top:5px;padding:3px 8px;border-radius:6px;background:var(--cc);border:1.5px solid rgba(8,10,28,.7);font-family:var(--display);font-size:15px;color:#0a0e1f;line-height:1;box-shadow:0 1px 3px rgba(0,0,0,.5)}
 .card .rg{position:absolute;left:46px;top:8px;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px;background:rgba(8,10,28,.8);color:#9fe8e0;line-height:1.1;white-space:nowrap}
 .card .own{position:absolute;top:7px;right:5px;font-size:10px;font-weight:700;padding:2px 5px;border-radius:999px;background:rgba(8,10,28,.85);color:var(--gold)}
@@ -192,7 +193,14 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 .pt .right .act{flex:0 0 64px;flex-direction:column;justify-content:center;font-size:13px;padding:4px}
 .pt .ready{flex:1;font-size:15px}
 .pt .cards{grid-area:cards;max-width:none}
-.pt .card .nm{font-size:14px}
+.pt .card .nm{font-size:15px}
+.pt .card .tr{flex-direction:column;align-items:flex-start;gap:4px;margin-bottom:7px}
+.pt .card .tr span{font-size:12.5px;gap:5px;color:#eef0ff;text-shadow:0 1px 2px #000}
+.pt .card .tr .te{display:flex}
+.pt .card .tr i{width:20px;height:22px;font-size:11px;font-weight:900;border-radius:0}
+.pt .card .tr .to i,.pt .card .tr .tc i{clip-path:none;border-radius:50%;width:20px;height:20px}
+.pt .card .ty{display:none}
+.pt .card .meta{padding-top:40px}
 .pt .sheet{width:min(480px,100%)}
 .pt .augPick{grid-template-columns:1fr;width:100%;gap:8px}
 .pt .augC{padding:10px 12px;min-height:0}
@@ -235,8 +243,9 @@ button:focus-visible{outline:2px solid var(--text);outline-offset:2px}
 'use strict';
 const W = 960, H = 540;
 const COLS = 7, ROWS = 8, CW = 70, RH = 40, BX0 = 480 - (6 * CW + CW / 2) / 2, BY0 = 46;
-const BENCH_N = 18, BENCH_ROWS = [356, 400], BENCH_X = Array.from({ length:BENCH_N }, (_, i) => 480 + ((i % 9) - 4) * 59), BENCH_YS = Array.from({ length:BENCH_N }, (_, i) => BENCH_ROWS[Math.floor(i / 9)]), BENCH_Y = 383;
-const SHOP_Y = 433;
+const BENCH_N = 18, BENCH_ROWS = [356, 400], BENCH_X = Array.from({ length:BENCH_N }, (_, i) => 480 + ((i % 9) - 4) * 59), BENCH_YS = Array.from({ length:BENCH_N }, (_, i) => BENCH_ROWS[Math.floor(i / 9)]), BENCH_Y = 383; let YS = 1; // YS: 세로 레이아웃에서 전장을 세로로 늘리는 배율(1=가로 그대로)
+const yS = y => BY0 + (y - BY0) * YS; // 월드 y를 세로 늘림 적용
+const SHOP_Y0 = 433; let SHOP_Y = 433;
 const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const C = { seradin:'#d9a066', artillery:'#a4aad8', swordsman:'#a4aad8', horizon:'#d9a066', commander:'#a4aad8', shaman:'#a4aad8', gunblade:'#a4aad8', shield:'#a4aad8', mirabel:'#d9a066', guardian:'#a4aad8', ice:'#bfefff', light:'#fff2a8', dark:'#8a6cff', mage:'#a4aad8', fighter:'#a4aad8', assassin:'#a4aad8', archer:'#a4aad8', varak:'#d9a066', wind:'#9fe8e0', grass:'#7ddc5a', earth:'#c98a4b', water:'#4cc3ff', elec:'#ffd23f', fire:'#ff7a45', sup:'#7fe0c0', foe:'#c46ce2', foeDark:'#4a2160', good:'#5be3a1', bad:'#ff5d73', gold:'#ffcf5a', mana:'#5aa8ff', brass:'#d4b36a', text:'#eef0ff', muted:'#a4aad8', ink:'#0d1230' };
 const MATCH_UP = 1.3, MATCH_DOWN = .75;
@@ -503,12 +512,13 @@ const AUG_STACK = ['power', 'tough', 'haste', 'spell', 'wealth', 'rich', 'xp'];
 const wrap = document.getElementById('wrap'), stage = document.getElementById('stage');
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let K = 1, VIEW = { s:1, rot:false, tx:0, ty:0, pt:false }, WT = { k:1, ox:0, oy:0 };
-const PW = 540, PX0 = 210, PK = PW / 560, PT_TOP = 92, PT_SHOP = 330; let PH = 960, POY = PT_TOP; // 세로 레이아웃: 월드(가로 좌표계) x 245~715 → 0~540, y → ×PK + POY
+const PW = 540, PX0 = 210, PK = PW / 560, PT_TOP = 92, PT_SHOP = 330, YS_MAX = 1.5; let PH = 960, POY = PT_TOP; // 세로 레이아웃: 월드(가로 좌표계) x 245~715 → 0~540, y → ×PK + POY
 function fit() {
   const vw = wrap.clientWidth, vh = wrap.clientHeight, pt = vh > vw * 1.05, rot = false;
   document.body.classList.toggle('pt', pt); document.querySelector('.app').classList.toggle('ptA', pt);
-  if (pt) { PH = Math.max(900, Math.min(1150, Math.round(PW * vh / Math.max(1, vw)))); const slack = Math.max(0, PH - PT_TOP - PT_SHOP - 430 * PK); POY = PT_TOP + slack * .3; }
-  const sb = document.querySelector('.shopbar'); if (sb) sb.style.height = pt ? Math.max(PT_SHOP, PH - (POY + 430 * PK) - 6) + 'px' : '';
+  if (pt) { PH = Math.max(900, Math.min(1150, Math.round(PW * vh / Math.max(1, vw)))); YS = Math.max(1, Math.min(YS_MAX, (PH - PT_TOP - PT_SHOP) / ((430 - BY0) * PK) - BY0 / (430 - BY0))); POY = PT_TOP; } else YS = 1;
+  for (let i = 0; i < BENCH_N; i++) BENCH_YS[i] = yS(BENCH_ROWS[Math.floor(i / 9)]); SHOP_Y = yS(SHOP_Y0);
+  const sb = document.querySelector('.shopbar'); if (sb) sb.style.height = pt ? Math.max(PT_SHOP, PH - (POY + yS(430) * PK) - 6) + 'px' : '';
   const SW = pt ? PW : W, SH = pt ? PH : H;
   stage.style.width = SW + 'px'; stage.style.height = SH + 'px';
   const s = Math.min(vw / SW, vh / SH), tx = (vw - SW * s) / 2, ty = (vh - SH * s) / 2;
@@ -528,7 +538,7 @@ function logical(e) {
 }
 
 // ---------- hex grid ----------
-const cellXY = (col, row) => [480 + (col - 3 + (row & 1) * .5) * CW * ROW_SC(row), BY0 + RH * (row * .7 + .3 * row * row / 14)];
+const cellXY = (col, row) => [480 + (col - 3 + (row & 1) * .5) * CW * ROW_SC(row), BY0 + YS * RH * (row * .7 + .3 * row * row / 14)];
 function cube(col, row) { const q = col - (row - (row & 1)) / 2; return [q, row, -q - row]; }
 function hexDist(a, b) { const A = cube(a.col, a.row), B = cube(b.col, b.row); return Math.max(Math.abs(A[0] - B[0]), Math.abs(A[1] - B[1]), Math.abs(A[2] - B[2])); }
 function neighbors(col, row) {
@@ -621,7 +631,7 @@ function headgear(g, key, t) {
 }
 const SPR_FR = { attack_6:[6,12], attack_near_6:[6,12], attack_far_6:[6,12], walk_4:[4,8], skill_6:[6,12], skill2_6:[6,12], fx_8:[8,12] };
 const ROW_SC = r => .7 + .3 * r / 7;
-const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / 238));
+const scAtY = y => Math.max(.7, Math.min(1, .7 + .3 * (y - BY0) / (238 * YS)));
 const idleBob = t => Math.sin(t * 2.513) * 1.5;
 const SPR = { VAR:SPR_VAR, LUA:SPR_LUA, TAR:SPR_TAR, MAR:SPR_MAR, BRU:SPR_BRU, SEI:SPR_SEI, RIO:SPR_RIO, BEL:SPR_BEL, KYL:SPR_KYL, MOR:SPR_MOR, ROS:SPR_ROS, NER:SPR_NER, BAS:SPR_BAS, SEN:SPR_SEN, IVE:SPR_IVE, ARD:SPR_ARD, TES:SPR_TES, ROD:SPR_ROD, SEV:SPR_SEV, MUK:SPR_MUK, IGN:SPR_IGN, BLS:SPR_BLS, ORV:SPR_ORV, KAL:SPR_KAL, NIR:SPR_NIR, MRU:SPR_MRU, SAI:SPR_SAI, FIN:SPR_FIN, ODL:SPR_ODL, ARM:SPR_ARM, RIE:SPR_RIE, KAR:SPR_KAR, NEI:SPR_NEI, ARK:SPR_ARK, ZET:SPR_ZET, PIO:SPR_PIO, RAS:SPR_RAS, SIR:SPR_SIR, VEI:SPR_VEI, BRN:SPR_BRN, TRK:SPR_TRK, RES:SPR_RES, KRN:SPR_KRN, MOG:SPR_MOG, GRN:SPR_GRN, NUM:SPR_NUM, ORD:SPR_ORD, REK:SPR_REK, ROK:SPR_ROK, BRG:SPR_BRG, LUE:SPR_LUE, POR:SPR_POR, ZEN:SPR_ZEN, VEL:SPR_VEL, ARV:SPR_ARV, SVR:SPR_SVR, RAD:SPR_RAD, OTT:SPR_OTT, ZRN:SPR_ZRN, ZAR:SPR_ZAR, ZBM:SPR_ZBM, ZHL:SPR_ZHL, ZSM:SPR_ZSM, ZGN:SPR_ZGN, ZBA:SPR_ZBA, ZBB:SPR_ZBB, ZBC:SPR_ZBC, ZSH:SPR_ZSH };
 const SIMG = {}; for (const set of Object.keys(SPR)) { SIMG[set] = {}; for (const n of Object.keys(SPR[set])) { const im = new Image(); im.src = SPR[set][n]; SIMG[set][n] = im; } }
@@ -1356,7 +1366,7 @@ function newGame() {
 const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle() {
-  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v43</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>랜덤 히어로 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">오토배틀러 · v44</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
@@ -1488,7 +1498,7 @@ function renderShop() {
     const h = HEROES[k], owned = copiesOf(k), up = unitsOf(k, 1).length === 2 || (unitsOf(k, 1).length === 5 && unitsOf(k, 2).length === 2);
     return `<button class="card c${h.cost}${up ? ' up' : ''}" data-buy="${i}" style="--img:url(${PORTRAIT[k]})" ${S.gold < h.cost || !shopOpen() ? 'disabled' : ''}>
       ${owned ? `<span class="own">${up ? '★ 업!' : `보유 ${owned}장`}</span>` : ''}
-      <span class="meta"><span><span class="tr">${h.origin ? `<span><i style="background:#d9a066"></i>${h.origin}</span>` : ''}${h.cls ? `<span><i style="background:#a4aad8"></i>${h.cls}</span>` : ''}</span><span class="nm">${h.name}<em class="ty" style="color:${C[h.el]}">${EL[h.el]}</em></span></span></span><span class="cost">${h.cost}G</span><span class="rg">사거리 ${h.range}</span></button>`;
+      <span class="meta"><span><span class="tr"><span class="te"><i style="background:${C[h.el]}">${EL[h.el][0]}</i>${EL[h.el]}</span>${h.origin ? `<span class="to"><i style="background:#d9a066">${h.origin[0]}</i>${h.origin}</span>` : ''}${h.cls ? `<span class="tc"><i style="background:#a4aad8">${h.cls[0]}</i>${h.cls}</span>` : ''}</span><span class="nm">${h.name}<em class="ty" style="color:${C[h.el]}">${EL[h.el]}</em></span></span></span><span class="cost">${h.cost}G</span><span class="rg">사거리 ${h.range}</span></button>`;
   }).join('');
   $('cards').querySelectorAll('[data-buy]').forEach(b => b.onclick = () => buy(+b.dataset.buy));
   $('gold').textContent = S.gold;
@@ -1584,9 +1594,9 @@ function update(dt) {
 }
 
 // ---------- draw ----------
-function hexPath(x, y, sc = 1) { const hw = 33 * sc, hh = 29 * sc; ctx.beginPath(); ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y - hh / 2); ctx.lineTo(x + hw, y + hh / 2); ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y + hh / 2); ctx.lineTo(x - hw, y - hh / 2); ctx.closePath(); }
+function hexPath(x, y, sc = 1) { const hw = 33 * sc, hh = 29 * sc * YS; ctx.beginPath(); ctx.moveTo(x, y - hh); ctx.lineTo(x + hw, y - hh / 2); ctx.lineTo(x + hw, y + hh / 2); ctx.lineTo(x, y + hh); ctx.lineTo(x - hw, y + hh / 2); ctx.lineTo(x - hw, y - hh / 2); ctx.closePath(); }
 function drawBoard() {
-  if (VIEW.pt && BGPIMG.complete && BGPIMG.naturalWidth) ctx.drawImage(BGPIMG, PX0, -100, 560, 740);
+  if (VIEW.pt && BGPIMG.complete && BGPIMG.naturalWidth) { ctx.save(); ctx.translate(0, BY0); ctx.scale(1, YS); ctx.translate(0, -BY0); ctx.drawImage(BGPIMG, PX0, -100, 560, 740); ctx.restore(); }
   else if (BGIMG.complete && BGIMG.naturalWidth) ctx.drawImage(BGIMG, 0, 0, W, H); else { ctx.fillStyle = '#11163a'; ctx.fillRect(0, 0, W, H); }
   const dragging = S.drag && S.drag.moved && S.phase === 'prep';
   for (let row = 0; row < ROWS; row++) for (let col = 0; col < COLS; col++) {
@@ -1698,8 +1708,8 @@ function drawFx() {
     if (e.type === 'link') { ctx.strokeStyle = e.col; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.lineTo(e.tx, e.ty); ctx.stroke(); ctx.setLineDash([]); }
     if (e.type === 'cone') { const gr = ctx.createLinearGradient(e.x, e.y, e.tx, e.ty); gr.addColorStop(0, 'rgba(255,210,63,.9)'); gr.addColorStop(1, 'rgba(255,122,69,.2)'); ctx.fillStyle = gr; const a = Math.atan2(e.ty - e.y, e.tx - e.x), d = Math.hypot(e.tx - e.x, e.ty - e.y) + 40; ctx.beginPath(); ctx.moveTo(e.x, e.y); ctx.arc(e.x, e.y, d, a - .25, a + .25); ctx.closePath(); ctx.fill(); }
     if (e.type === 'pillar') { ctx.fillStyle = C.fire; ctx.fillRect(e.x - 12 * (1 - k), e.y - 140, 24 * (1 - k), 140); ctx.fillStyle = C.elec; ctx.fillRect(e.x - 5 * (1 - k), e.y - 140, 10 * (1 - k), 140); }
-    if (e.type === 'wave') { ctx.fillStyle = 'rgba(76,195,255,.28)'; const yy = BY0 + 7 * RH - k * 8 * RH; ctx.fillRect(BX0 - 34, yy, 7 * CW + 34, 30); }
-    if (e.type === 'flash') { ctx.fillStyle = e.col; ctx.globalAlpha = .2 * (1 - k); ctx.fillRect(BX0 - 34, BY0 - 30, 7 * CW + 34, 4 * RH + 30); }
+    if (e.type === 'wave') { ctx.fillStyle = 'rgba(76,195,255,.28)'; const yy = BY0 + YS * (7 * RH - k * 8 * RH); ctx.fillRect(BX0 - 34, yy, 7 * CW + 34, 30); }
+    if (e.type === 'flash') { ctx.fillStyle = e.col; ctx.globalAlpha = .2 * (1 - k); ctx.fillRect(BX0 - 34, BY0 - 30, 7 * CW + 34, YS * 4 * RH + 30); }
     ctx.globalAlpha = 1;
   }
   for (const p of S.parts) { ctx.globalAlpha = 1 - p.t / p.life; ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.283); ctx.fill(); }
