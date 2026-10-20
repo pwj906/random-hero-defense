@@ -5,7 +5,7 @@ ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 src=open(os.path.join(ROOT,'src','autobattler.html'),encoding='utf8').read()
 lines=src.split('\n'); assets=[]; keep=[]
 for l in lines:
-    if re.match(r'^<script>const (SPR_[A-Z]+|BG_SRC|BGP_SRC)=',l) and l.endswith('</script>'):
+    if re.match(r'^<script>const (SPR_[A-Z]+|BG_SRC|BGP_SRC|TITLE_SRC)=',l) and l.endswith('</script>'):
         assets.append(l[len('<script>'):-len('</script>')])
     else: keep.append(l)
 # 아티팩트 파일 한도(16MB) 때문에 12MB씩 나눠 assets-1.js, assets-2.js… 로 저장
@@ -30,9 +30,21 @@ head='''<!doctype html>
 <meta name="theme-color" content="#0a0e1f">
 <link rel="icon" href="../favicon.ico">
 <link rel="apple-touch-icon" href="../icon-180.png">
-<meta property="og:title" content="랜덤 히어로 오토배틀러">
-<meta property="og:description" content="영웅을 사고, 시너지를 맞추고, 제륵 군단을 막아라. 20라운드 자동 전투 디펜스.">
-<meta property="og:image" content="https://pwj906.github.io/random-hero-defense/share.jpg">
+<meta name="apple-mobile-web-app-title" content="히어로 믹스 디펜스">
+<meta name="application-name" content="히어로 믹스 디펜스">
+<meta name="description" content="영웅을 모으고 시너지를 완성하라! 나만의 조합으로 제륵 군단을 막는 전략 디펜스.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="히어로 믹스 디펜스">
+<meta property="og:title" content="히어로 믹스 디펜스">
+<meta property="og:description" content="영웅을 모으고 시너지를 완성하라! 나만의 조합으로 제륵 군단을 막는 전략 디펜스.">
+<meta property="og:url" content="https://pwj906.github.io/random-hero-defense/autobattler/">
+<meta property="og:image" content="https://pwj906.github.io/random-hero-defense/autobattler/og-hero-mix-defense.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="히어로 믹스 디펜스">
+<meta name="twitter:description" content="영웅을 모으고 시너지를 완성하라! 나만의 조합으로 제륵 군단을 막는 전략 디펜스.">
+<meta name="twitter:image" content="https://pwj906.github.io/random-hero-defense/autobattler/og-hero-mix-defense.jpg">
 <style>*,*::before,*::after{box-sizing:border-box}html,body{height:100%}body{margin:0;background:#0a0e1f}[hidden]{display:none!important}</style>
 '''
 i=body.index('<div class="app">')
