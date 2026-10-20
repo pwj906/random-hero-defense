@@ -492,8 +492,8 @@ function genRound(ri) {
   const w = { runner:3, shielder:1.5 + .12 * d, archer:2, healer:1 + .1 * d, bomber:.9 + .18 * d, shaman:.5 + .18 * d };
   const pickT = () => { let t = rnd() * Object.values(w).reduce((a, b) => a + b, 0); for (const k of Object.keys(w)) { t -= w[k]; if (t <= 0) return k; } return 'runner'; };
   let n = Math.min(15, 8 + Math.floor((r - 20) / 8)); const big = [];
-  if (kind === '정예') big.push(...Array(1 + Math.floor(d / 3)).fill('general'));
-  if (kind === '보스') { const bs = { 3:'boss', 4:'boss2', 5:'boss3', 6:'boss', 7:'boss2', 8:'boss3', 9:'boss2', 10:'boss3' }[r / 10]; big.push(bs); big.push(...Array(Math.max(0, Math.floor(d / 3) - 1)).fill('general')); if (r === 100) big.push('general', 'general'); }
+  if (kind === '정예') big.push(...Array(Math.min(3, 1 + Math.floor(d / 3))).fill('general')); // v47: 91~100라운드 장군 4→3
+  if (kind === '보스') { const bs = { 3:'boss', 4:'boss2', 5:'boss3', 6:'boss', 7:'boss2', 8:'boss3', 9:'boss2', 10:'boss3' }[r / 10]; big.push(bs); big.push(...Array(Math.min(2, Math.max(0, Math.floor(d / 3) - 1))).fill('general')); if (r === 100) big.push('general'); } // v47: 100라운드 바르고스+장군 4→3
   n -= big.length * 2;
   const rows = { 3:[], 2:[], 1:[], 0:[] }, FRONT = ['runner', 'bomber', 'shielder'];
   for (const b of big) rows[2].push(b);
@@ -1386,7 +1386,7 @@ const overlay = document.getElementById('overlay');
 function hideOverlay() { overlay.hidden = true; overlay.innerHTML = ''; }
 function showTitle(rulesOnly) {
   if (VIEW.pt && !rulesOnly) { // 세로: 키아트 타이틀(제목은 그림에 있음) + 아래 버튼
-    overlay.innerHTML = `<div class="titleArt" style="background-image:url(${TITLE_SRC})"><div class="titleBtns"><div class="titleSub">나만의 조합으로 군단을 막아라!</div><button class="big" id="go">게임 시작</button><div style="display:flex;gap:8px;justify-content:center"><button class="big alt tsm" id="fs">전체 화면</button><button class="big alt tsm" id="rules">📖 규칙</button></div><div class="titleVer">히어로 믹스 디펜스 · v46</div></div></div>`;
+    overlay.innerHTML = `<div class="titleArt" style="background-image:url(${TITLE_SRC})"><div class="titleBtns"><div class="titleSub">나만의 조합으로 군단을 막아라!</div><button class="big" id="go">게임 시작</button><div style="display:flex;gap:8px;justify-content:center"><button class="big alt tsm" id="fs">전체 화면</button><button class="big alt tsm" id="rules">📖 규칙</button></div><div class="titleVer">히어로 믹스 디펜스 · v47</div></div></div>`;
     overlay.hidden = false; overlay.classList.add('title');
     document.getElementById('go').onclick = () => { overlay.classList.remove('title'); newGame(); };
     document.getElementById('fs').onclick = () => { const el = document.documentElement, p = el.requestFullscreen ? el.requestFullscreen() : null; if (p && p.then) p.then(() => setTimeout(fit, 200)).catch(() => {}); overlay.classList.remove('title'); newGame(); };
@@ -1394,7 +1394,7 @@ function showTitle(rulesOnly) {
     return;
   }
   overlay.classList.remove('title');
-  overlay.innerHTML = `<div class="sheet"><h1>히어로 믹스 디펜스 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">v46</small></h1>
+  overlay.innerHTML = `<div class="sheet"><h1>히어로 믹스 디펜스 <small style="font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600">v47</small></h1>
     <p>준비 시간에 위쪽 적 배치를 보고, 아래쪽 칸에 영웅을 세우세요. 전투는 자동으로 맞붙어요.</p>
     <ul class="rules">
       <li><span class="dot" style="background:${C.gold}"></span><span>같은 영웅 카드 2장이면 <b>★2</b>, 4장이면 <b>★3</b>. 별마다 스킬이 하나씩 열리고, 마나가 차면 열린 스킬 중 하나가 무작위로 나가요.</span></li>
