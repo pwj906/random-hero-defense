@@ -188,3 +188,9 @@
 - v46: '대기석에 있는 애가 안 보여' — 총검사 세트(ZET 제트·RES 레시아·REK 레카)는 `attack_6`이 없고 `attack_near_6/far_6`뿐이라 준비 단계 대기 그림(`drawUnit`·`drawSprite(…,'attack_6',0)`)이 안 그려졌음(대기석·보드 모두, 배지·별만 보임). `SIMG` 만들 때 `attack_6`이 없으면 `attack_near_6`을 별칭으로.
 - v47: 친구 '100라운드 난이도가 이상해요'(98라운드에서 탈락) — 91~100라운드가 d=9라 정예(95·98)에 장군 4명, 100라운드 바르고스+장군 4명으로 급등하던 것 → `genRound` 정예 장군 최대 3(`Math.min(3, 1+⌊d/3⌋)`), 보스 라운드 장군 최대 2 + 100라운드 +1 = 바르고스+장군 3. 라운드별 구성: 85·88·95·98 장군 3, 90 벨제나+장군 1, 100 바르고스+장군 3. 성장 복리(hpL 1.05·atkL 1.035·pw 1.03)는 그대로.
 - 난이도(v30, '너무 어렵다' 피드백): 적 체력 ×0.85×1.05^라운드, 공격 ×0.85×1.03^라운드(`BAL`, 이전 1.12^·1.08^), 장군 1900/66·대장 3600/88(이전 2300/72·4400/95), 15라운드 보스전 장군 2→1, 패배 생명력 손실 2+⌊라운드/2⌋+남은 적(최대 25, 이전 3+라운드+2×남은 적). `window.BAL`로 덮어쓸 수 있음. 봇 `tools/autobattler_bot.js`(`NODE_PATH=$(npm root -g) node tools/autobattler_bot.js 판수 strong|basic '{BAL json}'`, 아티팩트 본문 형식 파일을 같은 폴더 var1a-game.html로 둬야 함): strong 8판 5승·중간값 20, basic 6판 1승·중간값 19 (이전: 전부 9라운드 탈락). `window.__G`에 update·buy·buyXp·reroll·afterResult 등 노출.
+
+## 흑과백 (black-and-white/)
+- 더 지니어스 흑과백(0~8 타일, 상대는 색만 보임, 높은 숫자 승, 먼저 5승). 컴퓨터 대전 + 방 코드 4자리 온라인 1:1.
+- 원본 `src/black-and-white.html`(아티팩트 본문 형식) → `python3 tools/build_bw.py` → `black-and-white/index.html`.
+- 공개 주소 https://pwj906.github.io/random-hero-defense/black-and-white/ · claude.ai 아티팩트 https://claude.ai/artifact/VUFAwLDKdBMrN1TjLzt1Ym (원본 그대로, capabilities room).
+- 온라인: 각자 낸 수 목록을 presence로 주고받고 양쪽이 같은 규칙으로 판을 재구성(`derive`). claude.ai 안은 room 캡빌리티, 공개 사이트는 Supabase Realtime presence(`sbRoom`, 표 필요 없음). 방은 만든 사람이 화면을 켜 둬야 유지.
