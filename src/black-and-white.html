@@ -892,12 +892,13 @@ function sbRoom() {
   return {
     join(name) {
       return new Promise((resolve, reject) => {
-        // Presence alone sometimes drops updates, so every change also goes out as a broadcast,
-        // repeated every few seconds; a peer counts as here if either channel heard from it recently.
-        const ch = sb.channel(name, { config: { presence: { key: TAB }, broadcast: { self: false } } });
-        let mine = {}, ts = 0, cbs = [], errs = [], snap = [], done = false, left = false, bc = {}, beat = null;
+        // Supabase closes a channel that updates presence too often, so presence is only refreshed
+        // every few seconds; each change goes out right away as a broadcast, repeated every 3 seconds.
+        // A peer counts as here if either channel heard from it recently.
+        let ch = null, mine = {}, ts = 0, cbs = [], errs = [], snap = [], done = false, left = false, bc = {}, beat = null;
+        let lastTrack = 0, trackT = null;
         const rebuild = () => {
-          const st = ch.presenceState(), seen = {}, now = Date.now();
+          const st = ch ? ch.presenceState() : {}, seen = {}, now = Date.now();
           for (const k in st) { const m = st[k][st[k].length - 1] || {}; seen[k] = { p: m.p || {}, ts: m.ts || 0 }; }
           for (const k in bc) {
             if (now - bc[k].at > 12000) { if (!seen[k]) delete bc[k]; continue; }
@@ -913,18 +914,44 @@ function sbRoom() {
           cbs.forEach(f => { try { f({ peers: snap }); } catch (e) {} });
         };
         const sendAll = () => {
-          if (left) return;
+          if (left || !ch) return;
           ch.send({ type: 'broadcast', event: 'st', payload: { k: TAB, p: mine, ts } }).catch(() => {});
         };
-        ch.on('presence', { event: 'sync' }, rebuild);
-        ch.on('broadcast', { event: 'st' }, ({ payload }) => {
-          if (!payload || typeof payload.k !== 'string' || payload.k === TAB) return;
-          const o = bc[payload.k];
-          if (!o || payload.ts >= o.ts) bc[payload.k] = { p: payload.p || {}, ts: payload.ts || 0, at: Date.now() };
-          else o.at = Date.now();
-          rebuild();
-        });
-        ch.on('broadcast', { event: 'bye' }, ({ payload }) => { if (payload && payload.k) { delete bc[payload.k]; rebuild(); } });
+        const doTrack = () => {
+          clearTimeout(trackT); trackT = null;
+          if (left || !ch) return;
+          const wait = 5000 - (Date.now() - lastTrack);
+          if (wait > 0) { trackT = setTimeout(doTrack, wait); return; }
+          lastTrack = Date.now();
+          ch.track({ p: mine, ts }).catch(() => {});
+        };
+        const open = () => {
+          const c = sb.channel(name, { config: { presence: { key: TAB }, broadcast: { self: false } } });
+          ch = c;
+          c.on('presence', { event: 'sync' }, () => { if (ch === c) rebuild(); });
+          c.on('broadcast', { event: 'st' }, ({ payload }) => {
+            if (ch !== c || !payload || typeof payload.k !== 'string' || payload.k === TAB) return;
+            const o = bc[payload.k];
+            if (!o || payload.ts >= o.ts) bc[payload.k] = { p: payload.p || {}, ts: payload.ts || 0, at: Date.now() };
+            else o.at = Date.now();
+            rebuild();
+          });
+          c.on('broadcast', { event: 'bye' }, ({ payload }) => { if (payload && payload.k) { delete bc[payload.k]; rebuild(); } });
+          c.subscribe(st => {
+            if (ch !== c) return;
+            if (st === 'SUBSCRIBED') {
+              // Supabase only sends the room's presence to clients that track, so announce right away
+              lastTrack = Date.now();
+              const t = c.track({ p: mine, ts });
+              sendAll();
+              if (!done) { done = true; beat = setInterval(() => { sendAll(); rebuild(); }, 3000); t.then(() => resolve(api), () => resolve(api)); }
+            } else if (st === 'CHANNEL_ERROR' || st === 'CLOSED') {
+              if (!done || left) return;
+              // the server closed us (for example a rate limit): open a fresh channel shortly
+              setTimeout(() => { if (!left && ch === c) sb.removeChannel(c).catch(() => {}).then(() => { if (!left && ch === c) open(); }); }, 1500);
+            }
+          });
+        };
         const api = {
           name,
           peers: () => snap,
@@ -932,30 +959,20 @@ function sbRoom() {
             mine = Object.assign({}, mine);
             for (const k in patch) { if (patch[k] === null) delete mine[k]; else mine[k] = patch[k]; }
             ts = Date.now();
-            sendAll(); rebuild();
-            return ch.track({ p: mine, ts }).then(() => {}, () => {});
+            sendAll(); rebuild(); doTrack();
+            return Promise.resolve();
           },
           onPeers(f, e) { cbs.push(f); if (e) errs.push(e); setTimeout(() => f({ peers: snap }), 0); return () => { cbs = cbs.filter(x => x !== f); }; },
           leave() {
-            left = true; clearInterval(beat);
-            try { ch.send({ type: 'broadcast', event: 'bye', payload: { k: TAB } }); } catch (e) {}
-            try { ch.untrack(); } catch (e) {}
-            return sb.removeChannel(ch).then(() => {}, () => {});
+            left = true; clearInterval(beat); clearTimeout(trackT);
+            const c = ch;
+            try { c.send({ type: 'broadcast', event: 'bye', payload: { k: TAB } }); } catch (e) {}
+            try { c.untrack(); } catch (e) {}
+            return sb.removeChannel(c).then(() => {}, () => {});
           }
         };
-        ch.subscribe(st => {
-          // Supabase only sends the room's presence to clients that track, so announce an empty one first
-          if (st === 'SUBSCRIBED') {
-            if (!done) {
-              done = true;
-              beat = setInterval(() => { sendAll(); rebuild(); }, 3000);
-              ch.track({ p: mine, ts }).then(() => resolve(api), () => resolve(api));
-            } else { ch.track({ p: mine, ts }).catch(() => {}); sendAll(); }
-          } else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') {
-            if (!done) { done = true; reject({ code: 'upstream_error' }); }
-          }
-        });
-        setTimeout(() => { if (!done) { done = true; reject({ code: 'upstream_error' }); try { sb.removeChannel(ch); } catch (e) {} } }, 10000);
+        open();
+        setTimeout(() => { if (!done) { done = true; left = true; reject({ code: 'upstream_error' }); try { sb.removeChannel(ch); } catch (e) {} } }, 25000);
       });
     }
   };
