@@ -908,7 +908,8 @@ function sbRoom() {
           leave() { left = true; try { ch.untrack(); } catch (e) {} return sb.removeChannel(ch).then(() => {}, () => {}); }
         };
         ch.subscribe(st => {
-          if (st === 'SUBSCRIBED') { if (!done) { done = true; resolve(api); } }
+          // Supabase only sends the room's presence to clients that track, so announce an empty one first
+          if (st === 'SUBSCRIBED') { if (!done) { done = true; ch.track({ p: mine, t: Date.now() }).then(() => resolve(api), () => resolve(api)); } }
           else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') {
             if (!done) { done = true; reject({ code: 'upstream_error' }); }
             else if (!left && st !== 'CLOSED') errs.forEach(f => { try { f({ code: 'upstream_error' }); } catch (e) {} });
