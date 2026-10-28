@@ -430,6 +430,9 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 .augCard .nm{position:absolute;left:var(--nx);width:var(--nw);top:var(--ny);height:var(--nh);color:#fff;white-space:nowrap;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:calc(var(--cw)*.088);line-height:1.05;letter-spacing:-.03em;word-break:keep-all}
 .augCard .ds{position:absolute;left:var(--dx);width:var(--dw);top:var(--dy);height:var(--dh);display:flex;align-items:center;justify-content:center;text-align:center;font-style:normal;font-weight:900;font-size:calc(var(--cw)*.085);letter-spacing:.02em}
 .augCard.t0 .ds{color:#e9a066}.augCard.t1 .ds{color:#cfe0ff}.augCard.t2 .ds{color:#ffd34f}
+.augTier{margin:-6px 0 -4px;font-size:18px;font-weight:900;-webkit-text-stroke:4px #1b2650;paint-order:stroke}.augTier.t0{color:#f0a86a}.augTier.t1{color:#dfe9ff}.augTier.t2{color:#ffd34f}
+.augOv.spinning .augTier{display:none}
+.augCard .ds{font-size:calc(var(--cw)*.13)!important}
 .augCard .nm.sm{font-size:calc(var(--cw)*.072)}
 .augCard .dsx{position:absolute;left:-2px;right:-2px;top:calc(100% + 4px);text-align:center;font-size:12px;line-height:1.3;color:#e8eeff;word-break:keep-all;opacity:0;transition:opacity .3s .35s}
 .augCards.in .augCard .dsx{opacity:1}
@@ -1814,11 +1817,14 @@ function augTake(id){
 }
 function ensureAugDom(){
   if($("augOv"))return;const ov=document.createElement("div");ov.id="augOv";ov.className="augOv";ov.hidden=true;
-  ov.innerHTML=`<img class="augBanner" alt="증강 선택" src="ui/aug/banner_augment.png"><div class="augSpin" id="augSpin">${AUG_TNAME.map((n,i)=>`<div class="tp t${i}"><img class="pg" alt="" src="${A("ui/aug/plate_glow.webp")}"><img class="pl" alt="" src="${A(`ui/aug/plate_${AUG_TIER[i]}.webp`)}"><i class="fx"></i><b>${n}</b></div>`).join("")}</div><div class="augCards" id="augCards"></div><button type="button" class="augReroll" id="augReroll" aria-label="다시 뽑기, 보석 50"><img alt="" src="ui/aug/btn_reroll.png"></button><p class="augHint">하나를 골라요</p>`;
+  ov.innerHTML=`<img class="augBanner" alt="증강 선택" src="ui/aug/banner_augment.png"><p class="augTier" id="augTier"></p><div class="augSpin" id="augSpin">${AUG_TNAME.map((n,i)=>`<div class="tp t${i}"><img class="pg" alt="" src="${A("ui/aug/plate_glow.webp")}"><img class="pl" alt="" src="${A(`ui/aug/plate_${AUG_TIER[i]}.webp`)}"><i class="fx"></i><b>${n}</b></div>`).join("")}</div><div class="augCards" id="augCards"></div><button type="button" class="augReroll" id="augReroll" aria-label="다시 뽑기, 보석 50"><img alt="" src="ui/aug/btn_reroll.png"></button><p class="augHint">하나를 골라요</p>`;
   document.querySelector(".stage").appendChild(ov);
   $("augReroll").onclick=()=>{const o=S.augOffer;if(!o||o.rerolled||S.gas<50)return;S.gas-=50;o.rerolled=true;o.ch=augRoll(3,o.ch.map(a=>a.id),o.tier);if(!o.ch.length)o.ch=augRoll(3,[],o.tier);showAug(true)};
 }
-function cardHTML(a,i){return `<button type="button" class="augCard t${a.tier}" data-a="${a.id}" style="--d:${i*140}ms"><span class="flip"><span class="face back"><img alt="" src="ui/aug/aug_card_back.png"></span><span class="face front">${a.tier===2?`<img class="glow" alt="" src="${A("ui/aug/gold_glow.webp")}">`:""}<img class="frame" alt="" src="${A(`ui/aug/card_${AUG_TIER[a.tier]}.webp`)}"><img class="ic" alt="" src="ui/aug/icons/${a.id}.png"><b class="nm${a.name.length>5?" sm":""}">${a.name}</b><i class="ds tn2">${AUG_TNAME[a.tier]} 증강</i></span></span><small class="dsx">${a.desc}</small></button>`}
+// the main number of an augment (+20%, 3배…) shown big in the card's lower box; the full text sits under the card
+const AUG_KEY={devil_deal:"전설!",god_call:"신!",free_ticket:"무료",fate_dice:"등급↑",junk:"교환",all_in:"×3",time_warp:"-28%",trap_frost:"-40%",pure:"+25%",iron_wall:"❤ +10",gem_mine:"+15",execute:"즉사",trap_spike:"4%"};
+function augKey(d,id){if(id&&AUG_KEY[id])return AUG_KEY[id];const m=d.match(/[+\-]\d+(?:\.\d+)?%|\d+(?:\.\d+)?배|\d+(?:\.\d+)?%|[+\-]\d+/);return m?m[0]:"★"}
+function cardHTML(a,i){return `<button type="button" class="augCard t${a.tier}" data-a="${a.id}" style="--d:${i*140}ms"><span class="flip"><span class="face back"><img alt="" src="ui/aug/aug_card_back.png"></span><span class="face front">${a.tier===2?`<img class="glow" alt="" src="${A("ui/aug/gold_glow.webp")}">`:""}<img class="frame" alt="" src="${A(`ui/aug/card_${AUG_TIER[a.tier]}.webp`)}"><img class="ic" alt="" src="ui/aug/icons/${a.id}.png"><b class="nm${a.name.length>5?" sm":""}">${a.name}</b><i class="ds tn2">${augKey(a.desc,a.id)}</i></span></span><small class="dsx">${a.desc}</small></button>`}
 // before the cards: bronze / silver / gold light up in turn, slow down and stop on this offer's tier
 function augSpin(o,done){
   const ov=$("augOv"),sp=$("augSpin"),tps=[...sp.children];ov.classList.add("spinning");ov.hidden=false;sp.className="augSpin";
@@ -1833,7 +1839,7 @@ function augSpin(o,done){
 function showAug(again){
   ensureAugDom();const o=S.augOffer;if(!o)return;augOpen=true;if(S.sel){S.sel=null;renderBubble()}
   if(!o.spun&&o.tier!=null){o.spun=true;augSpin(o,()=>showAug(true));return}
-  $("augCards").innerHTML=o.ch.map(cardHTML).join("");
+  $("augCards").innerHTML=o.ch.map(cardHTML).join("");{const t=$("augTier"),tr=o.tier!=null?o.tier:(o.ch[0]&&o.ch[0].tier)||0;t.textContent=AUG_TNAME[tr]+" 증강";t.className="augTier t"+tr}
   const rr=$("augReroll");rr.disabled=o.rerolled||S.gas<50;
   sfx("flip");$("augOv").hidden=false;requestAnimationFrame(()=>requestAnimationFrame(()=>$("augCards").classList.add("in")));
   if(again)$("augCards").classList.remove("in"),setTimeout(()=>$("augCards").classList.add("in"),30);
