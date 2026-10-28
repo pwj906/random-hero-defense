@@ -856,7 +856,6 @@ function tick(){
 function addTower(slot,type,msg){
   const tw={id:S.nextId++,type,slot,x:slot.x,y:slot.y,ang:-Math.PI/2,cool:0,target:null,kick:0,born:S.frame};
   slot.tower=tw;S.towers.push(tw);const t=TOWERS[type];
-  if(ROLE[t.uid]==="Melee"&&!edgeSlot(slot))meleeToEdge(tw);
   if(msg!==false)log(`[${GRADE[t.grade]}] ${t.name} 건설`,t.grade>=3?"hi":"");
   if(t.grade>=5){banner(`신 강림 · ${t.name}`,GCOL[5]);const f=document.createElement("div");f.className="miracleFx";document.body.appendChild(f);setTimeout(()=>f.remove(),1600)}
   else if(t.grade>=3)banner(`${GRADE[t.grade]} · ${t.name}`,GCOL[t.grade]);
