@@ -412,6 +412,7 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 <style>
 .augOv{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(20,28,66,.78);border-radius:14px;padding:16px}
 .augOv[hidden]{display:none}
+.augOv{overflow:hidden;contain:layout paint}
 .augBanner{width:min(86%,420px);height:auto}
 .augCards{--cw:min(160px,calc((100vw - 28px)/3));display:flex;gap:6px;justify-content:center;perspective:900px;padding-bottom:58px}
 .augCard{position:relative;width:var(--cw);aspect-ratio:3/4;padding:0;border:0;background:none;cursor:pointer;font:inherit;color:#26314f}
