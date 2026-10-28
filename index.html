@@ -413,6 +413,20 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 .augOwn .ag img{width:24px;height:24px}
 </style>
 <style>
+.crateBox{position:absolute;z-index:6;width:46px;height:46px;pointer-events:none}
+.crateBox img{position:relative;width:100%;height:100%;display:block;transform-origin:50% 90%}
+.crateBox .cg{position:absolute;inset:-60%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,226,110,.95),rgba(255,226,110,0));opacity:0;transition:opacity .3s}
+.crateBox.tease img{animation:crRattle .16s linear infinite,crHop 1.4s ease-in forwards}
+.crateBox.tease .cg{opacity:.45;transition:opacity 1.4s}
+.crateBox.open img{animation:crOpen .5s ease-out forwards}
+.crateBox.open .cg{opacity:1;inset:-110%;background:repeating-conic-gradient(from 0deg,rgba(255,240,170,.75) 0 10deg,rgba(255,240,170,0) 10deg 36deg),radial-gradient(closest-side,rgba(255,226,110,1),rgba(255,226,110,0));-webkit-mask:radial-gradient(closest-side,#000 40%,transparent);mask:radial-gradient(closest-side,#000 40%,transparent);animation:crSpin 3s linear infinite}
+.crateBox .cb{position:absolute;right:0;bottom:100%;white-space:nowrap;font-size:13px;font-weight:900;color:#fff;-webkit-text-stroke:3px #23305a;paint-order:stroke;opacity:0}
+.crateBox .cb.pop{animation:crBub 1.4s ease-out forwards}
+@keyframes crRattle{0%,100%{rotate:-7deg}50%{rotate:7deg}}
+@keyframes crHop{0%{transform:scale(1) translateY(0)}60%{transform:scale(1.12) translateY(-3px)}100%{transform:scale(1.2) translateY(-6px)}}
+@keyframes crOpen{0%{transform:scale(1.2)}40%{transform:scale(1.5)}100%{transform:scale(1.3)}}
+@keyframes crSpin{to{rotate:360deg}}
+@keyframes crBub{0%{opacity:0;transform:translateY(6px)}20%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
 .sndBtn{position:absolute;top:14px;right:14px;z-index:6;width:34px;height:34px;border-radius:50%;border:2px solid #fff;background:#3d5bd9;box-shadow:0 2px 0 rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
 .sndBtn svg{width:20px;height:20px}.sndBtn .spk{fill:#fff}.sndBtn .on,.sndBtn .off{stroke:#fff}
 .sndBtn .off{display:none}.sndBtn[aria-pressed="true"]{background:#8a93ad}.sndBtn[aria-pressed="true"] .on{display:none}.sndBtn[aria-pressed="true"] .off{display:inline}
@@ -600,6 +614,7 @@ const MISSIONS=[{"u": 95, "name": "라그나사우르", "hp": 3300.0, "sh": 0, "
 // ---------- board: 6x9 cells (1 cell = 2x2 tiles = 64 world px). outer ring of cells is the path,
 // inner 4x7 cells are character slots. monsters enter at the top-left corner and run clockwise.
 const COLS=12, WT=32, CELL=64; let ROWS=18;
+const CRATE_STRIP=52; // room under the board for the supply crate
 const GRID=[],RECTS=[],PATH=[],SEG=[],SLOTS=[];let PATHLEN=0,SPEED_K=1;
 function buildBoard(){
   GRID.length=0;for(let y=0;y<ROWS;y++)GRID.push(y<2||y>=ROWS-2?"#".repeat(COLS):"##"+"P".repeat(COLS-4)+"##");
@@ -1481,10 +1496,10 @@ function clampPan(){
 function fitVp(){
   // whole board always fits the screen: no scrolling
   const top=(MQ.matches?document.querySelector(".stage"):vp).getBoundingClientRect().top+window.scrollY,nav=MQ.matches?(document.querySelector(".mnav").offsetHeight||58):16;
-  const availH=Math.max(240,window.innerHeight-top-nav-(MQ.matches?14:8)),availW=document.querySelector(".board").clientWidth-2;
+  const availH=Math.max(240,window.innerHeight-top-nav-(MQ.matches?14:8)-CRATE_STRIP),availW=document.querySelector(".board").clientWidth-2;
   // fixed 6x9-cell board, uniformly scaled to fit and centered
   const t=Math.min(availW/COLS,availH/ROWS);const w=Math.floor(t*COLS),h=Math.floor(t*ROWS);
-  cv.style.width=w+"px";cv.style.height=h+"px";vp.style.width=w+"px";vp.style.height=h+"px";panX=panY=0;clampPan()}
+  cv.style.width=w+"px";cv.style.height=h+"px";vp.style.width=w+"px";vp.style.height=h+"px";panX=panY=0;clampPan();cratePlace()}
 // ---------- drag a character to another slot (move, or swap if occupied) ----------
 let tdrag=null;
 function moveTower(tw,to){
@@ -1772,15 +1787,15 @@ function crateOddsHTML(){const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);
   return `<div class="oddsH">보급상자 <small>웨이브가 끝날 때마다 ${Math.round(crateP()*100)}% 확률로 열림${has("supply_vip")?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${["hero","legend","frenzy"].includes(o.k)?"hero":""}"><td>${CRATE_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table>`}
 // called when a wave is cleared (and twice by the airdrop augment)
 function crateTry(force){if(S.cA&&S.cA.t<C_TEASE+C_OPEN){S.crateQ=(S.crateQ||0)+(force?1:0);return}
-  S.cA={t:0,win:force||Math.random()<crateP()};sfx("reel")}
+  S.cA={t:0,win:force||Math.random()<crateP()};sfx("reel");crateState("tease")}
 function crateTick(){
   if(S.cBuff>0)S.cBuff--;
   const A=S.cA;if(!A){if(S.crateQ>0){S.crateQ--;crateTry(true)}return}
   A.t++;if(A.t%5===0&&A.t<C_TEASE)sfx("tick");
-  if(A.t===C_TEASE){if(!A.win){sfx("miss");S.fx.push({k:"txt",t:"아깝다!",x:CRATE_POS().x-WT*.6,y:CRATE_POS().y-WT*1.3,c:"#dfe6ff",sc:"#23305a",life:22,max:22});S.cA=null;return}
-    sfx("jackpot");const P=CRATE_POS();S.fx.push({k:"pop",x:P.x,y:P.y,r:90,c:"#ffd34f",life:20,max:20});log("보급상자가 열렸어요!","good")}
+  if(A.t===C_TEASE){if(!A.win){sfx("miss");crateState("",  "아깝다!");S.cA=null;return}
+    sfx("jackpot");crateState("open");log("보급상자가 열렸어요!","good")}
   if(A.win&&A.t===C_TEASE+14)crateOpen();
-  if(A.t>=C_TEASE+C_OPEN)S.cA=null}
+  if(A.t>=C_TEASE+C_OPEN){S.cA=null;setTimeout(()=>{if(!S.cA)crateState("")},2500)}}
 let crateInfoHide=0;
 function crateOpen(){
   const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);let r=Math.random()*tot,o=pool[0];for(const q of pool){if((r-=q.w)<0){o=q;break}}
@@ -1814,14 +1829,14 @@ function crateWheel(k,done){
     if(i>=N){el.classList.remove("spin");cells[target].classList.add("hit");setTimeout(done,350);return}
     i++;const left=N-i;setTimeout(step,left>10?55:left>5?95:left>2?170:left>0?280:0)};
   setTimeout(step,500)}
-function drawCrate(c,time){
-  const P=CRATE_POS(),A=S.cA,z=TS*1.15;let x=P.x*K,y=P.y*K,rot=0,sc=1,open=false,glow=0;
-  if(A){if(A.t<C_TEASE){const k=A.t/C_TEASE;rot=Math.sin(A.t*1.3)*.22*(.4+k);sc=1+.12*k;y-=Math.abs(Math.sin(A.t*.65))*TS*.18*(.5+k);glow=k*.5}
-    else if(A.win){open=A.t>=C_TEASE+4;sc=1.25;glow=1}}
-  if(glow>0){const g=c.createRadialGradient(x,y,0,x,y,TS*(1.2+glow*1.4));g.addColorStop(0,`rgba(255,230,120,${.75*glow})`);g.addColorStop(1,"rgba(255,230,120,0)");c.fillStyle=g;c.beginPath();c.arc(x,y,TS*(1.2+glow*1.4),0,7);c.fill();
-    if(A&&A.win&&A.t>=C_TEASE){c.save();c.translate(x,y);c.rotate(time*.05);c.fillStyle="rgba(255,240,170,.35)";for(let i=0;i<10;i++){c.rotate(Math.PI/5);c.beginPath();c.moveTo(0,0);c.lineTo(TS*3,-TS*.25);c.lineTo(TS*3,TS*.25);c.fill()}c.restore()}}
-  const im=open?CIMG.crate_open:CIMG.crate;if(!ok(im))return;
-  c.save();c.translate(x,y);c.rotate(rot);c.scale(sc,sc);c.drawImage(im,-z/2,-z*.66,z,z);c.restore()}
+function drawCrate(){} // the crate is a page element under the board (outside the road and the hero slots)
+function crateEl(){let el=$("crateBox");if(!el){el=document.createElement("div");el.id="crateBox";el.className="crateBox";el.innerHTML=`<i class="cg"></i><img alt="보급상자" src="ui/crate/crate.png"><b class="cb"></b>`;document.querySelector(".stage").appendChild(el)}return el}
+function cratePlace(){const el=crateEl(),st=document.querySelector(".stage").getBoundingClientRect(),r=cv.getBoundingClientRect();
+  el.style.top=Math.round(r.bottom-st.top+3)+"px";el.style.left=Math.round(r.right-st.left-52)+"px"}
+addEventListener("resize",()=>setTimeout(cratePlace,50));
+function crateState(st,txt){cratePlace();const el=crateEl(),im=el.querySelector("img");el.className="crateBox"+(st?" "+st:"");im.src=st==="open"?"ui/crate/crate_open.png":"ui/crate/crate.png";
+  const b=el.querySelector(".cb");b.textContent=txt||"";if(txt){b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop")}}
+setTimeout(cratePlace,60);
 
 // ---------- sound: every effect and the music are synthesized with Web Audio (no audio files) ----------
 const SND={ctx:null,master:null,sfx:null,music:null,on:true,last:{},recent:[],bgm:null};
