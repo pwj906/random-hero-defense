@@ -665,6 +665,9 @@ TOWERS.forEach(t=>{if(t.off||!ROLE[t.uid])return;
   const hit=want/per;const share=t.bonus/(t.dmg+3*t.bonus||1)||.12;
   t.bonus=Math.max(0,Math.round(hit*share));t.dmg=Math.max(1,Math.round(hit-3*t.bonus))});
 // area attacks hit at most this many enemies (closest to the impact first), so the card can say "N명"
+// v7 per-hero pass (bench3: real waves, each hero added to a board that leaks half) - pull outliers to their grade median
+const HERO_K={44:1.12,305:1.15,202:.76,1:.88,3:.79,52:1.19,54:1.45,58:.8,20:.88,51:1.15,79:.87,303:.81,301:.85};
+TOWERS.forEach(t=>{const f=HERO_K[t.uid];if(!f)return;t.dmg=Math.max(1,Math.round(t.dmg*f));t.bonus=Math.round(t.bonus*f)});
 const MAX_HIT=[3,3,4,5,6,8];
 TOWERS.forEach(t=>{t.maxHit=t.area?MAX_HIT[t.grade]:1});
 const byGrade=g=>TOWERS.filter(t=>t.grade===g&&!t.off);
