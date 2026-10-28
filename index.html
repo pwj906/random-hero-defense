@@ -1064,6 +1064,7 @@ function buyUpg(key){
 // but the spread is huge: 48% nothing, 0.6% a legend, 0.2% a miracle that wipes the field.
 // tuned with bots that spend ~1/3 of their gold here: same median play time, much wider luck spread.
 const LOTTO=[
+  {k:"miss",w:478},
   {k:"gold",w:130,v:120},
   {k:"gem",w:220},
   {k:"char",w:90},
@@ -1074,13 +1075,13 @@ const LOTTO=[
 const PITY=4; // after 4 misses in a row the next draw always wins something
 let lottoBusy=false;
 function lottoPool(pity){let pool=pity?LOTTO.filter(o=>o.k!=="miss"):LOTTO;
-  return pool.map(o=>["hero","legend","miracle"].includes(o.k)&&has("jackpot")?{...o,w:o.w*3}:o)}
+  return pool.map(o=>o.k==="miss"&&has("lucky_coin")?{...o,w:o.w/2}:["hero","legend","miracle"].includes(o.k)&&has("jackpot")?{...o,w:o.w*3}:o)}
 // odds table for the codex: what one ticket can give right now (augments included)
 const LOTTO_NAME={miss:"꽝",gold:"골드 +120",gem:"보석 60~160",char:"견습·숙련 캐릭터",big:"대박 (골드 400 또는 보석 300)",elite:"정예 캐릭터",hero:"영웅 캐릭터",legend:"전설 캐릭터",miracle:"신의 기적 (적 전멸 + 전설 + 보석 500)"};
 const ODDS_ORDER=["miss","gold","gem","char","big","elite","hero","legend","miracle"];
 function lottoOddsHTML(){const pool=lottoPool(false).sort((a,b)=>ODDS_ORDER.indexOf(a.k)-ODDS_ORDER.indexOf(b.k)),tot=pool.reduce((a,o)=>a+o.w,0);
   const pc=w=>{const v=w/tot*100;return v>=1?v.toFixed(1)+"%":v.toFixed(2)+"%"};
-  return `<div class="oddsH">복권 확률 <small>지금 기준${S&&(has("lucky_coin")||has("jackpot"))?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${o.k}"><td>${LOTTO_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table><p class="hint">꽝 없이 매번 뭔가 당첨돼요.${S&&has("lucky_coin")?" 행운의 동전: 골드·보석 2배.":""}</p>`}
+  return `<div class="oddsH">복권 확률 <small>지금 기준${S&&(has("lucky_coin")||has("jackpot"))?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${o.k}"><td>${LOTTO_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table><p class="hint">꽝이 ${PITY}번 연속 나오면 다음 한 장은 반드시 당첨이에요.</p>`}
 function rollLotto(){
   const pool=lottoPool(S.missRun>=PITY);const tot=pool.reduce((a,o)=>a+o.w,0);
   let r=Math.random()*tot;for(const o of pool){if((r-=o.w)<0)return o}return pool[0]}
@@ -1090,10 +1091,9 @@ function lotto(){
   else{if(S.ore<100){log("골드가 부족해요 (복권 100)","warn");return}S.ore-=100}const o=rollLotto();S.missRun=o.k==="miss"?(S.missRun||0)+1:0;
   // decide the concrete prize now so the reels can show it
   const pr={k:o.k};
-  const lk=has("lucky_coin")?2:1;
-  if(o.k==="gold")pr.gold=o.v*lk;
-  else if(o.k==="gem")pr.gem=[60,80,100,120,160][Math.floor(Math.random()*5)]*lk;
-  else if(o.k==="big"){if(Math.random()<.5)pr.gold=400*lk;else pr.gem=300*lk}
+  if(o.k==="gold")pr.gold=o.v;
+  else if(o.k==="gem")pr.gem=[60,80,100,120,160][Math.floor(Math.random()*5)];
+  else if(o.k==="big"){if(Math.random()<.5)pr.gold=400;else pr.gem=300}
   else if(o.k==="char")pr.type=pick(byGrade(Math.random()<.7?0:1)).i;
   else if(o.k==="elite")pr.type=pick(byGrade(2)).i;
   else if(o.k==="hero")pr.type=pick(byGrade(3)).i;
@@ -1690,7 +1690,7 @@ const AUGS=[
   {id:"cash_now",tier:0,name:"즉시 현금",desc:"지금 바로 골드 +400"},
   {id:"cheap_upg",tier:2,name:"짠돌이",desc:"업그레이드 비용 -25%"},
   {id:"junk",tier:0,name:"고물상",desc:"캐릭터를 같은 등급 다른 캐릭터로 교환 (견습 50골드, 등급마다 2배)"},
-  {id:"lucky_coin",tier:1,name:"행운의 동전",desc:"복권 골드·보석 당첨금 2배"},
+  {id:"lucky_coin",tier:1,name:"행운의 동전",desc:"복권 꽝 확률 절반"},
   {id:"jackpot",tier:0,name:"잭팟 체질",desc:"복권 영웅·전설·기적 확률 3배"},
   {id:"free_ticket",tier:2,name:"공짜 한 장",desc:"3웨이브마다 무료 복권 1장"},
   {id:"summon_bless",tier:0,name:"소환 축복",desc:"캐릭터를 뽑을 때 10% 확률로 한 등급 위"},
