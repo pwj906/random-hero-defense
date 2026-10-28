@@ -777,7 +777,7 @@ function waveDef(i){
   return S.gen[i]=d}
 function startWave(){
   const def=waveDef(S.wi);S.phase="wave";themeLoad(themeOf(S.wi+5));if(themeOf(S.wi)!==themeI)setTheme(themeOf(S.wi),true);sfx(def.boss?"boss":"wave");bgmMode(def.boss?"boss":"calm");
-  S.spawnLeft=def.boss?1:30;S.spawnT=0;crateRoll();
+  S.spawnLeft=def.boss?1:30;S.spawnT=0;
   banner((def.boss===2?"HELL BOSS · ":def.boss?"BOSS · ":S.wi>=30&&S.wi<40?"HELL MODE · ":"")+"WAVE "+(S.wi+1),def.boss?"var(--life)":"var(--fg)");
   log("Wave "+(S.wi+1)+" · "+def.name+" (HP "+fmt(waveHP(S.wi,def))+(def.ar?", 방어 "+def.ar:"")+")","hi");
 }
@@ -795,6 +795,7 @@ function endWave(){
   const gem=(i+1)%10===0?30:10;S.gas+=gem;extra=` · 보석 +${gem}`+extra;
   sfx("clear");bgmMode("calm");S.ore+=ore;S.fx.push({k:"txt",t:`+${ore} 골드`,x:COLS*WT/2,y:ROWS*WT*.42,c:"#ffd34f",sc:"#5a3a00",big:true,life:30,max:30});log("Wave "+(i+1)+" 종료 · 골드 +"+ore+extra+" · 준비 "+cd+"초","good");
   S.wi++;S.phase="prep";S.cd=Math.round(cd*24*PREP_K);
+  crateTry();
   if(S.wi%10===5)augOffer(); // waves 5, 15, 25…
 }
 function leak(m){
@@ -1601,9 +1602,9 @@ const AUGS=[
   {id:"last_stand",tier:0,name:"마지막 저항",desc:"목숨 5 이하일 때 공속 +50%"},
   {id:"devil_deal",tier:2,name:"악마의 거래",desc:"목숨 -10, 대신 무작위 전설 1명"},
   {id:"all_in",tier:0,name:"올인",desc:"가진 골드를 전부 걸고 50% 확률로 3배, 실패하면 0"},
-  {id:"supply_call",tier:0,name:"보급 요청",desc:"보급상자가 떨어질 확률 3% → 10%"},
+  {id:"supply_call",tier:0,name:"보급 요청",desc:"보급상자가 열릴 확률 3% → 10%"},
   {id:"supply_vip",tier:1,name:"특급 보급",desc:"보급상자에서 영웅·전설·광폭 확률 3배, 골드·보석 2배"},
-  {id:"airdrop",tier:1,name:"공수 지원",desc:"지금 바로 보급상자 2개가 떨어짐"},
+  {id:"airdrop",tier:1,name:"공수 지원",desc:"지금 바로 보급상자가 2번 열림"},
   {id:"fate_dice",tier:2,name:"운명의 주사위",desc:"판의 캐릭터를 모두 다른 캐릭터로, 3명은 한 등급 위"},
 ];
 const AUG=Object.fromEntries(AUGS.map(a=>[a.id,a]));
@@ -1756,36 +1757,33 @@ window.__rtd={get S(){return S},start,tick,TOWERS,WAVES,SLOTS,build,merge,addTow
 function augDetail(){if(!S||!S.aug.length)return `<p class="hint">아직 고른 증강이 없어요. 5·15·25…웨이브마다 하나씩 골라요.</p>`;
   return `<div class="augDet">${S.aug.map(id=>`<div class="ad t${AUG[id].tier}"><img alt="" src="ui/aug/icons/${id}.png"><div><b>${AUG[id].name}</b><small>${AUG[id].desc}</small></div></div>`).join("")}</div>`}
 
-// ---------- supply crate: each wave has a 3% chance; a crate parachutes onto the board during the wave, tap it to open ----------
-const CRATE_P=.03,CRATE_P_UP=.10,CRATE_AUTO=24*15; // unopened crates open by themselves after 15s
+// ---------- supply crate: a small crate waits in a corner of the map. every cleared wave it rattles as if it will open;
+// 3% of the time it really opens (glows, lid flies up) and a prize roulette runs ----------
+const CRATE_P=.03,CRATE_P_UP=.10;
 const CRATE=[ // weights per 100
   {k:"gold",w:30},{k:"gem",w:22},{k:"tix",w:12},{k:"elite",w:12},{k:"hero",w:8},{k:"frenzy",w:8},{k:"upg",w:5},{k:"legend",w:3}];
 const CRATE_NAME={gold:"골드 (200 + 웨이브×15)",gem:"보석 (100 + 웨이브×5)",tix:"무료 복권 3장",elite:"정예 캐릭터",hero:"영웅 캐릭터",frenzy:"광폭: 20초간 모두 공격력·공속 1.5배",upg:"모든 업글 +1",legend:"전설 캐릭터"};
-const CIMG={};for(const k of["crate","crate_fall"]){const im=new Image();im.src=`ui/crate/${k}.png`;CIMG[k]=im}
+const CIMG={};for(const k of["crate","crate_open"]){const im=new Image();im.src=`ui/crate/${k}.png`;CIMG[k]=im}
+const crateP=()=>has("supply_call")?CRATE_P_UP:CRATE_P;
+const CRATE_POS=()=>({x:COLS*WT-WT*.85,y:ROWS*WT-WT*.85}); // bottom-right corner of the map
+const C_TEASE=34,C_OPEN=40; // frames: rattle, then (on a win) glow + open
 function cratePool(){return CRATE.map(o=>has("supply_vip")&&["hero","legend","frenzy"].includes(o.k)?{...o,w:o.w*3}:o)}
 function crateOddsHTML(){const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);const pc=w=>{const v=w/tot*100;return v>=1?v.toFixed(1)+"%":v.toFixed(2)+"%"};
-  return `<div class="oddsH">보급상자 <small>웨이브마다 ${Math.round((has("supply_call")?CRATE_P_UP:CRATE_P)*100)}% 확률로 떨어짐${has("supply_vip")?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${["hero","legend","frenzy"].includes(o.k)?"hero":""}"><td>${CRATE_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table>`}
-function crateRoll(){if(Math.random()<(has("supply_call")?CRATE_P_UP:CRATE_P)){S.crateQ=(S.crateQ||0)+1;S.crateWait=Math.round(24*(3+Math.random()*10))}} // lands 3~13s into the wave
-function crateDrop(){
-  const cr=S.crates||[],free=SLOTS.filter(s=>!s.tower&&!cr.some(o=>o.x===s.x&&o.y===s.y)),sl=pick(free.length?free:SLOTS);
-  S.crates=S.crates||[];S.crates.push({x:sl.x,y:sl.y,t:0,fall:36});sfx("flip");log("보급상자가 도착했어요! 눌러서 열어요","good");crateInfo()}
-// when a crate arrives: say how rare it was and what can be inside
-let crateInfoHide=0;
-function crateInfo(){
-  if(window.FAST_LOTTO||($("crateInfo")&&$("crateInfo").classList.contains("spin")))return;let el=$("crateInfo");if(!el){el=document.createElement("div");el.id="crateInfo";el.className="crateInfo";document.body.appendChild(el)}el.onclick=()=>el.classList.remove("show");el.classList.remove("jp","won","spin");
-  const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0),pc=w=>{const v=w/tot*100;return (v>=1?Math.round(v):v.toFixed(1))+"%"};
-  const P=Math.round((has("supply_call")?CRATE_P_UP:CRATE_P)*100),SHORT={gold:"골드",gem:"보석",tix:"무료 복권 3장",elite:"정예 캐릭터",hero:"영웅 캐릭터",frenzy:"광폭 20초 (공격·공속 1.5배)",upg:"모든 업글 +1",legend:"전설 캐릭터"};
-  el.innerHTML=`<h4><img alt="" src="ui/crate/crate_fall.png"><span><b>${P}%</b> 확률로 보급상자가 도착했어요!</span></h4><ul>${pool.map(o=>`<li class="${["hero","legend","frenzy","upg"].includes(o.k)?"rare":""}"><span>${SHORT[o.k]}</span><span>${pc(o.w)}</span></li>`).join("")}</ul><p>상자를 눌러서 열어요</p>`;
-  el.classList.add("show");clearTimeout(crateInfoHide);crateInfoHide=setTimeout(()=>el.classList.remove("show"),5000)}
+  return `<div class="oddsH">보급상자 <small>웨이브가 끝날 때마다 ${Math.round(crateP()*100)}% 확률로 열림${has("supply_vip")?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${["hero","legend","frenzy"].includes(o.k)?"hero":""}"><td>${CRATE_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table>`}
+// called when a wave is cleared (and twice by the airdrop augment)
+function crateTry(force){if(S.cA&&S.cA.t<C_TEASE+C_OPEN){S.crateQ=(S.crateQ||0)+(force?1:0);return}
+  S.cA={t:0,win:force||Math.random()<crateP()};sfx("reel")}
 function crateTick(){
   if(S.cBuff>0)S.cBuff--;
-  if(S.crateWait>0)S.crateWait--;
-  else if(S.crateQ>0&&S.frame%30===0&&(S.crates||[]).length<3){S.crateQ--;crateDrop()}
-  if(!S.crates)return;for(const c of S.crates){c.t++;if(c.t>=c.fall+CRATE_AUTO)crateOpen(c)}}
-function crateOpen(c){
-  S.crates=S.crates.filter(o=>o!==c);
+  const A=S.cA;if(!A){if(S.crateQ>0){S.crateQ--;crateTry(true)}return}
+  A.t++;if(A.t%5===0&&A.t<C_TEASE)sfx("tick");
+  if(A.t===C_TEASE){if(!A.win){sfx("miss");S.fx.push({k:"txt",t:"아깝다!",x:CRATE_POS().x-WT*.6,y:CRATE_POS().y-WT*1.3,c:"#dfe6ff",sc:"#23305a",life:22,max:22});S.cA=null;return}
+    sfx("jackpot");const P=CRATE_POS();S.fx.push({k:"pop",x:P.x,y:P.y,r:90,c:"#ffd34f",life:20,max:20});log("보급상자가 열렸어요!","good")}
+  if(A.win&&A.t===C_TEASE+14)crateOpen();
+  if(A.t>=C_TEASE+C_OPEN)S.cA=null}
+let crateInfoHide=0;
+function crateOpen(){
   const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);let r=Math.random()*tot,o=pool[0];for(const q of pool){if((r-=q.w)<0){o=q;break}}
-  S.fx.push({k:"pop",x:c.x,y:c.y,r:56,c:"#ffd34f",life:16,max:16});
   if(window.FAST_LOTTO){crateGive(o);return}
   crateWheel(o.k,()=>crateGive(o))}
 function crateGive(o){
@@ -1809,32 +1807,21 @@ function crateWheel(k,done){
   el.onclick=null;clearTimeout(crateInfoHide);el.classList.remove("jp","won");
   const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0),RING=[0,1,2,3,7,6,5,4]; // grid 4x2, walk around the edge
   const col={elite:GCOL[2],hero:GCOL[3],legend:GCOL[4]};
-  el.innerHTML=`<h4><img alt="" src="ui/crate/crate.png"><span>보급상자 여는 중…</span></h4><div class="cw">${pool.map(o=>`<div class="cc ${o.k}"${col[o.k]?` style="--g:${col[o.k]}"`:""}><i>${CRATE_ICON[o.k]}</i><b>${CRATE_SHORT[o.k]}</b><small>${Math.round(o.w/tot*1000)/10}%</small></div>`).join("")}</div>`;
+  el.innerHTML=`<h4><img alt="" src="ui/crate/crate_open.png"><span><b>${Math.round(crateP()*100)}%</b> 확률로 보급상자가 열렸어요!</span></h4><div class="cw">${pool.map(o=>`<div class="cc ${o.k}"${col[o.k]?` style="--g:${col[o.k]}"`:""}><i>${CRATE_ICON[o.k]}</i><b>${CRATE_SHORT[o.k]}</b><small>${Math.round(o.w/tot*1000)/10}%</small></div>`).join("")}</div>`;
   el.classList.add("show","spin");const cells=[...el.querySelectorAll(".cc")],target=pool.findIndex(o=>o.k===k),tpos=RING.indexOf(target);
   let N=16+Math.floor(Math.random()*8);while(N%8!==tpos)N++;let i=0;
   const step=()=>{cells.forEach(c=>c.classList.remove("on"));cells[RING[i%8]].classList.add("on");sfx("tick");
-    if(i>=N){el.classList.remove("spin");cells[target].classList.add("hit");setTimeout(done,250);return}
+    if(i>=N){el.classList.remove("spin");cells[target].classList.add("hit");setTimeout(done,350);return}
     i++;const left=N-i;setTimeout(step,left>10?55:left>5?95:left>2?170:left>0?280:0)};
-  step()}
-let crateHide=0;
-function crateShow(pr,txt,rare){
-  if(window.FAST_LOTTO)return;let box=$("slotM");if(!box){box=document.createElement("div");box.id="slotM";box.className="slotm";document.body.appendChild(box)}
-  const face=pr.type!=null?symHTML("char",pr.type):pr.k==="gold"?symHTML("gold"):pr.k==="gem"?symHTML("gem"):`<img alt="" src="ui/crate/crate.png">`;
-  box.innerHTML=`<div class="res"></div><div class="reel hit"><img alt="" src="ui/crate/crate.png"></div><div class="reel hit">${face}</div><div class="reel hit"><img alt="" src="ui/crate/crate.png"></div>`;
-  box.querySelector(".res").textContent="보급상자 · "+txt;box.className="slotm show "+(rare?"jackpot":"win");sfx(rare?"jackpot":"win");
-  if(pr.k==="legend"){const f=document.createElement("div");f.className="miracleFx";document.body.appendChild(f);setTimeout(()=>f.remove(),1600)}
-  clearTimeout(crateHide);clearTimeout(lottoHide);crateHide=setTimeout(()=>{box.className="slotm"},rare?1800:1100)}
+  setTimeout(step,500)}
 function drawCrate(c,time){
-  if(!S.crates)return;for(const o of S.crates){const z=TS*1.5,f=Math.min(1,o.t/o.fall),x=o.x*K,y=o.y*K-(1-f)*(1-f)*TS*6;
-    if(f<1){if(ok(CIMG.crate_fall))c.drawImage(CIMG.crate_fall,x-z/2+Math.sin(o.t*.25)*TS*.15,y-z*.75,z,z);continue}
-    const left=1-(o.t-o.fall)/CRATE_AUTO,pul=1+Math.sin(time*.3)*.06;
-    c.save();c.globalAlpha=.5+.3*Math.sin(time*.3);c.beginPath();c.arc(x,y,TS*.85,0,7);c.fillStyle="#ffd34f";c.fill();c.restore();
-    if(ok(CIMG.crate))c.drawImage(CIMG.crate,x-z*pul/2,y-z*pul*.62,z*pul,z*pul);
-    c.beginPath();c.arc(x,y+TS*.62,TS*.16,0,7);c.lineWidth=TS*.08;c.strokeStyle="rgba(0,0,0,.4)";c.stroke();
-    c.beginPath();c.arc(x,y+TS*.62,TS*.16,-Math.PI/2,-Math.PI/2+Math.PI*2*left);c.strokeStyle="#fff";c.stroke();
-    c.font=`900 ${TS*.34}px sans-serif`;c.textAlign="center";c.lineWidth=TS*.09;c.strokeStyle="#4a2a00";c.strokeText("열기!",x,y-TS*.78);c.fillStyle="#ffe45a";c.fillText("열기!",x,y-TS*.78)}}
-cv.addEventListener("click",e=>{if(!S||!S.crates||!S.crates.length)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*cv.width/K,y=(e.clientY-r.top)/r.height*cv.height/K;
-  const o=S.crates.find(o=>o.t>=o.fall&&Math.hypot(o.x-x,o.y-y)<WT*1.3);if(o){e.stopImmediatePropagation();crateOpen(o)}},true);
+  const P=CRATE_POS(),A=S.cA,z=TS*1.15;let x=P.x*K,y=P.y*K,rot=0,sc=1,open=false,glow=0;
+  if(A){if(A.t<C_TEASE){const k=A.t/C_TEASE;rot=Math.sin(A.t*1.3)*.22*(.4+k);sc=1+.12*k;y-=Math.abs(Math.sin(A.t*.65))*TS*.18*(.5+k);glow=k*.5}
+    else if(A.win){open=A.t>=C_TEASE+4;sc=1.25;glow=1}}
+  if(glow>0){const g=c.createRadialGradient(x,y,0,x,y,TS*(1.2+glow*1.4));g.addColorStop(0,`rgba(255,230,120,${.75*glow})`);g.addColorStop(1,"rgba(255,230,120,0)");c.fillStyle=g;c.beginPath();c.arc(x,y,TS*(1.2+glow*1.4),0,7);c.fill();
+    if(A&&A.win&&A.t>=C_TEASE){c.save();c.translate(x,y);c.rotate(time*.05);c.fillStyle="rgba(255,240,170,.35)";for(let i=0;i<10;i++){c.rotate(Math.PI/5);c.beginPath();c.moveTo(0,0);c.lineTo(TS*3,-TS*.25);c.lineTo(TS*3,TS*.25);c.fill()}c.restore()}}
+  const im=open?CIMG.crate_open:CIMG.crate;if(!ok(im))return;
+  c.save();c.translate(x,y);c.rotate(rot);c.scale(sc,sc);c.drawImage(im,-z/2,-z*.66,z,z);c.restore()}
 
 // ---------- sound: every effect and the music are synthesized with Web Audio (no audio files) ----------
 const SND={ctx:null,master:null,sfx:null,music:null,on:true,last:{},recent:[],bgm:null};
