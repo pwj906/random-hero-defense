@@ -283,13 +283,13 @@ body:not(.atHome) .ci img{opacity:.45}body:not(.atHome) .ci.own img{opacity:1}
 .bossP .bgAmt{position:absolute;left:0;right:0;top:50.5%;text-align:center;font-size:clamp(24px,8vw,32px);font-weight:900;color:#ffd34f;-webkit-text-stroke:4px #3a2000;paint-order:stroke;font-variant-numeric:tabular-nums}
 .bossP .bgAmt.lose{color:#aab3c8;-webkit-text-stroke-color:#1b2240}
 .bossP.rolling .bgAmt{color:#ff7a45}
-.bossP .bgMsg{position:absolute;left:12%;right:12%;top:64.6%;margin:0;text-align:center;font-size:12px;color:#cfe0ff}
-.bossP .bgBtns{position:absolute;left:12.5%;right:11%;top:73.2%;height:13%;display:flex;gap:4%}
-.bossP .bgBtns.one{left:30%;right:30%}
-.bossP .bgBtns button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;border:0;border-radius:0;box-shadow:none;color:#fff;font-weight:900;background-color:transparent;background-position:center;background-size:100% 100%;background-repeat:no-repeat;font-size:clamp(13px,4vw,16px);line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.5)}
+.bossP .bgMsg{position:absolute;left:12%;right:12%;top:63%;margin:0;text-align:center;font-size:12px;color:#cfe0ff}
+.bossP .bgBtns{position:absolute;left:12%;right:11%;top:80.5%;transform:translateY(-50%);display:flex;justify-content:space-around;align-items:center}
+.bossP .bgBtns.one{left:25%;right:25%;justify-content:center}.bossP .bgBtns.one button{width:80%}
+.bossP .bgBtns button{flex:none;width:42%;white-space:nowrap;aspect-ratio:214/88;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;border:0;border-radius:0;box-shadow:none;color:#fff;font-weight:900;background-color:transparent;background-position:center;background-size:100% 100%;background-repeat:no-repeat;font-size:clamp(13px,4vw,16px);line-height:1.05;text-shadow:0 1px 0 rgba(0,0,0,.5)}
 .bossP .bgBtns button{line-height:1.05}.bossP .bgBtns button small{display:block;margin-top:2px;font-size:clamp(9px,2.6vw,11px);line-height:1}
 .bossP .bgBtns .bgTake{background-image:url(ui/boss/btn_take.webp)}.bossP .bgBtns .bgTake:active{background-image:url(ui/boss/btn_take_down.webp);transform:none}
-.bossP .bgBtns .bgDbl{background-image:url(ui/boss/btn_double.webp);padding-left:18%}.bossP .bgBtns .bgDbl:active{background-image:url(ui/boss/btn_double_down.webp);transform:none}
+.bossP .bgBtns .bgDbl{background-image:url(ui/boss/btn_double.webp);padding-left:26%}.bossP .bgBtns .bgDbl:active{background-image:url(ui/boss/btn_double_down.webp);transform:none}
 .bossP.rolling .bgBtns button{opacity:.55;pointer-events:none}
 .gfx{position:fixed;z-index:30;width:120px;height:120px;margin:-60px 0 0 -60px;background-size:480px 120px;background-repeat:no-repeat;pointer-events:none;animation:gfx .3s steps(4) forwards}
 @keyframes gfx{from{background-position:0 0}to{background-position:-480px 0}}
@@ -1188,7 +1188,7 @@ const pcTxt=p=>{const v=p*100;return (v>=10?Math.round(v):v>=1?+v.toFixed(1):+v.
 function bossGambleHTML(bx,msg,fx){
   bx.classList.add("bossP");const st=Math.min(5,1+(S.bN||0));
   bx.innerHTML=`<h2>보스 처치 보상</h2><div class="bgPot"><img alt="" src="${A(`ui/boss/gold_${st}.webp`)}"><i class="bgFx${fx?" "+fx:""}"></i></div><b class="bgAmt" id="bgAmt">${S.bPot.toLocaleString()}</b><p class="bgMsg">${msg||"받거나, 2배에 도전해요. 실패하면 0골드!"}</p>
-  <div class="bgBtns"><button type="button" class="bgTake" id="bgTake">받기<small>골드 +${S.bPot.toLocaleString()}</small></button><button type="button" class="bgDbl" id="bgDbl">2배 뽑기<small>${(S.bPot*2).toLocaleString()} · 성공 ${pcTxt(S.bP)}</small></button></div>`;
+  <div class="bgBtns"><button type="button" class="bgTake" id="bgTake">받기<small>골드 +${S.bPot.toLocaleString()}</small></button><button type="button" class="bgDbl" id="bgDbl">2배 뽑기<small>${(S.bPot*2).toLocaleString()} · ${pcTxt(S.bP)}</small></button></div>`;
   $("bgTake").onclick=()=>{if(bossSpin)return;S.ore+=S.bPot;log(`보스 보상 골드 +${S.bPot}`,"good");sfx("coin");bossDone()};
   $("bgDbl").onclick=()=>{if(bossSpin)return;bossSpin=true;const win=Math.random()<S.bP,el=$("bgAmt"),a=S.bPot,b=a*2;let n=0;bx.classList.add("rolling");
     const t=setInterval(()=>{el.textContent=(n%2?b:0).toLocaleString();sfx("tick");if(++n<14)return;clearInterval(t);bx.classList.remove("rolling");bossSpin=false;
