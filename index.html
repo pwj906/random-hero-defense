@@ -650,6 +650,7 @@ const MISSIONS=[{"u": 95, "name": "라그나사우르", "hp": 3300.0, "sh": 0, "
 // ---------- board: 6x9 cells (1 cell = 2x2 tiles = 64 world px). outer ring of cells is the path,
 // inner 4x7 cells are character slots. monsters enter at the top-left corner and run clockwise.
 const COLS=12, WT=32, CELL=64; let ROWS=18;
+const ART=window.ART||{},A=p=>ART[p]||p; // the claude.ai copy carries some images inline (file count limit)
 const CRATE_STRIP=52; // room under the board for the supply crate
 const GRID=[],RECTS=[],PATH=[],SEG=[],SLOTS=[];let PATHLEN=0,SPEED_K=1;
 function buildBoard(){
@@ -1148,13 +1149,13 @@ const BOSS_GOLD=200;let bossSpin=false;
 const pcTxt=p=>{const v=p*100;return (v>=10?Math.round(v):v>=1?+v.toFixed(1):+v.toFixed(2))+"%"};
 function bossGambleHTML(bx,msg,fx){
   bx.classList.add("bossP");const st=Math.min(5,1+(S.bN||0));
-  bx.innerHTML=`<h2>보스 처치 보상</h2><div class="bgPot"><img alt="" src="ui/boss/gold_${st}.webp"><i class="bgFx${fx?" "+fx:""}"></i></div><b class="bgAmt" id="bgAmt">${S.bPot.toLocaleString()}</b><p class="bgMsg">${msg||"받거나, 2배에 도전해요. 실패하면 0골드!"}</p>
+  bx.innerHTML=`<h2>보스 처치 보상</h2><div class="bgPot"><img alt="" src="${A(`ui/boss/gold_${st}.webp`)}"><i class="bgFx${fx?" "+fx:""}"></i></div><b class="bgAmt" id="bgAmt">${S.bPot.toLocaleString()}</b><p class="bgMsg">${msg||"받거나, 2배에 도전해요. 실패하면 0골드!"}</p>
   <div class="bgBtns"><button type="button" class="bgTake" id="bgTake">받기<small>골드 +${S.bPot.toLocaleString()}</small></button><button type="button" class="bgDbl" id="bgDbl">2배 뽑기<small>${(S.bPot*2).toLocaleString()} · 성공 ${pcTxt(S.bP)}</small></button></div>`;
   $("bgTake").onclick=()=>{if(bossSpin)return;S.ore+=S.bPot;log(`보스 보상 골드 +${S.bPot}`,"good");sfx("coin");bossDone()};
   $("bgDbl").onclick=()=>{if(bossSpin)return;bossSpin=true;const win=Math.random()<S.bP,el=$("bgAmt"),a=S.bPot,b=a*2;let n=0;bx.classList.add("rolling");
     const t=setInterval(()=>{el.textContent=(n%2?b:0).toLocaleString();sfx("tick");if(++n<14)return;clearInterval(t);bx.classList.remove("rolling");bossSpin=false;
       if(win){S.bPot=b;S.bP/=2;S.bN=(S.bN||0)+1;sfx("jackpot");bossGambleHTML(bx,`성공! 다음 2배는 ${pcTxt(S.bP)}`,"win")}
-      else{sfx("miss");bx.innerHTML=`<h2>보스 처치 보상</h2><div class="bgPot"><img alt="" src="ui/boss/gold_lost.webp"><i class="bgFx lose"></i></div><b class="bgAmt lose">0</b><p class="bgMsg">꽝! ${a.toLocaleString()}골드가 날아갔어요…</p><div class="bgBtns one"><button type="button" class="bgTake" id="bgOk">확인</button></div>`;log(`보스 보상 2배 뽑기 실패 (${a}골드 잃음)`,"warn");$("bgOk").onclick=bossDone}},70)}}
+      else{sfx("miss");bx.innerHTML=`<h2>보스 처치 보상</h2><div class="bgPot"><img alt="" src="${A("ui/boss/gold_lost.webp")}"><i class="bgFx lose"></i></div><b class="bgAmt lose">0</b><p class="bgMsg">꽝! ${a.toLocaleString()}골드가 날아갔어요…</p><div class="bgBtns one"><button type="button" class="bgTake" id="bgOk">확인</button></div>`;log(`보스 보상 2배 뽑기 실패 (${a}골드 잃음)`,"warn");$("bgOk").onclick=bossDone}},70)}}
 function bossDone(){S.tok.boss=Math.max(0,S.tok.boss-1);S.bPot=null;S.bN=0;$("rewardBox").classList.remove("bossP");renderPanels();showReward()}
 function useBoss(kind){
   if(S.tok.boss<1)return;S.tok.boss--;
@@ -1664,7 +1665,7 @@ const AUG_TIER=["bronze","silver","gold"],AUG_TNAME=["브론즈","실버","골�
 const has=id=>!!(S&&S.aug&&S.aug.includes(id));
 const AUG_IMG={};for(const a of AUGS){const im=new Image();im.src=`ui/aug/icons/${a.id}.png`;AUG_IMG[a.id]=im}
 // props art
-const PIMG={};for(const[k,files]of Object.entries({trap_frost:["idle","trigger"],trap_spike:["idle","trigger"],tower_bolt:["idle","attack","impact"],totem_curse:["idle","floor"],ward_break:["floor","floor_corner","status_break"],time_warp:["impact"]})){PIMG[k]={};for(const f of files){const im=new Image();im.src=`sprites/props/${k}/${f}.png`;PIMG[k][f]=im}}
+const PIMG={};for(const[k,files]of Object.entries({trap_frost:["idle","trigger"],trap_spike:["idle","trigger"],totem_curse:["idle","floor"],ward_break:["floor","floor_corner","status_break"],time_warp:["impact"]})){PIMG[k]={};for(const f of files){const im=new Image();im.src=`sprites/props/${k}/${f}.png`;PIMG[k][f]=im}}
 const ok=im=>im&&im.complete&&im.naturalWidth;
 
 // ----- stat helpers used by combat -----
@@ -1767,11 +1768,11 @@ function augTake(id){
 }
 function ensureAugDom(){
   if($("augOv"))return;const ov=document.createElement("div");ov.id="augOv";ov.className="augOv";ov.hidden=true;
-  ov.innerHTML=`<img class="augBanner" alt="증강 선택" src="ui/aug/banner_augment.png"><div class="augSpin" id="augSpin">${AUG_TNAME.map((n,i)=>`<div class="tp t${i}"><img class="pg" alt="" src="ui/aug/plate_glow.webp"><img class="pl" alt="" src="ui/aug/plate_${AUG_TIER[i]}.webp"><i class="fx"></i><b>${n}</b></div>`).join("")}</div><div class="augCards" id="augCards"></div><button type="button" class="augReroll" id="augReroll" aria-label="다시 뽑기, 보석 50"><img alt="" src="ui/aug/btn_reroll.png"></button><p class="augHint">하나를 골라요</p>`;
+  ov.innerHTML=`<img class="augBanner" alt="증강 선택" src="ui/aug/banner_augment.png"><div class="augSpin" id="augSpin">${AUG_TNAME.map((n,i)=>`<div class="tp t${i}"><img class="pg" alt="" src="${A("ui/aug/plate_glow.webp")}"><img class="pl" alt="" src="${A(`ui/aug/plate_${AUG_TIER[i]}.webp`)}"><i class="fx"></i><b>${n}</b></div>`).join("")}</div><div class="augCards" id="augCards"></div><button type="button" class="augReroll" id="augReroll" aria-label="다시 뽑기, 보석 50"><img alt="" src="ui/aug/btn_reroll.png"></button><p class="augHint">하나를 골라요</p>`;
   document.querySelector(".stage").appendChild(ov);
   $("augReroll").onclick=()=>{const o=S.augOffer;if(!o||o.rerolled||S.gas<50)return;S.gas-=50;o.rerolled=true;o.ch=augRoll(3,o.ch.map(a=>a.id),o.tier);if(!o.ch.length)o.ch=augRoll(3,[],o.tier);showAug(true)};
 }
-function cardHTML(a,i){return `<button type="button" class="augCard t${a.tier}" data-a="${a.id}" style="--d:${i*140}ms"><span class="flip"><span class="face back"><img alt="" src="ui/aug/aug_card_back.png"></span><span class="face front">${a.tier===2?`<img class="glow" alt="" src="ui/aug/gold_glow.webp">`:""}<img class="frame" alt="" src="ui/aug/card_${AUG_TIER[a.tier]}.webp"><img class="ic" alt="" src="ui/aug/icons/${a.id}.png"><b class="nm${a.name.length>5?" sm":""}">${a.name}</b><i class="ds tn2">${AUG_TNAME[a.tier]} 증강</i></span></span><small class="dsx">${a.desc}</small></button>`}
+function cardHTML(a,i){return `<button type="button" class="augCard t${a.tier}" data-a="${a.id}" style="--d:${i*140}ms"><span class="flip"><span class="face back"><img alt="" src="ui/aug/aug_card_back.png"></span><span class="face front">${a.tier===2?`<img class="glow" alt="" src="${A("ui/aug/gold_glow.webp")}">`:""}<img class="frame" alt="" src="${A(`ui/aug/card_${AUG_TIER[a.tier]}.webp`)}"><img class="ic" alt="" src="ui/aug/icons/${a.id}.png"><b class="nm${a.name.length>5?" sm":""}">${a.name}</b><i class="ds tn2">${AUG_TNAME[a.tier]} 증강</i></span></span><small class="dsx">${a.desc}</small></button>`}
 // before the cards: bronze / silver / gold light up in turn, slow down and stop on this offer's tier
 function augSpin(o,done){
   const ov=$("augOv"),sp=$("augSpin"),tps=[...sp.children];ov.classList.add("spinning");ov.hidden=false;sp.className="augSpin";
@@ -1815,7 +1816,6 @@ const CRATE_P=.03,CRATE_P_UP=.10;
 const CRATE=[ // weights per 100
   {k:"gold",w:30},{k:"gem",w:22},{k:"tix",w:12},{k:"elite",w:12},{k:"hero",w:8},{k:"frenzy",w:8},{k:"upg",w:5},{k:"legend",w:3}];
 const CRATE_NAME={gold:"골드 (200 + 웨이브×15)",gem:"보석 (100 + 웨이브×5)",tix:"무료 복권 3장",elite:"정예 캐릭터",hero:"영웅 캐릭터",frenzy:"광폭: 20초간 모두 공격력·공속 1.5배",upg:"모든 업글 +1",legend:"전설 캐릭터"};
-const CIMG={};for(const k of["crate","crate_open"]){const im=new Image();im.src=`ui/crate/${k}.png`;CIMG[k]=im}
 const crateP=()=>has("supply_call")?CRATE_P_UP:CRATE_P;
 const CRATE_POS=()=>({x:COLS*WT-WT*.85,y:ROWS*WT-WT*.85}); // bottom-right corner of the map
 const C_TEASE=34,C_OPEN=40; // frames: rattle, then (on a win) glow + open
@@ -1852,7 +1852,7 @@ function crateGive(o){
     clearTimeout(crateInfoHide);crateInfoHide=setTimeout(()=>el.classList.remove("show","jp","won"),rare?2600:1900)}}
   renderPanels()}
 // roulette: the 8 prizes sit in a ring, the light runs around, slows down and stops on the prize
-const CRATE_ICON=Object.fromEntries(Object.entries({gold:"gold",gem:"gem",tix:"ticket",elite:"elite",hero:"hero",frenzy:"frenzy",upg:"upgrade",legend:"legend"}).map(([k,f])=>[k,`<img alt="" src="ui/roulette/prize_${f}.webp">`]));
+const CRATE_ICON=Object.fromEntries(Object.entries({gold:"gold",gem:"gem",tix:"ticket",elite:"elite",hero:"hero",frenzy:"frenzy",upg:"upgrade",legend:"legend"}).map(([k,f])=>[k,`<img alt="" src="${A(`ui/roulette/prize_${f}.webp`)}">`]));
 const CRATE_SHORT={gold:"골드",gem:"보석",tix:"복권 3장",elite:"정예",hero:"영웅",frenzy:"광폭",upg:"업글 +1",legend:"전설"};
 function crateWheel(k,done){
   let el=$("crateInfo");if(!el){el=document.createElement("div");el.id="crateInfo";el.className="crateInfo";document.body.appendChild(el)}
