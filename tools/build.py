@@ -1,7 +1,7 @@
 import re,json,os
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC=os.path.join(ROOT,'src','unppal-defense.html')
-OUT=ROOT
+OUT=os.path.join(ROOT,'v1')
 s=open(SRC,encoding='utf8').read()
 a=s.index('<script>');b=s.rindex('</script>')
 pre,js,post=s[:a],s[a+len('<script>'):b],s[b+len('</script>'):]

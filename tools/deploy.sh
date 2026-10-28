@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 tools/build.py
-node --check game.js
+node --check v1/game.js
 git add -A
 msg="${1:-게임 업데이트}"
 git commit -m "$msg" || { echo "바뀐 게 없음"; exit 0; }

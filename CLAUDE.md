@@ -3,6 +3,8 @@
 운빨존많겜 규칙 기반 HTML 캔버스 디펜스 게임. 사용자와는 한국어 반말로 대화한다.
 
 ## 파일
+- **2026-10-28부터 저장소 루트(기본 주소)는 새 게임 '랜덤 히어로 디펜스'(원본 /home/claude/game, 저장소 pwj906/random-hero-td)** — 루트 `index.html`·`ui/`·`sprites/`는 그쪽 `deploy.sh`가 덮어쓴다. 여기서 고치지 않는다.
+- 아래 운빨존많겜 규칙 게임(v310)은 **`v1/`** 폴더로 옮겼다(https://pwj906.github.io/random-hero-defense/v1/). `tools/build.py` 출력도 `v1/`. 같은 출처라 저장·계정·랭킹 그대로.
 - `src/unppal-defense.html` — **원본. 수정은 항상 여기서만 한다.** 그림(WebP data URI)이 전부 박힌 단일 HTML.
 - `index.html`, `game.js`, `pack.json`, `pack-1.json`, `pack-2.json`… — 배포용. `tools/build.py`가 원본에서 자동 생성한다. 직접 고치지 않는다.
   - 그림을 pack 파일로 빼는 이유: 그림이 HTML 안에 많으면 claude.ai 공개 공유 검토가 막힌다.
@@ -11,7 +13,7 @@
 ## 업데이트할 때마다 (자동 배포)
 1. `src/unppal-defense.html` 수정. 메인 화면의 버전 표시 `>v1NN<`와 랭킹 기록용 `v:1NN`을 함께 올린다.
 2. `tools/deploy.sh "vNNN: 바꾼 내용"` 실행 → 빌드, 문법 검사, 커밋, push.
-   - GitHub Pages(main 브랜치 / root)가 1~2분 안에 https://pwj906.github.io/random-hero-defense/ 에 반영한다.
+   - GitHub Pages(main 브랜치 / root)가 1~2분 안에 https://pwj906.github.io/random-hero-defense/v1/ 에 반영한다.
 3. claude.ai 아티팩트(https://claude.ai/artifact/QzZJKSqcjsDtUz14ccwMRg)도 같은 `index.html`과 files `{game.js, pack.json, pack-1.json, pack-2.json…}`로 다시 게시한다. `capabilities`는 생략해서 기존 설정(db·user)을 유지한다.
 4. 커밋 메시지 끝에는 세션 안내에 있는 Co-Authored-By 줄을 붙인다.
 
