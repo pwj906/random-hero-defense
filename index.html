@@ -467,20 +467,21 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 .augOwn .ag img{width:24px;height:24px}
 </style>
 <style>
-.crateBox{position:absolute;z-index:6;width:50px;height:50px;pointer-events:none}
-.crateBox .cs{position:absolute;inset:-14% -14% 0;background:url(ui/crate/crate_idle.webp) center bottom/100% auto no-repeat}
+.crateBox{position:absolute;z-index:6;left:14px;top:14px;height:34px;padding:0 10px 0 40px;display:flex;align-items:center;border-radius:17px;border:2px solid #fff;background:#3d5bd9;box-shadow:0 2px 0 rgba(0,0,0,.25);pointer-events:none}
+.crateBox .cs{position:absolute;left:-4px;top:-9px;width:46px;height:46px;background:url(ui/crate/crate_idle.webp) center bottom/100% auto no-repeat}
 .crateBox.tease .cs{background-image:url(ui/crate/crate_tease_6.webp);background-size:600% 100%;background-position:0 0;animation:crTease 1.4s steps(5) forwards}
 .crateBox.open .cs{background-image:url(ui/crate/crate_open_8.webp);background-size:800% 100%;animation:crOpen8 .6s steps(7) forwards}
 .crateBox.opened .cs{background-image:url(ui/crate/crate_open_idle.webp)}
-.crateBox .cg{position:absolute;inset:-60%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,226,110,.95),rgba(255,226,110,0));opacity:0;transition:opacity .3s}
-.crateBox.tease .cg{opacity:.4;transition:opacity 1.4s}
-.crateBox.open .cg,.crateBox.opened .cg{opacity:1;inset:-110%;background:repeating-conic-gradient(from 0deg,rgba(255,240,170,.75) 0 10deg,rgba(255,240,170,0) 10deg 36deg),radial-gradient(closest-side,rgba(255,226,110,1),rgba(255,226,110,0));-webkit-mask:radial-gradient(closest-side,#000 40%,transparent);mask:radial-gradient(closest-side,#000 40%,transparent);animation:crSpin 3s linear infinite}
-.crateBox .cfx{position:absolute;left:50%;top:40%;width:260%;aspect-ratio:1;transform:translate(-50%,-50%);background:url(ui/crate/fx_crate_burst_8.webp) 0 0/800% 100% no-repeat;opacity:0}
+.crateBox .cg{position:absolute;left:19px;top:14px;width:90px;height:90px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,226,110,.95),rgba(255,226,110,0));opacity:0;transition:opacity .3s;pointer-events:none}
+.crateBox.tease .cg{opacity:.45;transition:opacity 1.4s}
+.crateBox.open .cg,.crateBox.opened .cg{opacity:1;width:170px;height:170px;background:repeating-conic-gradient(from 0deg,rgba(255,240,170,.75) 0 10deg,rgba(255,240,170,0) 10deg 36deg),radial-gradient(closest-side,rgba(255,226,110,1),rgba(255,226,110,0));-webkit-mask:radial-gradient(closest-side,#000 40%,transparent);mask:radial-gradient(closest-side,#000 40%,transparent);animation:crSpin2 3s linear infinite}
+@keyframes crSpin2{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.crateBox .cfx{position:absolute;left:19px;top:12px;width:130px;aspect-ratio:1;transform:translate(-50%,-50%);background:url(ui/crate/fx_crate_burst_8.webp) 0 0/800% 100% no-repeat;opacity:0;pointer-events:none}
 .crateBox.open .cfx{opacity:1;animation:crOpen8 .7s steps(7) forwards}
-.crateBox .cpf{position:absolute;left:10%;top:-30%;width:80%;aspect-ratio:1;background:url(ui/crate/fx_crate_fail.webp) center/contain no-repeat;opacity:0}
+.crateBox .cpf{position:absolute;left:0;top:-30px;width:38px;aspect-ratio:1;background:url(ui/crate/fx_crate_fail.webp) center/contain no-repeat;opacity:0}
 .crateBox .cpf.go{animation:crPuff 1.2s ease-out forwards}
-.crateBox .cl{position:absolute;left:50%;bottom:86%;transform:translateX(-50%);white-space:nowrap;font-size:9.5px;font-weight:800;color:#fff;-webkit-text-stroke:2.5px #23305a;paint-order:stroke;letter-spacing:-.02em}
-.crateBox .cb{position:absolute;right:0;bottom:calc(86% + 13px);white-space:nowrap;font-size:13px;font-weight:900;color:#fff;-webkit-text-stroke:3px #23305a;paint-order:stroke;opacity:0}
+.crateBox .cl{position:relative;white-space:nowrap;font-size:11.5px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.crateBox .cb{position:absolute;left:30px;top:-20px;white-space:nowrap;font-size:13px;font-weight:900;color:#fff;-webkit-text-stroke:3px #23305a;paint-order:stroke;opacity:0}
 .crateBox .cb.pop{animation:crBub 1.4s ease-out forwards}
 @keyframes crTease{from{background-position:0 0}to{background-position:100% 0}}
 @keyframes crOpen8{from{background-position:0 0}to{background-position:100% 0}}
@@ -675,7 +676,7 @@ const MISSIONS=[{"u": 95, "name": "라그나사우르", "hp": 3300.0, "sh": 0, "
 // inner 4x7 cells are character slots. monsters enter at the top-left corner and run clockwise.
 const COLS=12, WT=32, CELL=64; let ROWS=18;
 const ART=window.ART||{},A=p=>ART[p]||p; // the claude.ai copy carries some images inline (file count limit)
-const CRATE_STRIP=52; // room under the board for the supply crate
+const CRATE_STRIP=0; // (the supply crate is a corner button now, no extra room needed)
 const GRID=[],RECTS=[],PATH=[],SEG=[],SLOTS=[];let PATHLEN=0,SPEED_K=1;
 function buildBoard(){
   GRID.length=0;for(let y=0;y<ROWS;y++)GRID.push(y<2||y>=ROWS-2?"#".repeat(COLS):"##"+"P".repeat(COLS-4)+"##");
@@ -1050,7 +1051,6 @@ function buyUpg(key){
 // but the spread is huge: 48% nothing, 0.6% a legend, 0.2% a miracle that wipes the field.
 // tuned with bots that spend ~1/3 of their gold here: same median play time, much wider luck spread.
 const LOTTO=[
-  {k:"miss",w:478},
   {k:"gold",w:130,v:120},
   {k:"gem",w:220},
   {k:"char",w:90},
@@ -1061,13 +1061,13 @@ const LOTTO=[
 const PITY=4; // after 4 misses in a row the next draw always wins something
 let lottoBusy=false;
 function lottoPool(pity){let pool=pity?LOTTO.filter(o=>o.k!=="miss"):LOTTO;
-  return pool.map(o=>o.k==="miss"&&has("lucky_coin")?{...o,w:o.w/2}:["hero","legend","miracle"].includes(o.k)&&has("jackpot")?{...o,w:o.w*3}:o)}
+  return pool.map(o=>["hero","legend","miracle"].includes(o.k)&&has("jackpot")?{...o,w:o.w*3}:o)}
 // odds table for the codex: what one ticket can give right now (augments included)
 const LOTTO_NAME={miss:"꽝",gold:"골드 +120",gem:"보석 60~160",char:"견습·숙련 캐릭터",big:"대박 (골드 400 또는 보석 300)",elite:"정예 캐릭터",hero:"영웅 캐릭터",legend:"전설 캐릭터",miracle:"신의 기적 (적 전멸 + 전설 + 보석 500)"};
 const ODDS_ORDER=["miss","gold","gem","char","big","elite","hero","legend","miracle"];
 function lottoOddsHTML(){const pool=lottoPool(false).sort((a,b)=>ODDS_ORDER.indexOf(a.k)-ODDS_ORDER.indexOf(b.k)),tot=pool.reduce((a,o)=>a+o.w,0);
   const pc=w=>{const v=w/tot*100;return v>=1?v.toFixed(1)+"%":v.toFixed(2)+"%"};
-  return `<div class="oddsH">복권 확률 <small>지금 기준${S&&(has("lucky_coin")||has("jackpot"))?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${o.k}"><td>${LOTTO_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table><p class="hint">꽝이 ${PITY}번 연속 나오면 다음 한 장은 반드시 당첨이에요.</p>`}
+  return `<div class="oddsH">복권 확률 <small>지금 기준${S&&(has("lucky_coin")||has("jackpot"))?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${o.k}"><td>${LOTTO_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table><p class="hint">꽝 없이 매번 뭔가 당첨돼요.${S&&has("lucky_coin")?" 행운의 동전: 골드·보석 2배.":""}</p>`}
 function rollLotto(){
   const pool=lottoPool(S.missRun>=PITY);const tot=pool.reduce((a,o)=>a+o.w,0);
   let r=Math.random()*tot;for(const o of pool){if((r-=o.w)<0)return o}return pool[0]}
@@ -1077,9 +1077,10 @@ function lotto(){
   else{if(S.ore<100){log("골드가 부족해요 (복권 100)","warn");return}S.ore-=100}const o=rollLotto();S.missRun=o.k==="miss"?(S.missRun||0)+1:0;
   // decide the concrete prize now so the reels can show it
   const pr={k:o.k};
-  if(o.k==="gold")pr.gold=o.v;
-  else if(o.k==="gem")pr.gem=[60,80,100,120,160][Math.floor(Math.random()*5)];
-  else if(o.k==="big"){if(Math.random()<.5)pr.gold=400;else pr.gem=300}
+  const lk=has("lucky_coin")?2:1;
+  if(o.k==="gold")pr.gold=o.v*lk;
+  else if(o.k==="gem")pr.gem=[60,80,100,120,160][Math.floor(Math.random()*5)]*lk;
+  else if(o.k==="big"){if(Math.random()<.5)pr.gold=400*lk;else pr.gem=300*lk}
   else if(o.k==="char")pr.type=pick(byGrade(Math.random()<.7?0:1)).i;
   else if(o.k==="elite")pr.type=pick(byGrade(2)).i;
   else if(o.k==="hero")pr.type=pick(byGrade(3)).i;
@@ -1676,7 +1677,7 @@ const AUGS=[
   {id:"cash_now",tier:0,name:"즉시 현금",desc:"지금 바로 골드 +400"},
   {id:"cheap_upg",tier:2,name:"짠돌이",desc:"업그레이드 비용 -25%"},
   {id:"junk",tier:0,name:"고물상",desc:"캐릭터를 같은 등급 다른 캐릭터로 교환 (견습 50골드, 등급마다 2배)"},
-  {id:"lucky_coin",tier:1,name:"행운의 동전",desc:"복권 꽝 확률 절반"},
+  {id:"lucky_coin",tier:1,name:"행운의 동전",desc:"복권 골드·보석 당첨금 2배"},
   {id:"jackpot",tier:0,name:"잭팟 체질",desc:"복권 영웅·전설·기적 확률 3배"},
   {id:"free_ticket",tier:2,name:"공짜 한 장",desc:"3웨이브마다 무료 복권 1장"},
   {id:"summon_bless",tier:0,name:"소환 축복",desc:"캐릭터를 뽑을 때 10% 확률로 한 등급 위"},
@@ -1904,8 +1905,7 @@ function crateWheel(k,done){
   setTimeout(step,500)}
 function drawCrate(){} // the crate is a page element under the board (outside the road and the hero slots)
 function crateEl(){let el=$("crateBox");if(!el){el=document.createElement("div");el.id="crateBox";el.className="crateBox";el.innerHTML=`<i class="cg"></i><i class="cs" role="img" aria-label="보급상자"></i><i class="cfx"></i><i class="cpf"></i><b class="cb"></b><small class="cl"></small>`;document.querySelector(".stage").appendChild(el)}return el}
-function cratePlace(){const el=crateEl();{const l=el.querySelector(".cl");if(l)l.textContent=`열릴 확률 ${Math.round(crateP()*100)}%`}const st=document.querySelector(".stage").getBoundingClientRect(),r=cv.getBoundingClientRect();
-  el.style.top=Math.round(r.bottom-st.top+3)+"px";el.style.left=Math.round(r.right-st.left-52)+"px"}
+function cratePlace(){const el=crateEl(),l=el.querySelector(".cl");if(l)l.textContent=`열릴 확률 ${Math.round(crateP()*100)}%`}
 addEventListener("resize",()=>setTimeout(cratePlace,50));
 function crateState(st,txt){cratePlace();const el=crateEl();el.className="crateBox"+(st?" "+st:"");
   if(txt==="fail"){const pf=el.querySelector(".cpf");pf.classList.remove("go");void pf.offsetWidth;pf.classList.add("go");txt="아깝다!"}
