@@ -579,11 +579,11 @@ body.menuHold .stage::before{content:"일시정지";position:absolute;left:50%;t
 </style>
 <style>@media (max-width:700px){.mnav button{font-size:13.5px!important;font-weight:700}.mnav button img{width:26px;height:26px}}</style>
 <style>
-.tipBox{position:fixed;z-index:90;background:#fffdf4;color:#24305a;border:3px solid #ffc23a;border-radius:16px;padding:12px 14px 10px;box-shadow:0 10px 26px rgba(10,20,60,.45);animation:tipIn .25s ease-out}
+.tipBox{position:fixed;z-index:90;padding-right:78px!important;background:#fffdf4;color:#24305a;border:3px solid #ffc23a;border-radius:16px;padding:12px 14px 10px;box-shadow:0 10px 26px rgba(10,20,60,.45);animation:tipIn .25s ease-out}
 .tipBox[hidden]{display:none}
-.tipBox b{display:block;font-size:16px;font-weight:900;color:#b06a00;margin-bottom:3px}
-.tipBox p{margin:0 0 8px;font-size:14px;line-height:1.45;color:#24305a}
-.tipBox button{display:block;margin-left:auto;border:0;border-radius:10px;padding:7px 16px;background:#3d5bd9;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.tipBox b{display:block;font-size:16px;font-weight:900;color:#24305a;margin-bottom:2px}
+.tipBox p{margin:0;font-size:13px;line-height:1.35;color:#6a7290}
+.tipBox button{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;border-radius:10px;padding:7px 16px;background:#3d5bd9;color:#fff;font:inherit;font-weight:800;cursor:pointer}
 .tipBox .tArw{position:absolute;left:var(--ax,50%);width:14px;height:14px;background:#fffdf4;border:3px solid #ffc23a;transform:translateX(-50%) rotate(45deg);display:none}
 .tipBox.up .tArw{display:block;bottom:-9px;border-top:0;border-left:0}
 .tipBox.down .tArw{display:block;top:-9px;border-bottom:0;border-right:0}
@@ -1064,7 +1064,7 @@ function buyUpg(key){
 // but the spread is huge: 48% nothing, 0.6% a legend, 0.2% a miracle that wipes the field.
 // tuned with bots that spend ~1/3 of their gold here: same median play time, much wider luck spread.
 const LOTTO=[
-  {k:"miss",w:478},
+  {k:"miss",w:783}, // ~60% miss
   {k:"gold",w:130,v:120},
   {k:"gem",w:220},
   {k:"char",w:90},
@@ -1075,13 +1075,13 @@ const LOTTO=[
 const PITY=4; // after 4 misses in a row the next draw always wins something
 let lottoBusy=false;
 function lottoPool(pity){let pool=pity?LOTTO.filter(o=>o.k!=="miss"):LOTTO;
-  return pool.map(o=>o.k==="miss"&&has("lucky_coin")?{...o,w:o.w/2}:["hero","legend","miracle"].includes(o.k)&&has("jackpot")?{...o,w:o.w*3}:o)}
+  return pool.map(o=>["hero","legend","miracle"].includes(o.k)&&has("jackpot")?{...o,w:o.w*3}:o)}
 // odds table for the codex: what one ticket can give right now (augments included)
 const LOTTO_NAME={miss:"꽝",gold:"골드 +120",gem:"보석 60~160",char:"견습·숙련 캐릭터",big:"대박 (골드 400 또는 보석 300)",elite:"정예 캐릭터",hero:"영웅 캐릭터",legend:"전설 캐릭터",miracle:"신의 기적 (적 전멸 + 전설 + 보석 500)"};
 const ODDS_ORDER=["miss","gold","gem","char","big","elite","hero","legend","miracle"];
 function lottoOddsHTML(){const pool=lottoPool(false).sort((a,b)=>ODDS_ORDER.indexOf(a.k)-ODDS_ORDER.indexOf(b.k)),tot=pool.reduce((a,o)=>a+o.w,0);
   const pc=w=>{const v=w/tot*100;return v>=1?v.toFixed(1)+"%":v.toFixed(2)+"%"};
-  return `<div class="oddsH">복권 확률 <small>지금 기준${S&&(has("lucky_coin")||has("jackpot"))?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${o.k}"><td>${LOTTO_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table><p class="hint">꽝이 ${PITY}번 연속 나오면 다음 한 장은 반드시 당첨이에요.</p>`}
+  return `<div class="oddsH">복권 확률 <small>지금 기준${S&&has("jackpot")?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${o.k}"><td>${LOTTO_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table><p class="hint">꽝이 ${PITY}번 연속 나오면 다음 한 장은 반드시 당첨이에요.</p>`}
 function rollLotto(){
   const pool=lottoPool(S.missRun>=PITY);const tot=pool.reduce((a,o)=>a+o.w,0);
   let r=Math.random()*tot;for(const o of pool){if((r-=o.w)<0)return o}return pool[0]}
@@ -1690,7 +1690,6 @@ const AUGS=[
   {id:"cash_now",tier:0,name:"즉시 현금",desc:"지금 바로 골드 +400"},
   {id:"cheap_upg",tier:2,name:"짠돌이",desc:"업그레이드 비용 -25%"},
   {id:"junk",tier:0,name:"고물상",desc:"캐릭터를 같은 등급 다른 캐릭터로 교환 (견습 50골드, 등급마다 2배)"},
-  {id:"lucky_coin",tier:1,name:"행운의 동전",desc:"복권 꽝 확률 절반"},
   {id:"jackpot",tier:0,name:"잭팟 체질",desc:"복권 영웅·전설·기적 확률 3배"},
   {id:"free_ticket",tier:2,name:"공짜 한 장",desc:"3웨이브마다 무료 복권 1장"},
   {id:"summon_bless",tier:0,name:"소환 축복",desc:"캐릭터를 뽑을 때 10% 확률로 한 등급 위"},
@@ -2028,11 +2027,11 @@ showHome();
 
 // ---------- situational tips: each one shows once, the first time its situation comes up ----------
 const TIPS={
-  summon:{t:"캐릭터 뽑기",d:"빈 칸을 누르면 골드 100으로 캐릭터가 나와요. 길 옆 칸일수록 적을 잘 때려요.",at:()=>$("cv"),when:()=>S.towers.length===0&&S.frame>10},
-  merge:{t:"합성",d:"같은 캐릭터가 2명 모였어요! '합성'을 누르거나 캐릭터를 두 번 톡톡 누르면 한 등급 위 캐릭터로 합쳐져요.",at:()=>MQ.matches?$("navMerge"):$("mergeAll"),when:()=>S.towers.some(tw=>TOWERS[tw.type].grade<5&&sameCount(tw)>=2)},
-  aug:{t:"증강",d:"5·15·25…웨이브마다 증강을 하나 골라요. 브론즈 < 실버 < 골드 순으로 세요. 마음에 안 들면 보석 50으로 다시 뽑아요.",at:null,when:()=>augOpen&&$("augCards")&&$("augCards").classList.contains("in")},
-  upg:{t:"업글",d:"보석이 모였어요! '업글'에서 근접·사격·저격 계열과 단발·범위 공격을 강화해요. 가진 캐릭터 쪽을 올리면 좋아요.",at:()=>MQ.matches?document.querySelector('[data-sheet="pUpg"]'):$("pUpg"),when:()=>S.wi>=6&&S.phase==="prep"},
-  boss:{t:"보스 보상",d:"그냥 받거나 2배에 도전해요. 성공할 때마다 다음 확률은 절반, 실패하면 0골드예요.",at:null,when:()=>rewardOpen&&$("rewardBox").classList.contains("bossP")},
+  summon:{t:"빈 칸을 눌러 캐릭터를 뽑아 보세요!",d:"골드 100",at:()=>$("cv"),when:()=>S.towers.length===0&&S.frame>10},
+  merge:{t:"같은 캐릭터 2명! 합성을 눌러 보세요",d:"캐릭터를 두 번 톡톡 눌러도 돼요",at:()=>MQ.matches?$("navMerge"):$("mergeAll"),when:()=>S.towers.some(tw=>TOWERS[tw.type].grade<5&&sameCount(tw)>=2)},
+  aug:{t:"증강 하나를 골라 보세요!",d:"골드 등급이 가장 세요",at:null,when:()=>augOpen&&$("augCards")&&$("augCards").classList.contains("in")},
+  upg:{t:"업글을 눌러 강화해 보세요!",d:"보석으로 공격력을 올려요",at:()=>MQ.matches?document.querySelector('[data-sheet="pUpg"]'):$("pUpg"),when:()=>S.wi>=6&&S.phase==="prep"},
+  boss:{t:"받을까, 2배에 걸까?",d:"실패하면 0골드!",at:null,when:()=>rewardOpen&&$("rewardBox").classList.contains("bossP")},
 };
 let tipSeen={};try{tipSeen=JSON.parse(localStorage.getItem("rhd_tips")||"{}")}catch(e){}
 let tipNow=null;
@@ -2040,7 +2039,7 @@ function tipClose(){const el=$("tipBox");if(el)el.hidden=true;document.querySele
 function tipShow(id){
   const T=TIPS[id];tipSeen[id]=1;try{localStorage.setItem("rhd_tips",JSON.stringify(tipSeen))}catch(e){}
   let el=$("tipBox");if(!el){el=document.createElement("div");el.id="tipBox";el.className="tipBox";document.body.appendChild(el)}
-  el.innerHTML=`<b>${T.t}</b><p>${T.d}</p><button type="button">알겠어</button><i class="tArw"></i>`;el.querySelector("button").onclick=tipClose;
+  el.innerHTML=`<b>${T.t}</b><p>${T.d}</p><button type="button">확인</button><i class="tArw"></i>`;el.querySelector("button").onclick=tipClose;
   el.hidden=false;el.className="tipBox";tipNow=id;
   const tg=T.at&&T.at(),W=innerWidth,H=innerHeight,bw=Math.min(320,W-24);el.style.width=bw+"px";
   if(tg){tg.classList.add("tipHi");const r=tg.getBoundingClientRect(),bh=el.offsetHeight,cx=r.left+r.width/2;
