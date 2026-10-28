@@ -498,19 +498,20 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 </style>
 <style>
 .homeOv{position:fixed;inset:0;z-index:25;display:flex;flex-direction:column;align-items:center;justify-content:space-between;overflow:hidden;background:#243D83;padding:max(18px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px))}
+.homeOv{bottom:auto;height:100vh;height:100dvh}
 .homeOv[hidden]{display:none}
 .homeOv::before{content:"";position:absolute;inset:-1%;background:url(ui/home/bg_home.jpg) center 58%/cover no-repeat;animation:homeBreath 4.5s ease-in-out infinite;z-index:-1}
 @keyframes homeBreath{50%{transform:scale(1.018) translateY(-.4%)}}
 @media (prefers-reduced-motion:reduce){.homeOv::before{animation:none}}
 .homeLogo{position:relative;width:min(62vw,280px,30dvh);height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.3));margin-top:1dvh}
 .homeLow{position:relative;display:flex;flex-direction:column;align-items:center;gap:min(14px,1.6dvh);width:100%}
-.recPlate{position:relative;width:min(78vw,320px);aspect-ratio:600/140;background:url(ui/home/record_plate.png) center/contain no-repeat}
+.recPlate{position:relative;width:min(78vw,320px,40dvh);aspect-ratio:600/140;background:url(ui/home/record_plate.png) center/contain no-repeat}
 .recPlate span{position:absolute;left:21.7%;top:15.7%;width:73.3%;height:57%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:min(17px,4.3vw);color:#5a3a00}
 .imgBtn{border:0;background:none;padding:0;cursor:pointer;line-height:0}.imgBtn img{width:100%;height:auto;display:block}
 .imgBtn:active{transform:translateY(2px) scale(.98)}
-.startBtn{width:min(80vw,330px);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3));animation:startPulse 1.8s ease-in-out infinite}
+.startBtn{width:min(80vw,330px,42dvh);filter:drop-shadow(0 6px 8px rgba(0,0,0,.3));animation:startPulse 1.8s ease-in-out infinite}
 @keyframes startPulse{50%{transform:scale(1.04)}}
-.homeBtns{display:flex;gap:18px}.homeBtns .imgBtn{width:min(15vw,64px)}
+.homeBtns{display:flex;gap:18px}.homeBtns .imgBtn{width:min(15vw,64px,8.5dvh)}
 .homeModal{position:fixed;inset:0;z-index:28;display:flex;align-items:center;justify-content:center;background:rgba(15,22,55,.7);padding:16px}
 .homeModal[hidden]{display:none}
 .homeModal .hm{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;width:min(380px,100%);max-height:88dvh;overflow:auto;display:flex;flex-direction:column;gap:14px}
@@ -872,7 +873,6 @@ function endWave(){
   const gem=(i+1)%10===0?30:10;S.gas+=gem;extra=` · 보석 +${gem}`+extra;
   sfx("clear");bgmMode("calm");S.ore+=ore;S.fx.push({k:"txt",t:`+${ore} 골드`,x:COLS*WT/2,y:ROWS*WT*.42,c:"#ffd34f",sc:"#5a3a00",big:true,life:30,max:30});log("Wave "+(i+1)+" 종료 · 골드 +"+ore+extra+" · 준비 "+cd+"초","good");
   S.wi++;S.phase="prep";S.cd=Math.round(cd*24*PREP_K);
-  crateTry();
   if(S.wi%10===5)augOffer(); // waves 5, 15, 25…
 }
 function leak(m){
@@ -1531,7 +1531,7 @@ function renderPanels(){
   {const fr=S.freeTix>0,dis=(!fr&&S.ore<100)||lottoBusy;$("lottoBtn").disabled=dis;$("navLotto").disabled=dis;const lb=fr?`무료 ${S.freeTix}장`:"골드 100";$("lottoBtn").querySelector("span").textContent=lb;$("navLotto").querySelector("small").textContent=lb}
   {const n=mergeablePairs();$("mergeAll").disabled=!n||!running;$("mergeAllN").textContent=n;$("navMerge").disabled=!n||!running;$("navMergeN").textContent=n;$("navMergeN").hidden=!n}
   if(rail.dataset.view==="sel"&&!S.sel&&viewType==null)closeSheet();
-  {const el=$("lottoOdds");if(el)el.innerHTML=lottoOddsHTML()+crateOddsHTML()}
+  {const el=$("lottoOdds");if(el)el.innerHTML=lottoOddsHTML()}
   // codex
   const oc={};for(const o of S.towers)oc[o.type]=(oc[o.type]||0)+1;
   document.querySelectorAll("#codex .ci").forEach(b=>{const n=oc[+b.dataset.t]||0;b.classList.toggle("own",n>0);b.querySelector(".cnt").textContent=n?n:""});
@@ -1563,7 +1563,7 @@ function fitVp(){
   const availH=Math.max(240,window.innerHeight-top-nav-(MQ.matches?14:8)-CRATE_STRIP),availW=document.querySelector(".board").clientWidth-2;
   // fixed 6x9-cell board, uniformly scaled to fit and centered
   const t=Math.min(availW/COLS,availH/ROWS);const w=Math.floor(t*COLS),h=Math.floor(t*ROWS);
-  cv.style.width=w+"px";cv.style.height=h+"px";vp.style.width=w+"px";vp.style.height=h+"px";panX=panY=0;clampPan();cratePlace()}
+  cv.style.width=w+"px";cv.style.height=h+"px";vp.style.width=w+"px";vp.style.height=h+"px";panX=panY=0;clampPan()}
 // ---------- drag a character to another slot (move, or swap if occupied) ----------
 let tdrag=null;
 function moveTower(tw,to){
@@ -1691,9 +1691,6 @@ const AUGS=[
   {id:"last_stand",tier:0,name:"마지막 저항",desc:"목숨 5 이하일 때 공속 +50%"},
   {id:"devil_deal",tier:2,name:"악마의 거래",desc:"목숨 -10, 대신 무작위 전설 1명"},
   {id:"all_in",tier:1,name:"올인",desc:"가진 골드를 전부 걸고 50% 확률로 3배, 실패하면 0"},
-  {id:"supply_call",tier:0,name:"보급 요청",desc:"보급상자가 열릴 확률 3% → 10%"},
-  {id:"supply_vip",tier:0,name:"특급 보급",desc:"보급상자에서 영웅·전설·광폭 확률 3배, 골드·보석 2배"},
-  {id:"airdrop",tier:2,name:"공수 지원",desc:"지금 바로 보급상자가 2번 열림"},
   {id:"fate_dice",tier:2,name:"운명의 주사위",desc:"판의 캐릭터를 모두 다른 캐릭터로, 3명은 한 등급 위"},
 ];
 const AUG=Object.fromEntries(AUGS.map(a=>[a.id,a]));
@@ -1847,7 +1844,7 @@ window.__rtd={get S(){return S},start,tick,TOWERS,WAVES,SLOTS,build,merge,addTow
 function augDetail(){if(!S||!S.aug.length)return `<p class="hint">아직 고른 증강이 없어요. 5·15·25…웨이브마다 하나씩 골라요.</p>`;
   return `<div class="augDet">${S.aug.map(id=>`<div class="ad t${AUG[id].tier}"><img alt="" src="ui/aug/icons/${id}.png"><div><b>${AUG[id].name}</b><small>${AUG[id].desc}</small></div></div>`).join("")}</div>`}
 
-// ---------- supply crate: a small crate waits in a corner of the map. every cleared wave it rattles as if it will open;
+// ---------- supply crate (OFF: not called from the game any more): a small crate waits in a corner of the map. every cleared wave it rattles as if it will open;
 // 3% of the time it really opens (glows, lid flies up) and a prize roulette runs ----------
 const CRATE_P=.03,CRATE_P_UP=.10;
 const CRATE=[ // weights per 100
@@ -1906,11 +1903,10 @@ function crateWheel(k,done){
 function drawCrate(){} // the crate is a page element under the board (outside the road and the hero slots)
 function crateEl(){let el=$("crateBox");if(!el){el=document.createElement("div");el.id="crateBox";el.className="crateBox";el.innerHTML=`<i class="cg"></i><i class="cs" role="img" aria-label="보급상자"></i><i class="cfx"></i><i class="cpf"></i><b class="cb"></b><small class="cl"></small>`;document.querySelector(".stage").appendChild(el)}return el}
 function cratePlace(){const el=crateEl(),l=el.querySelector(".cl");if(l)l.textContent=`열릴 확률 ${Math.round(crateP()*100)}%`}
-addEventListener("resize",()=>setTimeout(cratePlace,50));
 function crateState(st,txt){cratePlace();const el=crateEl();el.className="crateBox"+(st?" "+st:"");
   if(txt==="fail"){const pf=el.querySelector(".cpf");pf.classList.remove("go");void pf.offsetWidth;pf.classList.add("go");txt="아깝다!"}
   const b=el.querySelector(".cb");b.textContent=txt||"";if(txt){b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop")}}
-setTimeout(cratePlace,60);
+// supply crate removed from play (2026-10-28); code kept dormant
 
 // ---------- sound: every effect and the music are synthesized with Web Audio (no audio files) ----------
 const SND={ctx:null,master:null,sfx:null,music:null,on:true,last:{},recent:[],bgm:null};
