@@ -250,6 +250,19 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;font-family:var(--mono);font-vari
 .reward button{background:center/100% 100% no-repeat;border:0;aspect-ratio:300/402;padding:0 6px 13%;justify-content:flex-end;box-shadow:none}
 .reward button b{font-family:var(--body);font-weight:700;font-size:14px;color:#213365}
 .reward button:active{transform:translateY(3px)}
+.bgPot{display:flex;align-items:center;justify-content:center;gap:10px;margin:6px 0 2px}
+.bgPot img{width:44px;height:44px}.bgPot b{font-size:46px;font-weight:900;color:#e8a400;font-variant-numeric:tabular-nums;min-width:3ch;text-align:left}
+.bgPot.lose b{color:#9aa3b8}
+.rolling .bgPot b{color:#ff6a3d}
+.won .bgPot{animation:ccHit .5s ease-out}
+.bgMsg{margin:4px 0 12px;text-align:center}
+.bgBtns{display:flex;gap:10px}
+.bgBtns button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;border-radius:14px;border:0;font:inherit;font-size:18px;font-weight:900;cursor:pointer;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.bgBtns button small{font-size:12.5px;font-weight:700;opacity:.92}
+.bgTake{background:linear-gradient(#4f8bff,#2f5fd6)}
+.bgDbl{background:linear-gradient(#ffb43a,#f07a12)}
+.rolling .bgBtns button{opacity:.5;pointer-events:none}
+.bgBtns button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
 .gfx{position:fixed;z-index:30;width:120px;height:120px;margin:-60px 0 0 -60px;background-size:480px 120px;background-repeat:no-repeat;pointer-events:none;animation:gfx .3s steps(4) forwards}
 @keyframes gfx{from{background-position:0 0}to{background-position:-480px 0}}
 .lotto{background:url(ui/controls/btn_lotto_normal.svg) center/contain no-repeat;border:0;box-shadow:none;color:#43310D;border-radius:0}
@@ -301,6 +314,27 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 <style>/* lotto slot machine */
 .slotm{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;gap:8px;padding:10px 12px;background:linear-gradient(#3a5bb0,#2a438a);border:3px solid #FFC23A;border-radius:18px;box-shadow:0 8px 24px rgba(20,30,70,.45);transform:translate(-50%,30px) scale(.9);opacity:0;pointer-events:none;transition:transform .18s,opacity .18s}
 @media (min-width:701px){.slotm{bottom:120px}}
+.crateInfo{position:fixed;left:50%;top:calc(96px + env(safe-area-inset-top,0px));z-index:41;width:min(330px,calc(100vw - 32px));padding:12px 14px 10px;background:linear-gradient(#3a5bb0,#2a438a);border:3px solid #FFC23A;border-radius:18px;box-shadow:0 8px 24px rgba(20,30,70,.45);color:#fff;transform:translate(-50%,-16px) scale(.92);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s}
+.crateInfo.show{transform:translate(-50%,0) scale(1);opacity:1;pointer-events:auto}
+.crateInfo h4{margin:0 0 8px;display:flex;align-items:center;gap:8px;font-size:17px;line-height:1.25}
+.crateInfo h4 img{width:40px;height:40px;flex:none}
+.crateInfo h4 b{color:#FFD34F}
+.crateInfo ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr auto;gap:3px 10px;font-size:13.5px}
+.crateInfo li{display:contents}
+.crateInfo li span:last-child{text-align:right;font-variant-numeric:tabular-nums;color:#cfe0ff}
+.crateInfo li.rare span{color:#FFD34F;font-weight:700}
+.crateInfo p{margin:8px 0 0;font-size:12.5px;color:#cfe0ff;text-align:center}
+.crateInfo .cw{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.crateInfo .cc{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 2px 5px;border-radius:10px;background:#1d2f66;border:2px solid #3e5aa8;transition:transform .06s}
+.crateInfo .cc i{font-style:normal;height:24px;display:flex;align-items:center;font-size:18px;color:var(--g,#fff);font-weight:900;letter-spacing:-2px}
+.crateInfo .cc i img{width:22px;height:22px}
+.crateInfo .cc b{font-size:12.5px;color:var(--g,#fff)}
+.crateInfo .cc small{font-size:11px;color:#9fb4e8;font-variant-numeric:tabular-nums}
+.crateInfo .cc.on{background:#ffd34f;border-color:#fff;transform:scale(1.08)}
+.crateInfo .cc.on b,.crateInfo .cc.on i,.crateInfo .cc.on small{color:#3a2600}
+.crateInfo .cc.hit{animation:ccHit .5s ease-out 2;box-shadow:0 0 16px #ffd34f}
+@keyframes ccHit{50%{transform:scale(1.2)}}
+.crateInfo.jp{border-color:#fff;box-shadow:0 0 30px #ffd34f,0 8px 24px rgba(20,30,70,.45)}
 .slotm.show{transform:translate(-50%,0) scale(1);opacity:1}
 .slotm .reel{width:60px;height:60px;border-radius:12px;background:#fff;display:grid;place-items:center;overflow:hidden;box-shadow:inset 0 -4px 0 #d9e2f5}
 .slotm .reel img{width:46px;height:46px}
@@ -355,6 +389,19 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 .augReroll{border:0;background:none;padding:0;cursor:pointer;width:min(46%,200px)}.augReroll img{width:100%;height:auto;display:block}
 .augReroll:disabled{filter:grayscale(1);opacity:.55;cursor:default}
 .augHint{margin:0;color:#dfe6ff;font-size:13px}
+.augSpin{display:none;gap:12px;justify-content:center}
+.augOv.spinning .augSpin{display:flex}.augOv.spinning .augCards,.augOv.spinning .augReroll,.augOv.spinning .augHint{display:none}
+.augSpin .tp{position:relative;width:min(96px,26vw);aspect-ratio:3/4;filter:brightness(.45) saturate(.6);transform:scale(.92);transition:transform .08s,filter .08s}
+.augSpin .tp img{width:100%;height:100%;display:block}
+.augSpin .tp b{position:absolute;left:0;right:0;top:42%;text-align:center;font-weight:900;font-size:min(20px,5.4vw);color:#26314f}
+.augSpin .tp.t0 b{color:#8a4a1c}.augSpin .tp.t1 b{color:#4a5c7a}.augSpin .tp.t2 b{color:#b07400}
+.augSpin .tp.on{filter:none;transform:scale(1.08)}
+.augSpin.done .tp:not(.on){opacity:.25}
+.augSpin.done .tp.on{transform:scale(1.22);animation:tierPop .5s ease-out}
+.augSpin.done.t2 .tp.on{filter:drop-shadow(0 0 16px #ffd34f)}.augSpin.done.t1 .tp.on{filter:drop-shadow(0 0 12px #cfe0ff)}.augSpin.done.t0 .tp.on{filter:drop-shadow(0 0 10px #e8a060)}
+@keyframes tierPop{0%{transform:scale(1.5)}100%{transform:scale(1.22)}}
+.augCard .tn{position:absolute;left:0;right:0;top:3.2%;text-align:center;font-style:normal;font-weight:900;font-size:calc(var(--cw)*.075);letter-spacing:.04em}
+.augCard.t0 .tn{color:#a0602a}.augCard.t1 .tn{color:#5a6e90}.augCard.t2 .tn{color:#c08400}
 .linePick .box{background:var(--panel);border-radius:14px;padding:18px;text-align:center;max-width:340px;width:100%}
 .linePick h2{font-size:20px;margin:0 0 12px}
 .linePick .lines{display:flex;gap:8px}.linePick .lines button{flex:1;border:0;border-radius:12px;background:var(--c);color:#fff;font-weight:900;font-size:15px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
@@ -362,7 +409,7 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 .augOwn{display:flex;align-items:center;gap:8px;margin:0 0 10px;font-size:13px}.augOwn>b{white-space:nowrap}
 .augOwn>div{display:flex;flex-wrap:wrap;gap:4px}
 .augOwn .ag{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:#eef2f7;border:2px solid #c3ccd8}
-.augOwn .ag.t1{border-color:#f0b43a;background:#fff6dc}.augOwn .ag.t2{border-color:#c77dff;background:linear-gradient(135deg,#ffe0f0,#e0f4ff)}
+.augOwn .ag.t0{border-color:#c47a3a;background:#fbeee2}.augOwn .ag.t1{border-color:#8fa3c0;background:#eef3fa}.augOwn .ag.t2{border-color:#f0b43a;background:#fff6dc}
 .augOwn .ag img{width:24px;height:24px}
 </style>
 <style>
@@ -434,7 +481,7 @@ body{background:#243D83}
 }
 .augDet{display:flex;flex-direction:column;gap:8px}
 .augDet .ad{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.08);border:2px solid #9aa7bd;border-radius:12px;padding:8px}
-.augDet .ad.t1{border-color:#f0b43a}.augDet .ad.t2{border-color:#c77dff}
+.augDet .ad.t0{border-color:#c47a3a}.augDet .ad.t1{border-color:#8fa3c0}.augDet .ad.t2{border-color:#f0b43a}
 .augDet .ad img{width:40px;height:40px;flex:none}.augDet .ad b{display:block;font-size:14px}.augDet .ad small{color:var(--muted);font-size:12px}
 </style>
 <style>@media (max-width:700px){#augCard>h3{display:none}}</style>
@@ -494,7 +541,7 @@ body.menuHold .stage::before{content:"일시정지";position:absolute;left:50%;t
           <li><img alt="" src="ui/icons/icon_guide_draw.svg">빈 칸을 눌러 캐릭터 뽑기</li>
           <li><img alt="" src="ui/icons/icon_guide_merge.svg">같은 캐릭터 2명을 합성</li>
           <li><img alt="" src="ui/icons/icon_guide_survive.svg">최대한 오래 버티기 (40웨이브 뒤 무한 모드)</li>
-          <li><img alt="" src="ui/aug/icons/pure.png">5웨이브마다 증강 1개 고르기</li>
+          <li><img alt="" src="ui/aug/icons/pure.png">5·15·25…웨이브에 증강 1개 고르기</li>
         </ol><button type="button" class="btn primary" data-close>닫기</button></div></div>
       <div class="homeModal" id="codexModal" hidden><div class="hm wide"><h2>도감</h2><div id="codexSlot"></div><button type="button" class="btn primary" data-close>닫기</button></div></div>
     </div>
@@ -748,7 +795,7 @@ function endWave(){
   const gem=(i+1)%10===0?30:10;S.gas+=gem;extra=` · 보석 +${gem}`+extra;
   sfx("clear");bgmMode("calm");S.ore+=ore;S.fx.push({k:"txt",t:`+${ore} 골드`,x:COLS*WT/2,y:ROWS*WT*.42,c:"#ffd34f",sc:"#5a3a00",big:true,life:30,max:30});log("Wave "+(i+1)+" 종료 · 골드 +"+ore+extra+" · 준비 "+cd+"초","good");
   S.wi++;S.phase="prep";S.cd=Math.round(cd*24*PREP_K);
-  if(S.wi%5===0)augOffer();
+  if(S.wi%10===5)augOffer(); // waves 5, 15, 25…
 }
 function leak(m){
   m.dead=true;
@@ -1044,6 +1091,18 @@ function mission(i){
   S.mis[i]=S.wi+MIS_WAVES;const d=MISSIONS[i];spawn(d,d.hp,"mission");
   log(`${i+1}단계 도전 미션 시작 · ${d.name} HP ${fmt(d.hp)}. 막지 못하면 목숨 -10.`,"hi");renderPanels();
 }
+// boss reward: 200 gold per boss so far (wave 10: 200, wave 20: 400…), take it or try "x2" again and again. each try is half as likely: 50% → 25% → 12.5%… a miss gives 0
+const BOSS_GOLD=200;let bossSpin=false;
+const pcTxt=p=>{const v=p*100;return (v>=10?Math.round(v):v>=1?+v.toFixed(1):+v.toFixed(2))+"%"};
+function bossGambleHTML(bx,msg){
+  bx.innerHTML=`<h2>보스 처치 보상</h2><div class="bgPot"><img alt="" src="ui/icons/icon_gold.svg"><b id="bgAmt">${S.bPot}</b></div><p class="bgMsg">${msg||"받거나, 2배에 도전해요. 실패하면 0골드!"}</p>
+  <div class="bgBtns"><button type="button" class="bgTake" id="bgTake">받기<small>골드 +${S.bPot}</small></button><button type="button" class="bgDbl" id="bgDbl">2배 뽑기<small>${S.bPot*2} · 성공 ${pcTxt(S.bP)}</small></button></div>`;
+  $("bgTake").onclick=()=>{if(bossSpin)return;S.ore+=S.bPot;log(`보스 보상 골드 +${S.bPot}`,"good");sfx("coin");bossDone()};
+  $("bgDbl").onclick=()=>{if(bossSpin)return;bossSpin=true;const win=Math.random()<S.bP,el=$("bgAmt"),a=S.bPot,b=a*2;let n=0;bx.classList.add("rolling");
+    const t=setInterval(()=>{el.textContent=n%2?b:0;sfx("tick");if(++n<14)return;clearInterval(t);bx.classList.remove("rolling");bossSpin=false;
+      if(win){S.bPot=b;S.bP/=2;sfx("jackpot");bossGambleHTML(bx,`성공! ${b}골드. 다음 2배는 ${pcTxt(S.bP)}`);bx.classList.add("won");setTimeout(()=>bx.classList.remove("won"),600)}
+      else{sfx("miss");bx.innerHTML=`<h2>보스 처치 보상</h2><div class="bgPot lose"><img alt="" src="ui/icons/icon_gold.svg"><b>0</b></div><p class="bgMsg">꽝! ${a}골드가 날아갔어요…</p><div class="bgBtns"><button type="button" class="bgTake" id="bgOk">확인</button></div>`;log(`보스 보상 2배 뽑기 실패 (${a}골드 잃음)`,"warn");$("bgOk").onclick=bossDone}},70)}}
+function bossDone(){S.tok.boss=Math.max(0,S.tok.boss-1);S.bPot=null;renderPanels();showReward()}
 function useBoss(kind){
   if(S.tok.boss<1)return;S.tok.boss--;
   if(kind==="ore"){S.ore+=400;log("골드 +400","good")}else if(kind==="gas"){S.gas+=200;log("보석 +200","good")}else{S.tok.rare++}
@@ -1059,8 +1118,7 @@ const NM=u=>TOWERS[UID(u)].short;
 
 function showReward(){
   const ov=$("rewardOv"),bx=$("rewardBox"),tk=S.tok;
-  if(tk.boss>0){bx.innerHTML=`<h2>보스 처치 보상</h2><p>하나를 고르세요.</p><div class="reward"><button type="button" data-k="ore" style="background-image:url(ui/cards/reward_card_gold.svg)"><b>골드 +400</b></button><button type="button" data-k="gas" style="background-image:url(ui/cards/reward_card_gem.svg)"><b>보석 +200</b></button><button type="button" data-k="rare" style="background-image:url(ui/cards/reward_card_elite.svg)"><b>정예 고르기</b></button></div>`;
-    bx.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>useBoss(b.dataset.k))}
+  if(tk.boss>0){if(S.bPot==null){S.bPot=BOSS_GOLD*Math.max(1,Math.floor((S.wi+1)/10));S.bP=.5}bossGambleHTML(bx)}
   else if(tk.rare>0){bx.innerHTML=`<h2>정예 고르기</h2><p>다음에 빈 칸을 누르면 이 캐릭터가 나와요.</p><div class="pick">${byGrade(2).map(t=>`<button type="button" data-t="${t.i}"><img alt="" src="${ICON[t.i]}">${t.short}</button>`).join("")}</div>`;
     bx.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>choose(2,+b.dataset.t))}
   else{ov.hidden=true;rewardOpen=false;return}
@@ -1503,7 +1561,7 @@ requestAnimationFrame(loop);
 
 // ---------- augments: every 5 cleared waves, pick 1 of 3 (silver 60% / gold 32% / prism 8%) ----------
 const AUGS=[
-  // tier 0 = silver, 1 = gold, 2 = prism
+  // tier 0 = bronze, 1 = silver, 2 = gold (by measured strength). one tier is rolled per offer, all 3 cards share it
   {id:"melee_pow",tier:1,name:"근접 · 강타",desc:"근접 공격력 +20%"},
   {id:"melee_spd",tier:1,name:"근접 · 연타",desc:"근접 공속 +25%"},
   {id:"shot_pow",tier:1,name:"사격 · 철갑탄",desc:"사격 공격력 +20%"},
@@ -1549,7 +1607,7 @@ const AUGS=[
   {id:"fate_dice",tier:2,name:"운명의 주사위",desc:"판의 캐릭터를 모두 다른 캐릭터로, 3명은 한 등급 위"},
 ];
 const AUG=Object.fromEntries(AUGS.map(a=>[a.id,a]));
-const AUG_TIER=["silver","gold","prism"],AUG_TW=[.6,.32,.08];
+const AUG_TIER=["bronze","silver","gold"],AUG_TNAME=["브론즈","실버","골드"],AUG_TW=[.55,.33,.12];
 const has=id=>!!(S&&S.aug&&S.aug.includes(id));
 const AUG_IMG={};for(const a of AUGS){const im=new Image();im.src=`ui/aug/icons/${a.id}.png`;AUG_IMG[a.id]=im}
 // props art
@@ -1626,15 +1684,18 @@ function drawPropsTop(c,time){
 
 // ----- offer / pick -----
 let augOpen=false,pickOpen=false;
-function augRoll(n,excl){
+function augTierRoll(){const r=Math.random();return r<AUG_TW[2]?2:r<AUG_TW[2]+AUG_TW[1]?1:0}
+function augRoll(n,excl,tier){
+  if(tier==null)tier=augTierRoll();
   const pool=AUGS.filter(a=>!S.aug.includes(a.id)&&!excl.includes(a.id));const out=[];
-  for(let i=0;i<n&&pool.length;i++){let r=Math.random(),tier=r<AUG_TW[2]?2:r<AUG_TW[2]+AUG_TW[1]?1:0;
-    let cand=pool.filter(a=>a.tier===tier&&!out.includes(a));for(let k=1;!cand.length&&k<3;k++)cand=pool.filter(a=>a.tier===(tier+k)%3&&!out.includes(a));
+  for(let i=0;i<n&&pool.length;i++){
+    let cand=pool.filter(a=>a.tier===tier&&!out.includes(a));for(let k=1;!cand.length&&k<3;k++)cand=pool.filter(a=>a.tier===tier-k&&!out.includes(a)); // tier ran dry: next lower tier
+    for(let k=1;!cand.length&&k<3;k++)cand=pool.filter(a=>a.tier===tier+k&&!out.includes(a));
     if(!cand.length)break;out.push(pick(cand))}
   return out}
 function augOffer(){
-  const ch=augRoll(3,[]);if(!ch.length)return;
-  S.augOffer={ch,rerolled:false};
+  const tier=augTierRoll(),ch=augRoll(3,[],tier);if(!ch.length)return;
+  S.augOffer={ch,tier,rerolled:false,spun:false};
   if(window.AUG_AUTO){augTake(window.AUG_AUTO(ch).id);return}
   S.augPending=true}
 function augTake(id){
@@ -1653,13 +1714,25 @@ function augTake(id){
 }
 function ensureAugDom(){
   if($("augOv"))return;const ov=document.createElement("div");ov.id="augOv";ov.className="augOv";ov.hidden=true;
-  ov.innerHTML=`<img class="augBanner" alt="증강 선택" src="ui/aug/banner_augment.png"><div class="augCards" id="augCards"></div><button type="button" class="augReroll" id="augReroll" aria-label="다시 뽑기, 보석 50"><img alt="" src="ui/aug/btn_reroll.png"></button><p class="augHint">하나를 골라요</p>`;
+  ov.innerHTML=`<img class="augBanner" alt="증강 선택" src="ui/aug/banner_augment.png"><div class="augSpin" id="augSpin">${AUG_TNAME.map((n,i)=>`<div class="tp t${i}"><img alt="" src="ui/aug/aug_card_${AUG_TIER[i]}.png"><b>${n}</b></div>`).join("")}</div><div class="augCards" id="augCards"></div><button type="button" class="augReroll" id="augReroll" aria-label="다시 뽑기, 보석 50"><img alt="" src="ui/aug/btn_reroll.png"></button><p class="augHint">하나를 골라요</p>`;
   document.querySelector(".stage").appendChild(ov);
-  $("augReroll").onclick=()=>{const o=S.augOffer;if(!o||o.rerolled||S.gas<50)return;S.gas-=50;o.rerolled=true;o.ch=augRoll(3,o.ch.map(a=>a.id));if(!o.ch.length)o.ch=augRoll(3,[]);showAug(true)};
+  $("augReroll").onclick=()=>{const o=S.augOffer;if(!o||o.rerolled||S.gas<50)return;S.gas-=50;o.rerolled=true;o.ch=augRoll(3,o.ch.map(a=>a.id),o.tier);if(!o.ch.length)o.ch=augRoll(3,[],o.tier);showAug(true)};
 }
-function cardHTML(a,i){return `<button type="button" class="augCard t${a.tier}" data-a="${a.id}" style="--d:${i*140}ms"><span class="flip"><span class="face back"><img alt="" src="ui/aug/aug_card_back.png"></span><span class="face front">${a.tier===2?`<img class="glow" alt="" src="ui/aug/aug_prism_glow.png">`:""}<img class="frame" alt="" src="ui/aug/aug_card_${AUG_TIER[a.tier]}.png"><img class="ic" alt="" src="ui/aug/icons/${a.id}.png"><b class="nm">${a.name}</b><small class="ds">${a.desc}</small></span></span></button>`}
+function cardHTML(a,i){return `<button type="button" class="augCard t${a.tier}" data-a="${a.id}" style="--d:${i*140}ms"><span class="flip"><span class="face back"><img alt="" src="ui/aug/aug_card_back.png"></span><span class="face front">${a.tier===2?`<img class="glow" alt="" src="ui/aug/aug_prism_glow.png">`:""}<img class="frame" alt="" src="ui/aug/aug_card_${AUG_TIER[a.tier]}.png"><img class="ic" alt="" src="ui/aug/icons/${a.id}.png"><b class="nm">${a.name}</b><small class="ds">${a.desc}</small><i class="tn">${AUG_TNAME[a.tier]}</i></span></span></button>`}
+// before the cards: bronze / silver / gold light up in turn, slow down and stop on this offer's tier
+function augSpin(o,done){
+  const ov=$("augOv"),sp=$("augSpin"),tps=[...sp.children];ov.classList.add("spinning");ov.hidden=false;sp.className="augSpin";
+  // step i lights plate i%3; last step lands on o.tier
+  const N=(()=>{let n=10+Math.floor(Math.random()*4);while(n%3!==o.tier)n++;return n})();let i=0;
+  const step=()=>{tps.forEach((p,k)=>p.classList.toggle("on",k===i%3));sfx("tick");
+    if(i>=N){sp.classList.add("done","t"+o.tier);sfx(o.tier===2?"jackpot":o.tier===1?"win":"pick");
+      if(o.tier===2){const f=document.createElement("div");f.className="miracleFx";document.body.appendChild(f);setTimeout(()=>f.remove(),1600)}
+      setTimeout(()=>{ov.classList.remove("spinning");done()},o.tier===2?1100:800);return}
+    i++;const left=N-i;setTimeout(step,left>6?70:left>3?130:left>1?220:340)};
+  step()}
 function showAug(again){
   ensureAugDom();const o=S.augOffer;if(!o)return;augOpen=true;
+  if(!o.spun&&o.tier!=null){o.spun=true;augSpin(o,()=>showAug(true));return}
   $("augCards").innerHTML=o.ch.map(cardHTML).join("");
   const rr=$("augReroll");rr.disabled=o.rerolled||S.gas<50;
   sfx("flip");$("augOv").hidden=false;requestAnimationFrame(()=>requestAnimationFrame(()=>$("augCards").classList.add("in")));
@@ -1680,7 +1753,7 @@ function augList(){if(!S||!S.aug||!S.aug.length)return"";
 
 window.__rtd={get S(){return S},start,tick,TOWERS,WAVES,SLOTS,build,merge,addTower,spawn,augTake,augOffer,showAug,AUGS};
 
-function augDetail(){if(!S||!S.aug.length)return `<p class="hint">아직 고른 증강이 없어요. 5웨이브마다 하나씩 골라요.</p>`;
+function augDetail(){if(!S||!S.aug.length)return `<p class="hint">아직 고른 증강이 없어요. 5·15·25…웨이브마다 하나씩 골라요.</p>`;
   return `<div class="augDet">${S.aug.map(id=>`<div class="ad t${AUG[id].tier}"><img alt="" src="ui/aug/icons/${id}.png"><div><b>${AUG[id].name}</b><small>${AUG[id].desc}</small></div></div>`).join("")}</div>`}
 
 // ---------- supply crate: each wave has a 3% chance; a crate parachutes onto the board during the wave, tap it to open ----------
@@ -1694,8 +1767,16 @@ function crateOddsHTML(){const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);
   return `<div class="oddsH">보급상자 <small>웨이브마다 ${Math.round((has("supply_call")?CRATE_P_UP:CRATE_P)*100)}% 확률로 떨어짐${has("supply_vip")?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${["hero","legend","frenzy"].includes(o.k)?"hero":""}"><td>${CRATE_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table>`}
 function crateRoll(){if(Math.random()<(has("supply_call")?CRATE_P_UP:CRATE_P)){S.crateQ=(S.crateQ||0)+1;S.crateWait=Math.round(24*(3+Math.random()*10))}} // lands 3~13s into the wave
 function crateDrop(){
-  const free=SLOTS.filter(s=>!s.tower),sl=pick(free.length?free:SLOTS);
-  S.crates=S.crates||[];S.crates.push({x:sl.x,y:sl.y,t:0,fall:36});sfx("flip");banner("보급상자 투하!","#ffd34f");log("보급상자가 떨어졌어요! 눌러서 열어요","good")}
+  const cr=S.crates||[],free=SLOTS.filter(s=>!s.tower&&!cr.some(o=>o.x===s.x&&o.y===s.y)),sl=pick(free.length?free:SLOTS);
+  S.crates=S.crates||[];S.crates.push({x:sl.x,y:sl.y,t:0,fall:36});sfx("flip");log("보급상자가 도착했어요! 눌러서 열어요","good");crateInfo()}
+// when a crate arrives: say how rare it was and what can be inside
+let crateInfoHide=0;
+function crateInfo(){
+  if(window.FAST_LOTTO||($("crateInfo")&&$("crateInfo").classList.contains("spin")))return;let el=$("crateInfo");if(!el){el=document.createElement("div");el.id="crateInfo";el.className="crateInfo";document.body.appendChild(el)}el.onclick=()=>el.classList.remove("show");el.classList.remove("jp","won","spin");
+  const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0),pc=w=>{const v=w/tot*100;return (v>=1?Math.round(v):v.toFixed(1))+"%"};
+  const P=Math.round((has("supply_call")?CRATE_P_UP:CRATE_P)*100),SHORT={gold:"골드",gem:"보석",tix:"무료 복권 3장",elite:"정예 캐릭터",hero:"영웅 캐릭터",frenzy:"광폭 20초 (공격·공속 1.5배)",upg:"모든 업글 +1",legend:"전설 캐릭터"};
+  el.innerHTML=`<h4><img alt="" src="ui/crate/crate_fall.png"><span><b>${P}%</b> 확률로 보급상자가 도착했어요!</span></h4><ul>${pool.map(o=>`<li class="${["hero","legend","frenzy","upg"].includes(o.k)?"rare":""}"><span>${SHORT[o.k]}</span><span>${pc(o.w)}</span></li>`).join("")}</ul><p>상자를 눌러서 열어요</p>`;
+  el.classList.add("show");clearTimeout(crateInfoHide);crateInfoHide=setTimeout(()=>el.classList.remove("show"),5000)}
 function crateTick(){
   if(S.cBuff>0)S.cBuff--;
   if(S.crateWait>0)S.crateWait--;
@@ -1704,6 +1785,10 @@ function crateTick(){
 function crateOpen(c){
   S.crates=S.crates.filter(o=>o!==c);
   const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);let r=Math.random()*tot,o=pool[0];for(const q of pool){if((r-=q.w)<0){o=q;break}}
+  S.fx.push({k:"pop",x:c.x,y:c.y,r:56,c:"#ffd34f",life:16,max:16});
+  if(window.FAST_LOTTO){crateGive(o);return}
+  crateWheel(o.k,()=>crateGive(o))}
+function crateGive(o){
   const w=S.wi+1,vip=has("supply_vip")?2:1,pr={k:o.k};let txt,rare=false;
   if(o.k==="gold"){pr.v=(200+15*w)*vip;S.ore+=pr.v;txt=`골드 +${pr.v}`}
   else if(o.k==="gem"){pr.v=(100+5*w)*vip;S.gas+=pr.v;txt=`보석 +${pr.v}`}
@@ -1711,9 +1796,26 @@ function crateOpen(c){
   else if(o.k==="frenzy"){S.cBuff=24*20;applyAuras();txt="광폭! 20초간 공격력·공속 1.5배";rare=true}
   else if(o.k==="upg"){for(const k in S.upg)if(S.upg[k]<255)S.upg[k]++;txt="모든 업글 +1";rare=true}
   else{const g={elite:2,hero:3,legend:4}[o.k];pr.type=pick(byGrade(g)).i;placePrize(pr.type);txt=`${GRADE[g]} ${TOWERS[pr.type].name}`;rare=g>=3}
-  S.fx.push({k:"pop",x:c.x,y:c.y,r:56,c:"#ffd34f",life:16,max:16});
   log(`보급상자: ${txt}`,"good");if(rare)banner(o.k==="legend"?"보급 대박! 전설":"보급 대박!",o.k==="legend"?GCOL[4]:GCOL[3]);
-  crateShow(pr,txt,rare);renderPanels()}
+  if(!window.FAST_LOTTO){const el=$("crateInfo");if(el){el.querySelector("h4 span").textContent="🎁 "+txt;el.classList.add(rare?"jp":"won");sfx(rare?"jackpot":"win");
+    if(o.k==="legend"){const f=document.createElement("div");f.className="miracleFx";document.body.appendChild(f);setTimeout(()=>f.remove(),1600)}
+    clearTimeout(crateInfoHide);crateInfoHide=setTimeout(()=>el.classList.remove("show","jp","won"),rare?2400:1700)}}
+  renderPanels()}
+// roulette: the 8 prizes sit in a ring, the light runs around, slows down and stops on the prize
+const CRATE_ICON={gold:`<img alt="" src="ui/icons/icon_gold.svg">`,gem:`<img alt="" src="ui/icons/icon_gem.svg">`,tix:"🎫",elite:"★",hero:"★★",frenzy:"🔥",upg:"⬆",legend:"★★★"};
+const CRATE_SHORT={gold:"골드",gem:"보석",tix:"복권 3장",elite:"정예",hero:"영웅",frenzy:"광폭",upg:"업글 +1",legend:"전설"};
+function crateWheel(k,done){
+  let el=$("crateInfo");if(!el){el=document.createElement("div");el.id="crateInfo";el.className="crateInfo";document.body.appendChild(el)}
+  el.onclick=null;clearTimeout(crateInfoHide);el.classList.remove("jp","won");
+  const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0),RING=[0,1,2,3,7,6,5,4]; // grid 4x2, walk around the edge
+  const col={elite:GCOL[2],hero:GCOL[3],legend:GCOL[4]};
+  el.innerHTML=`<h4><img alt="" src="ui/crate/crate.png"><span>보급상자 여는 중…</span></h4><div class="cw">${pool.map(o=>`<div class="cc ${o.k}"${col[o.k]?` style="--g:${col[o.k]}"`:""}><i>${CRATE_ICON[o.k]}</i><b>${CRATE_SHORT[o.k]}</b><small>${Math.round(o.w/tot*1000)/10}%</small></div>`).join("")}</div>`;
+  el.classList.add("show","spin");const cells=[...el.querySelectorAll(".cc")],target=pool.findIndex(o=>o.k===k),tpos=RING.indexOf(target);
+  let N=16+Math.floor(Math.random()*8);while(N%8!==tpos)N++;let i=0;
+  const step=()=>{cells.forEach(c=>c.classList.remove("on"));cells[RING[i%8]].classList.add("on");sfx("tick");
+    if(i>=N){el.classList.remove("spin");cells[target].classList.add("hit");setTimeout(done,250);return}
+    i++;const left=N-i;setTimeout(step,left>10?55:left>5?95:left>2?170:left>0?280:0)};
+  step()}
 let crateHide=0;
 function crateShow(pr,txt,rare){
   if(window.FAST_LOTTO)return;let box=$("slotM");if(!box){box=document.createElement("div");box.id="slotM";box.className="slotm";document.body.appendChild(box)}
