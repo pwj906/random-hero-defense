@@ -730,7 +730,7 @@ function waveDef(i){
   return S.gen[i]=d}
 function startWave(){
   const def=waveDef(S.wi);S.phase="wave";themeLoad(themeOf(S.wi+5));if(themeOf(S.wi)!==themeI)setTheme(themeOf(S.wi),true);sfx(def.boss?"boss":"wave");bgmMode(def.boss?"boss":"calm");
-  S.spawnLeft=def.boss?1:30;S.spawnT=0;
+  S.spawnLeft=def.boss?1:30;S.spawnT=0;crateRoll();
   banner((def.boss===2?"HELL BOSS · ":def.boss?"BOSS · ":S.wi>=30&&S.wi<40?"HELL MODE · ":"")+"WAVE "+(S.wi+1),def.boss?"var(--life)":"var(--fg)");
   log("Wave "+(S.wi+1)+" · "+def.name+" (HP "+fmt(waveHP(S.wi,def))+(def.ar?", 방어 "+def.ar:"")+")","hi");
 }
@@ -841,6 +841,7 @@ function tick(){
   for(const m of S.mons){if(m.dead)continue;if(m.frozen>0){m.frozen--;continue}m.d+=m.spd*SPEED_K*(m.slowT>0?1-m.slowV:1)*(1-S.gSlow)*(S.aug.includes("time_warp")?.72:1);if(m.slowT>0)m.slowT--;if(m.curseT>0)m.curseT--;if(m.acidT>0&&--m.acidT===0)m.acid=0;
     if(m.d>=PATHLEN){leak(m);continue}const p=pathAt(m.d);m.x=p[0];m.y=p[1];m.a=p[2]}
   if(S.frame%6===0)applyAuras();
+  crateTick();
   for(const tw of S.towers){const t=TOWERS[tw.type];
     if(t.aura&&(tw.acool=(tw.acool||1)-1)<=0){tw.acool=72;ANIM.impact(t,tw.x,tw.y,t.aura.r>9?7:(t.aura.r*2+1)*2/1.5)} // buff ring every 3s; magic also attacks
     let m=tw.target;if(!m||m.dead||!inRange(t,tw,m)){m=null;let best=-1;for(const o of S.mons){if(!o.dead&&o.d>best&&inRange(t,tw,o)){best=o.d;m=o}}tw.target=m}
@@ -1273,6 +1274,7 @@ function render(){
   drawPropsFloor(c,time);
   for(const m of S.mons)drawMon(c,m,time);
   drawPropsTop(c,time);
+  drawCrate(c,time);
   // status icons: slowed (storm) and cursed monsters, buffed characters
   const si=(k,x,y,z)=>{const im=STAT_IMG[k];if(im&&im.complete&&im.naturalWidth)c.drawImage(im,x-z/2,y-z/2,z,z)};
   for(const m of S.mons){let n=0;const z=TS*.5,y=m.y*K-monR(m)*K-TS*.55;if(m.slowT>0)si("status_slow",m.x*K-z*.55+n++*z*1.1,y,z);if(m.curseT>0)si("status_curse",m.x*K-z*.55+n++*z*1.1,y,z)}
@@ -1391,7 +1393,7 @@ function renderPanels(){
   {const fr=S.freeTix>0,dis=(!fr&&S.ore<100)||lottoBusy;$("lottoBtn").disabled=dis;$("navLotto").disabled=dis;const lb=fr?`무료 ${S.freeTix}장`:"골드 100";$("lottoBtn").querySelector("span").textContent=lb;$("navLotto").querySelector("small").textContent=lb}
   {const n=mergeablePairs();$("mergeAll").disabled=!n||!running;$("mergeAllN").textContent=n;$("navMerge").disabled=!n||!running;$("navMergeN").textContent=n;$("navMergeN").hidden=!n}
   if(rail.dataset.view==="sel"&&!S.sel&&viewType==null)closeSheet();
-  {const el=$("lottoOdds");if(el)el.innerHTML=lottoOddsHTML()}
+  {const el=$("lottoOdds");if(el)el.innerHTML=lottoOddsHTML()+crateOddsHTML()}
   // codex
   const oc={};for(const o of S.towers)oc[o.type]=(oc[o.type]||0)+1;
   document.querySelectorAll("#codex .ci").forEach(b=>{const n=oc[+b.dataset.t]||0;b.classList.toggle("own",n>0);b.querySelector(".cnt").textContent=n?n:""});
@@ -1518,7 +1520,6 @@ const AUGS=[
   {id:"trinity",tier:1,name:"삼위일체",desc:"세 계열이 각각 3명 이상이면 공격력·공속 +10%"},
   {id:"trap_frost",tier:1,name:"서리 함정",desc:"길 위 함정 3개. 밟은 적 2초간 40% 느려짐"},
   {id:"trap_spike",tier:1,name:"가시 덫",desc:"길 위 덫 3개. 밟을 때 최대 체력 4% 피해"},
-  {id:"tower_bolt",tier:1,name:"낙뢰 탑",desc:"3초마다 무작위 적 3명에게 번개, 최대 체력 6% 피해"},
   {id:"totem_curse",tier:1,name:"저주의 토템",desc:"토템 주변 2칸 안 적이 받는 피해 +15%"},
   {id:"ward_break",tier:1,name:"방어 파쇄 결계",desc:"길 3칸을 지난 적은 5초간 방어력 0, 받는 피해 +30%"},
   {id:"time_warp",tier:2,name:"시간 왜곡",desc:"모든 적이 영구히 28% 느려짐"},
@@ -1542,6 +1543,9 @@ const AUGS=[
   {id:"last_stand",tier:0,name:"마지막 저항",desc:"목숨 5 이하일 때 공속 +50%"},
   {id:"devil_deal",tier:2,name:"악마의 거래",desc:"목숨 -10, 대신 무작위 전설 1명"},
   {id:"all_in",tier:0,name:"올인",desc:"가진 골드를 전부 걸고 50% 확률로 3배, 실패하면 0"},
+  {id:"supply_call",tier:0,name:"보급 요청",desc:"보급상자가 떨어질 확률 3% → 10%"},
+  {id:"supply_vip",tier:1,name:"특급 보급",desc:"보급상자에서 영웅·전설·광폭 확률 3배, 골드·보석 2배"},
+  {id:"airdrop",tier:1,name:"공수 지원",desc:"지금 바로 보급상자 2개가 떨어짐"},
   {id:"fate_dice",tier:2,name:"운명의 주사위",desc:"판의 캐릭터를 모두 다른 캐릭터로, 3명은 한 등급 위"},
 ];
 const AUG=Object.fromEntries(AUGS.map(a=>[a.id,a]));
@@ -1563,6 +1567,7 @@ function augMult(tw){
   if(r==="Shot"){if(has("shot_pow"))p*=1.2;if(has("shot_spd"))s*=1.25}
   if(r==="Sniper"){if(has("snipe_pow"))p*=1.2;if(has("snipe_spd"))s*=1.25}
   if(t.area){if(has("area_pow"))p*=1.15;if(has("area_spd"))s*=1.2}else{if(has("single_pow"))p*=1.15;if(has("single_spd"))s*=1.2}
+  if(S.cBuff>0){p*=1.5;s*=1.5}
   if(S.pureOn){p*=1.25;s*=1.25}if(S.trinOn){p*=1.1;s*=1.1}
   if(has("last_stand")&&S.life<=5)s*=1.5;
   return[p,s]}
@@ -1637,6 +1642,7 @@ function augTake(id){
   if(id==="cash_now")S.ore+=400;
   if(id==="iron_wall")S.life+=10;
   if(id==="god_call")S.godCall=1;
+  if(id==="airdrop"){S.crateQ=(S.crateQ||0)+2}
   if(id==="devil_deal"){S.life=Math.max(1,S.life-10);placePrize(pick(byGrade(4)).i)}
   if(id==="all_in"){const bet=S.ore;if(Math.random()<.5){S.ore=bet*3;banner("올인 성공!","var(--ore)");log(`올인 성공! 골드 ${bet} → ${bet*3}`,"good");sfx("jackpot")}else{S.ore=0;banner("올인 실패…","var(--life)");log(`올인 실패… 골드 ${bet}을(를) 잃었어요`,"warn");sfx("miss")}}
   if(id==="fate_dice"){const tws=[...S.towers];for(const tw of tws){const t=TOWERS[tw.type],opts=byGrade(t.grade).filter(o=>o.i!==t.i);if(opts.length){const sl=tw.slot,cc=tw.conc;removeTower(tw);const nw=addTower(sl,pick(opts).i,false);if(cc)nw.conc=cc}}
@@ -1676,6 +1682,57 @@ window.__rtd={get S(){return S},start,tick,TOWERS,WAVES,SLOTS,build,merge,addTow
 
 function augDetail(){if(!S||!S.aug.length)return `<p class="hint">아직 고른 증강이 없어요. 5웨이브마다 하나씩 골라요.</p>`;
   return `<div class="augDet">${S.aug.map(id=>`<div class="ad t${AUG[id].tier}"><img alt="" src="ui/aug/icons/${id}.png"><div><b>${AUG[id].name}</b><small>${AUG[id].desc}</small></div></div>`).join("")}</div>`}
+
+// ---------- supply crate: each wave has a 3% chance; a crate parachutes onto the board during the wave, tap it to open ----------
+const CRATE_P=.03,CRATE_P_UP=.10,CRATE_AUTO=24*15; // unopened crates open by themselves after 15s
+const CRATE=[ // weights per 100
+  {k:"gold",w:30},{k:"gem",w:22},{k:"tix",w:12},{k:"elite",w:12},{k:"hero",w:8},{k:"frenzy",w:8},{k:"upg",w:5},{k:"legend",w:3}];
+const CRATE_NAME={gold:"골드 (200 + 웨이브×15)",gem:"보석 (100 + 웨이브×5)",tix:"무료 복권 3장",elite:"정예 캐릭터",hero:"영웅 캐릭터",frenzy:"광폭: 20초간 모두 공격력·공속 1.5배",upg:"모든 업글 +1",legend:"전설 캐릭터"};
+const CIMG={};for(const k of["crate","crate_fall"]){const im=new Image();im.src=`ui/crate/${k}.png`;CIMG[k]=im}
+function cratePool(){return CRATE.map(o=>has("supply_vip")&&["hero","legend","frenzy"].includes(o.k)?{...o,w:o.w*3}:o)}
+function crateOddsHTML(){const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);const pc=w=>{const v=w/tot*100;return v>=1?v.toFixed(1)+"%":v.toFixed(2)+"%"};
+  return `<div class="oddsH">보급상자 <small>웨이브마다 ${Math.round((has("supply_call")?CRATE_P_UP:CRATE_P)*100)}% 확률로 떨어짐${has("supply_vip")?" · 증강 적용":""}</small></div><table class="odds">${pool.map(o=>`<tr class="${["hero","legend","frenzy"].includes(o.k)?"hero":""}"><td>${CRATE_NAME[o.k]}</td><td>${pc(o.w)}</td></tr>`).join("")}</table>`}
+function crateRoll(){if(Math.random()<(has("supply_call")?CRATE_P_UP:CRATE_P)){S.crateQ=(S.crateQ||0)+1;S.crateWait=Math.round(24*(3+Math.random()*10))}} // lands 3~13s into the wave
+function crateDrop(){
+  const free=SLOTS.filter(s=>!s.tower),sl=pick(free.length?free:SLOTS);
+  S.crates=S.crates||[];S.crates.push({x:sl.x,y:sl.y,t:0,fall:36});sfx("flip");banner("보급상자 투하!","#ffd34f");log("보급상자가 떨어졌어요! 눌러서 열어요","good")}
+function crateTick(){
+  if(S.cBuff>0)S.cBuff--;
+  if(S.crateWait>0)S.crateWait--;
+  else if(S.crateQ>0&&S.frame%30===0&&(S.crates||[]).length<3){S.crateQ--;crateDrop()}
+  if(!S.crates)return;for(const c of S.crates){c.t++;if(c.t>=c.fall+CRATE_AUTO)crateOpen(c)}}
+function crateOpen(c){
+  S.crates=S.crates.filter(o=>o!==c);
+  const pool=cratePool(),tot=pool.reduce((a,o)=>a+o.w,0);let r=Math.random()*tot,o=pool[0];for(const q of pool){if((r-=q.w)<0){o=q;break}}
+  const w=S.wi+1,vip=has("supply_vip")?2:1,pr={k:o.k};let txt,rare=false;
+  if(o.k==="gold"){pr.v=(200+15*w)*vip;S.ore+=pr.v;txt=`골드 +${pr.v}`}
+  else if(o.k==="gem"){pr.v=(100+5*w)*vip;S.gas+=pr.v;txt=`보석 +${pr.v}`}
+  else if(o.k==="tix"){S.freeTix=(S.freeTix||0)+3;txt="무료 복권 3장"}
+  else if(o.k==="frenzy"){S.cBuff=24*20;applyAuras();txt="광폭! 20초간 공격력·공속 1.5배";rare=true}
+  else if(o.k==="upg"){for(const k in S.upg)if(S.upg[k]<255)S.upg[k]++;txt="모든 업글 +1";rare=true}
+  else{const g={elite:2,hero:3,legend:4}[o.k];pr.type=pick(byGrade(g)).i;placePrize(pr.type);txt=`${GRADE[g]} ${TOWERS[pr.type].name}`;rare=g>=3}
+  S.fx.push({k:"pop",x:c.x,y:c.y,r:56,c:"#ffd34f",life:16,max:16});
+  log(`보급상자: ${txt}`,"good");if(rare)banner(o.k==="legend"?"보급 대박! 전설":"보급 대박!",o.k==="legend"?GCOL[4]:GCOL[3]);
+  crateShow(pr,txt,rare);renderPanels()}
+let crateHide=0;
+function crateShow(pr,txt,rare){
+  if(window.FAST_LOTTO)return;let box=$("slotM");if(!box){box=document.createElement("div");box.id="slotM";box.className="slotm";document.body.appendChild(box)}
+  const face=pr.type!=null?symHTML("char",pr.type):pr.k==="gold"?symHTML("gold"):pr.k==="gem"?symHTML("gem"):`<img alt="" src="ui/crate/crate.png">`;
+  box.innerHTML=`<div class="res"></div><div class="reel hit"><img alt="" src="ui/crate/crate.png"></div><div class="reel hit">${face}</div><div class="reel hit"><img alt="" src="ui/crate/crate.png"></div>`;
+  box.querySelector(".res").textContent="보급상자 · "+txt;box.className="slotm show "+(rare?"jackpot":"win");sfx(rare?"jackpot":"win");
+  if(pr.k==="legend"){const f=document.createElement("div");f.className="miracleFx";document.body.appendChild(f);setTimeout(()=>f.remove(),1600)}
+  clearTimeout(crateHide);clearTimeout(lottoHide);crateHide=setTimeout(()=>{box.className="slotm"},rare?1800:1100)}
+function drawCrate(c,time){
+  if(!S.crates)return;for(const o of S.crates){const z=TS*1.5,f=Math.min(1,o.t/o.fall),x=o.x*K,y=o.y*K-(1-f)*(1-f)*TS*6;
+    if(f<1){if(ok(CIMG.crate_fall))c.drawImage(CIMG.crate_fall,x-z/2+Math.sin(o.t*.25)*TS*.15,y-z*.75,z,z);continue}
+    const left=1-(o.t-o.fall)/CRATE_AUTO,pul=1+Math.sin(time*.3)*.06;
+    c.save();c.globalAlpha=.5+.3*Math.sin(time*.3);c.beginPath();c.arc(x,y,TS*.85,0,7);c.fillStyle="#ffd34f";c.fill();c.restore();
+    if(ok(CIMG.crate))c.drawImage(CIMG.crate,x-z*pul/2,y-z*pul*.62,z*pul,z*pul);
+    c.beginPath();c.arc(x,y+TS*.62,TS*.16,0,7);c.lineWidth=TS*.08;c.strokeStyle="rgba(0,0,0,.4)";c.stroke();
+    c.beginPath();c.arc(x,y+TS*.62,TS*.16,-Math.PI/2,-Math.PI/2+Math.PI*2*left);c.strokeStyle="#fff";c.stroke();
+    c.font=`900 ${TS*.34}px sans-serif`;c.textAlign="center";c.lineWidth=TS*.09;c.strokeStyle="#4a2a00";c.strokeText("열기!",x,y-TS*.78);c.fillStyle="#ffe45a";c.fillText("열기!",x,y-TS*.78)}}
+cv.addEventListener("click",e=>{if(!S||!S.crates||!S.crates.length)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*cv.width/K,y=(e.clientY-r.top)/r.height*cv.height/K;
+  const o=S.crates.find(o=>o.t>=o.fall&&Math.hypot(o.x-x,o.y-y)<WT*1.3);if(o){e.stopImmediatePropagation();crateOpen(o)}},true);
 
 // ---------- sound: every effect and the music are synthesized with Web Audio (no audio files) ----------
 const SND={ctx:null,master:null,sfx:null,music:null,on:true,last:{},recent:[],bgm:null};
