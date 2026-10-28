@@ -578,6 +578,19 @@ table.odds tr.miss td{color:var(--muted)}table.odds tr.hero td,table.odds tr.leg
 body.menuHold .stage::before{content:"일시정지";position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:7;background:rgba(20,28,66,.82);color:#fff;font-weight:900;font-size:12px;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35);pointer-events:none}
 </style>
 <style>@media (max-width:700px){.mnav button{font-size:13.5px!important;font-weight:700}.mnav button img{width:26px;height:26px}}</style>
+<style>
+.tipBox{position:fixed;z-index:90;background:#fffdf4;color:#24305a;border:3px solid #ffc23a;border-radius:16px;padding:12px 14px 10px;box-shadow:0 10px 26px rgba(10,20,60,.45);animation:tipIn .25s ease-out}
+.tipBox[hidden]{display:none}
+.tipBox b{display:block;font-size:16px;font-weight:900;color:#b06a00;margin-bottom:3px}
+.tipBox p{margin:0 0 8px;font-size:14px;line-height:1.45;color:#24305a}
+.tipBox button{display:block;margin-left:auto;border:0;border-radius:10px;padding:7px 16px;background:#3d5bd9;color:#fff;font:inherit;font-weight:800;cursor:pointer}
+.tipBox .tArw{position:absolute;left:var(--ax,50%);width:14px;height:14px;background:#fffdf4;border:3px solid #ffc23a;transform:translateX(-50%) rotate(45deg);display:none}
+.tipBox.up .tArw{display:block;bottom:-9px;border-top:0;border-left:0}
+.tipBox.down .tArw{display:block;top:-9px;border-bottom:0;border-right:0}
+.tipHi{animation:tipGlow 1s ease-in-out infinite alternate!important;position:relative;z-index:21}
+@keyframes tipGlow{from{box-shadow:0 0 0 2px #ffd34f,0 0 8px 2px rgba(255,211,79,.5)}to{box-shadow:0 0 0 4px #ffd34f,0 0 20px 6px rgba(255,211,79,.9)}}
+@keyframes tipIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
 <div class="app">
   <header class="hud">
     <div class="brand"><img alt="랜덤 히어로 디펜스" src="ui/logo_horizontal.png"></div>
@@ -618,7 +631,7 @@ body.menuHold .stage::before{content:"일시정지";position:absolute;left:50%;t
           <li><img alt="" src="ui/icons/icon_guide_merge.svg">같은 캐릭터 2명을 합성</li>
           <li><img alt="" src="ui/icons/icon_guide_survive.svg">최대한 오래 버티기 (40웨이브 뒤 무한 모드)</li>
           <li><img alt="" src="ui/aug/icons/pure.png">5·15·25…웨이브에 증강 1개 고르기</li>
-        </ol><button type="button" class="btn primary" data-close>닫기</button></div></div>
+        </ol><button type="button" class="btn" id="tipReset">게임 중 도움말 다시 보기</button><button type="button" class="btn primary" data-close>닫기</button></div></div>
       <div class="homeModal" id="codexModal" hidden><div class="hm wide"><h2>도감</h2><div id="codexSlot"></div><button type="button" class="btn primary" data-close>닫기</button></div></div>
     </div>
     <div class="overlay" id="endOv" hidden>
@@ -2012,6 +2025,35 @@ function showResult(){
   $("resHero").innerHTML=top?`<img alt="${TOWERS[top.type].name}" src="${ICON[top.type]}"><small>${TOWERS[top.type].name}${top.conc?" ★"+(top.conc+1):""}</small>`:"";
 }
 showHome();
+
+// ---------- situational tips: each one shows once, the first time its situation comes up ----------
+const TIPS={
+  summon:{t:"캐릭터 뽑기",d:"빈 칸을 누르면 골드 100으로 캐릭터가 나와요. 길 옆 칸일수록 적을 잘 때려요.",at:()=>$("cv"),when:()=>S.towers.length===0&&S.frame>10},
+  merge:{t:"합성",d:"같은 캐릭터가 2명 모였어요! '합성'을 누르거나 캐릭터를 두 번 톡톡 누르면 한 등급 위 캐릭터로 합쳐져요.",at:()=>MQ.matches?$("navMerge"):$("mergeAll"),when:()=>S.towers.some(tw=>TOWERS[tw.type].grade<5&&sameCount(tw)>=2)},
+  aug:{t:"증강",d:"5·15·25…웨이브마다 증강을 하나 골라요. 브론즈 < 실버 < 골드 순으로 세요. 마음에 안 들면 보석 50으로 다시 뽑아요.",at:null,when:()=>augOpen&&$("augCards")&&$("augCards").classList.contains("in")},
+  upg:{t:"업글",d:"보석이 모였어요! '업글'에서 근접·사격·저격 계열과 단발·범위 공격을 강화해요. 가진 캐릭터 쪽을 올리면 좋아요.",at:()=>MQ.matches?document.querySelector('[data-sheet="pUpg"]'):$("pUpg"),when:()=>S.wi>=6&&S.phase==="prep"},
+  boss:{t:"보스 보상",d:"그냥 받거나 2배에 도전해요. 성공할 때마다 다음 확률은 절반, 실패하면 0골드예요.",at:null,when:()=>rewardOpen&&$("rewardBox").classList.contains("bossP")},
+};
+let tipSeen={};try{tipSeen=JSON.parse(localStorage.getItem("rhd_tips")||"{}")}catch(e){}
+let tipNow=null;
+function tipClose(){const el=$("tipBox");if(el)el.hidden=true;document.querySelectorAll(".tipHi").forEach(e=>e.classList.remove("tipHi"));tipNow=null}
+function tipShow(id){
+  const T=TIPS[id];tipSeen[id]=1;try{localStorage.setItem("rhd_tips",JSON.stringify(tipSeen))}catch(e){}
+  let el=$("tipBox");if(!el){el=document.createElement("div");el.id="tipBox";el.className="tipBox";document.body.appendChild(el)}
+  el.innerHTML=`<b>${T.t}</b><p>${T.d}</p><button type="button">알겠어</button><i class="tArw"></i>`;el.querySelector("button").onclick=tipClose;
+  el.hidden=false;el.className="tipBox";tipNow=id;
+  const tg=T.at&&T.at(),W=innerWidth,H=innerHeight,bw=Math.min(320,W-24);el.style.width=bw+"px";
+  if(tg){tg.classList.add("tipHi");const r=tg.getBoundingClientRect(),bh=el.offsetHeight,cx=r.left+r.width/2;
+    let left=Math.max(12,Math.min(W-bw-12,cx-bw/2)),top;
+    if(r.height>H*.4){top=r.top+r.height*.35;el.classList.add("mid")}           // the board: float over its middle
+    else if(r.top>bh+24){top=r.top-bh-12;el.classList.add("up")}              // above the button
+    else{top=r.bottom+12;el.classList.add("down")}
+    el.style.left=left+"px";el.style.top=top+"px";el.style.setProperty("--ax",Math.max(16,Math.min(bw-16,cx-left))+"px")}
+  else{el.style.left=(W-bw)/2+"px";el.style.top=Math.max(12,H*.06)+"px";el.classList.add("mid")}
+  clearTimeout(el._t);el._t=setTimeout(()=>{if(tipNow===id)tipClose()},14000)}
+setInterval(()=>{if(!S||tipNow||window.AUG_AUTO)return;if(!running&&!augOpen&&!rewardOpen)return;
+  for(const id in TIPS){if(tipSeen[id])continue;let ok=false;try{ok=TIPS[id].when()}catch(e){}if(ok){tipShow(id);break}}},400);
+$("tipReset").onclick=()=>{tipSeen={};try{localStorage.removeItem("rhd_tips")}catch(e){}$("tipReset").textContent="다음 판에 다시 보여 줄게요";$("tipReset").disabled=true};
 
 // ---------- dopamine: crits, kill coins, all-clear bonus, crisis warning and escape ----------
 const CRIT_P=.08,CRIT_X=2.5;
