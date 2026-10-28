@@ -868,7 +868,7 @@ function kill(m){
   if(m.def.boss===2){S.tok.boss++;banner("무한 모드 시작!","var(--ore)");log("40웨이브 클리어! 이제부터 끝없는 웨이브가 몰려와요","good");showReward()}
 }
 function finish(win){
-  if(S.over)return;S.over=true;running=false;sfx("over");
+  if(S.over)return;S.over=true;running=false;sfx("over");S.sel=null;renderBubble();
   showResult();
   $("endTitle").textContent=win?"승리":"패배";$("endOv").style.backgroundImage=`url(ui/screens/bg_${win?"victory":"defeat"}.jpg)`;
   $("endText").textContent=win?`40라운드 클리어. ${S.kills}킬, 남은 목숨 ${S.life}.`:`Wave ${S.wi+1}에서 목숨을 모두 잃었습니다. ${S.kills}킬.`;
@@ -1171,6 +1171,7 @@ function choose(grade,type){
 const NM=u=>TOWERS[UID(u)].short;
 
 function showReward(){
+  if(S.sel){S.sel=null;renderBubble()}
   const ov=$("rewardOv"),bx=$("rewardBox"),tk=S.tok;
   if(tk.boss>0){if(S.bPot==null){S.bPot=BOSS_GOLD*Math.max(1,Math.floor((S.wi+1)/10));S.bP=.5}bossGambleHTML(bx)}
   else if(tk.rare>0){bx.innerHTML=`<h2>정예 고르기</h2><p>다음에 빈 칸을 누르면 이 캐릭터가 나와요.</p><div class="pick">${byGrade(2).map(t=>`<button type="button" data-t="${t.i}"><img alt="" src="${ICON[t.i]}">${t.short}</button>`).join("")}</div>`;
@@ -1785,7 +1786,7 @@ function augSpin(o,done){
     i++;const left=N-i;setTimeout(step,left>6?70:left>3?130:left>1?220:340)};
   step()}
 function showAug(again){
-  ensureAugDom();const o=S.augOffer;if(!o)return;augOpen=true;
+  ensureAugDom();const o=S.augOffer;if(!o)return;augOpen=true;if(S.sel){S.sel=null;renderBubble()}
   if(!o.spun&&o.tier!=null){o.spun=true;augSpin(o,()=>showAug(true));return}
   $("augCards").innerHTML=o.ch.map(cardHTML).join("");
   const rr=$("augReroll");rr.disabled=o.rerolled||S.gas<50;
