@@ -573,7 +573,7 @@ body.menuHold .stage::before{content:"일시정지";position:absolute;left:50%;t
     <div class="toast" id="toast" aria-live="polite"></div>
     <div class="bubble" id="bubble" hidden></div>
     <button type="button" class="lotto" id="lottoBtn" aria-label="보석 복권, 골드 100"><b>복권</b><span>골드 100</span></button>
-    <button type="button" class="mergeAll" id="mergeAll" disabled aria-label="일괄 합성"><b>일괄 합성</b><span id="mergeAllN">0</span></button>
+    <button type="button" class="mergeAll" id="mergeAll" disabled aria-label="합성"><b>합성</b><span id="mergeAllN">0</span></button>
     <div class="overlay" id="rewardOv" hidden><div class="box" id="rewardBox"></div></div>
     <div class="homeOv" id="startOv">
       <img class="homeLogo" alt="랜덤 히어로 디펜스" src="ui/logo_vertical.png">
@@ -637,7 +637,7 @@ body.menuHold .stage::before{content:"일시정지";position:absolute;left:50%;t
 </div>
 <nav class="mnav" aria-label="메뉴">
   <button type="button" data-sheet="pUpg" aria-pressed="false"><img alt="" src="ui/icons/icon_upg2.svg">업글</button>
-  <button type="button" id="navMerge" aria-label="일괄 합성"><img alt="" src="ui/icons/icon_merge_all.svg">일괄 합성<span class="dot" id="navMergeN" hidden>0</span></button>
+  <button type="button" id="navMerge" aria-label="합성"><img alt="" src="ui/icons/icon_merge_all.svg">합성<span class="dot" id="navMergeN" hidden>0</span></button>
   <button type="button" class="mlotto" id="navLotto" aria-label="보석 복권, 골드 100"><span class="orb"><b>복권</b><small>골드 100</small></span></button>
   <button type="button" data-sheet="pAug" aria-pressed="false"><img alt="" src="ui/icons/icon_aug.svg">증강</button>
   <button type="button" data-sheet="codex" aria-pressed="false"><img alt="" src="ui/icons/icon_codex.svg">도감</button>
@@ -1002,7 +1002,7 @@ function mergeablePairs(){const by={};for(const tw of S.towers){const t=TOWERS[t
 function mergeAll(){
   if(!running)return;const by={};for(const tw of S.towers){const t=TOWERS[tw.type];if(t.grade<=3)(by[tw.type]=by[tw.type]||[]).push(tw)}
   let n=0;const keep=S.sel;for(const list of Object.values(by)){list.sort((a,b)=>a.born-b.born);for(let i=0;i+1<list.length;i+=2){if(!S.towers.includes(list[i])||!S.towers.includes(list[i+1]))continue;merge(list[i],true);n++}}
-  S.sel=null;if(n)log(`일괄 합성 ${n}번`,"good");renderPanels()}
+  S.sel=null;if(n)log(`합성 ${n}번`,"good");renderPanels()}
 const xCost=g=>50<<g; // 고물상: swap price doubles per grade (견습 50 ... 전설 800)
 function exchange(tw){ // 고물상 augment: swap for a different character of the same grade
   const t=TOWERS[tw.type],c=xCost(t.grade);if(t.grade>=5||!has("junk"))return;if(S.ore<c){log(`골드가 부족해요 (교환 ${c})`,"warn");return}
