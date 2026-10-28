@@ -479,7 +479,8 @@ body{background:radial-gradient(ellipse at 30% 0%,#A5D9E8 0%,#6CA9D5 42%,#527CB4
 .crateBox.open .cfx{opacity:1;animation:crOpen8 .7s steps(7) forwards}
 .crateBox .cpf{position:absolute;left:10%;top:-30%;width:80%;aspect-ratio:1;background:url(ui/crate/fx_crate_fail.webp) center/contain no-repeat;opacity:0}
 .crateBox .cpf.go{animation:crPuff 1.2s ease-out forwards}
-.crateBox .cb{position:absolute;right:0;bottom:100%;white-space:nowrap;font-size:13px;font-weight:900;color:#fff;-webkit-text-stroke:3px #23305a;paint-order:stroke;opacity:0}
+.crateBox .cl{position:absolute;left:50%;bottom:86%;transform:translateX(-50%);white-space:nowrap;font-size:9.5px;font-weight:800;color:#fff;-webkit-text-stroke:2.5px #23305a;paint-order:stroke;letter-spacing:-.02em}
+.crateBox .cb{position:absolute;right:0;bottom:calc(86% + 13px);white-space:nowrap;font-size:13px;font-weight:900;color:#fff;-webkit-text-stroke:3px #23305a;paint-order:stroke;opacity:0}
 .crateBox .cb.pop{animation:crBub 1.4s ease-out forwards}
 @keyframes crTease{from{background-position:0 0}to{background-position:100% 0}}
 @keyframes crOpen8{from{background-position:0 0}to{background-position:100% 0}}
@@ -1792,6 +1793,7 @@ function augTake(id){
   if(id==="iron_wall")S.life+=10;
   if(id==="god_call")S.godCall=1;
   if(id==="airdrop"){S.crateQ=(S.crateQ||0)+2}
+  if(id==="supply_call")cratePlace();
   if(id==="devil_deal"){S.life=Math.max(1,S.life-10);placePrize(pick(byGrade(4)).i)}
   if(id==="all_in"){const bet=S.ore;if(Math.random()<.5){S.ore=bet*3;banner("올인 성공!","var(--ore)");log(`올인 성공! 골드 ${bet} → ${bet*3}`,"good");sfx("jackpot")}else{S.ore=0;banner("올인 실패…","var(--life)");log(`올인 실패… 골드 ${bet}을(를) 잃었어요`,"warn");sfx("miss")}}
   if(id==="fate_dice"){const tws=[...S.towers];for(const tw of tws){const t=TOWERS[tw.type],opts=byGrade(t.grade).filter(o=>o.i!==t.i);if(opts.length){const sl=tw.slot,cc=tw.conc;removeTower(tw);const nw=addTower(sl,pick(opts).i,false);if(cc)nw.conc=cc}}
@@ -1901,8 +1903,8 @@ function crateWheel(k,done){
     i++;const left=N-i;setTimeout(step,left>10?55:left>5?95:left>2?170:left>0?280:0)};
   setTimeout(step,500)}
 function drawCrate(){} // the crate is a page element under the board (outside the road and the hero slots)
-function crateEl(){let el=$("crateBox");if(!el){el=document.createElement("div");el.id="crateBox";el.className="crateBox";el.innerHTML=`<i class="cg"></i><i class="cs" role="img" aria-label="보급상자"></i><i class="cfx"></i><i class="cpf"></i><b class="cb"></b>`;document.querySelector(".stage").appendChild(el)}return el}
-function cratePlace(){const el=crateEl(),st=document.querySelector(".stage").getBoundingClientRect(),r=cv.getBoundingClientRect();
+function crateEl(){let el=$("crateBox");if(!el){el=document.createElement("div");el.id="crateBox";el.className="crateBox";el.innerHTML=`<i class="cg"></i><i class="cs" role="img" aria-label="보급상자"></i><i class="cfx"></i><i class="cpf"></i><b class="cb"></b><small class="cl"></small>`;document.querySelector(".stage").appendChild(el)}return el}
+function cratePlace(){const el=crateEl();{const l=el.querySelector(".cl");if(l)l.textContent=`열릴 확률 ${Math.round(crateP()*100)}%`}const st=document.querySelector(".stage").getBoundingClientRect(),r=cv.getBoundingClientRect();
   el.style.top=Math.round(r.bottom-st.top+3)+"px";el.style.left=Math.round(r.right-st.left-52)+"px"}
 addEventListener("resize",()=>setTimeout(cratePlace,50));
 function crateState(st,txt){cratePlace();const el=crateEl();el.className="crateBox"+(st?" "+st:"");
