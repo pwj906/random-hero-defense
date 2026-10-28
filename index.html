@@ -127,8 +127,31 @@ dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;font-family:var(--mono);font-vari
 .glab{font-size:12px;font-weight:700}
 .cgrid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
 .ci{position:relative;padding:0;border:0;border-radius:8px;background:rgba(0,0,0,.2);aspect-ratio:1;box-shadow:inset 0 -3px 0 var(--gc)}
-.ci img{width:100%;height:100%;display:block;opacity:.45}
-.ci.own img{opacity:1}
+.ci img{width:100%;height:100%;display:block}
+body:not(.atHome) .ci img{opacity:.45}body:not(.atHome) .ci.own img{opacity:1}
+.ci .cn{display:none}
+.cxDet{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(14,20,50,.6)}
+.cxDet[hidden]{display:none}
+.cxCard{position:relative;width:min(360px,100%);background:linear-gradient(#34509e,#25397a);border:3px solid var(--gc);border-radius:18px;padding:18px 16px 14px;color:#fff;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.cxX{position:absolute;right:8px;top:8px;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.15);color:#fff;font-size:18px;cursor:pointer}
+.cxTop{display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.cxImg{flex:none;width:96px;height:96px;border-radius:14px;background:rgba(0,0,0,.25);box-shadow:inset 0 -4px 0 var(--gc)}
+.cxImg img{width:100%;height:100%}
+.cxCard h3{margin:6px 0 2px;font-size:22px;line-height:1.15}
+.cxTags{margin:0;font-size:13px;color:#cfdcff}
+.cxDesc{margin:0 0 12px;font-size:15px;line-height:1.45}
+.cxKv{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:0}
+.cxKv div{background:rgba(0,0,0,.22);border-radius:10px;padding:8px 10px}
+.cxKv dt{font-size:12px;color:#b9c8f0}.cxKv dd{margin:2px 0 0;font-size:18px;font-weight:800}
+.cxNote{margin:10px 0 0;font-size:11.5px;color:#b9c8f0}
+@media (max-width:700px){
+ #codex .crow{grid-template-columns:1fr;gap:4px;margin-bottom:12px}
+ #codex .glab{font-size:14px}
+ #codex .cgrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+ #codex .ci{aspect-ratio:auto;padding:4px 2px 6px;display:flex;flex-direction:column;align-items:center}
+ #codex .ci img{width:72%;height:auto;aspect-ratio:1}
+ #codex .ci .cn{display:block;margin-top:2px;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+}
 .ci .cnt{position:absolute;right:-3px;top:-4px;min-width:16px;padding:0 4px;border-radius:8px;background:var(--gas);color:#0b3324;font:700 10px/16px var(--mono)}
 .ci .cnt:empty{display:none}
 .mlotto{display:none}
@@ -1597,8 +1620,18 @@ function start(d){
 }
 
 // ---------- boot ----------
-function buildCodex(){makeIcons();$("codex").innerHTML=[0,1,2,3,4,5].map(g=>`<div class="crow"><span class="glab" style="color:${GCOL[g]}">${GRADE[g]}</span><div class="cgrid">${byGrade(g).map(t=>`<button type="button" class="ci" data-t="${t.i}" title="${t.name}" style="--gc:${GCOL[g]}"><img alt="${t.name}" src="${ICON[t.i]}"><span class="cnt"></span></button>`).join("")}</div></div>`).join("");
-document.querySelectorAll("#codex .ci").forEach(im=>im.onclick=()=>{if(S)S.sel=null;viewType=+im.dataset.t;renderSel();if(MQ.matches)openSheet("sel");else viewType=null});if(S)renderPanels()}
+function buildCodex(){makeIcons();$("codex").innerHTML=[0,1,2,3,4,5].map(g=>`<div class="crow"><span class="glab" style="color:${GCOL[g]}">${GRADE[g]}</span><div class="cgrid">${byGrade(g).map(t=>`<button type="button" class="ci" data-t="${t.i}" title="${t.name}" style="--gc:${GCOL[g]}"><img alt="${t.name}" src="${ICON[t.i]}"><b class="cn">${t.short||t.name}</b><span class="cnt"></span></button>`).join("")}</div></div>`).join("");
+document.querySelectorAll("#codex .ci").forEach(im=>im.onclick=()=>codexDetail(+im.dataset.t));if(S)renderPanels()}
+// tapping a codex entry: a large card over everything (home screen and in game, phone and desktop)
+function codexDetail(i){
+  const t=TOWERS[i];let el=$("cxDet");if(!el){el=document.createElement("div");el.id="cxDet";el.className="cxDet";el.onclick=e=>{if(e.target===el||e.target.closest(".cxX"))el.hidden=true};document.body.appendChild(el)}
+  const dmg=hitDmg(t),own=S?S.towers.filter(o=>o.type===t.i).length:null,role={Melee:"근접",Shot:"사격",Sniper:"저격"}[ROLE[t.uid]]||"";
+  el.innerHTML=`<div class="cxCard" style="--gc:${GCOL[t.grade]}"><button type="button" class="cxX" aria-label="닫기">✕</button>
+   <div class="cxTop"><div class="cxImg"><img alt="" src="${ICON[t.i]}"></div><div><span class="gchip" style="background:${GCOL[t.grade]}">${GRADE[t.grade]}</span><h3>${t.name}</h3><p class="cxTags">${role}${role?" · ":""}${t.area?"범위":"단발"}${t.area?` · 최대 ${t.maxHit}명`:""}</p></div></div>
+   <p class="cxDesc">${desc(t)}</p>
+   <dl class="cxKv"><div><dt>공격력</dt><dd>${fmt(dmg*t.factor*(t.shots||1))}</dd></div><div><dt>공격 간격</dt><dd>${(t.cd/24).toFixed(2)}초</dd></div><div><dt>사거리</dt><dd>${t.rt}칸</dd></div>${own!=null?`<div><dt>보유</dt><dd>${own}명</dd></div>`:""}</dl>
+   ${S?`<p class="cxNote">공격력은 지금 업글 레벨 기준이에요.</p>`:""}</div>`;
+  el.hidden=false}
 buildCodex();loadSprites(buildCodex);
 let last=performance.now(),acc=0,uiT=0;
 function loop(now){
